@@ -4,7 +4,7 @@
   "private": true,
   "description": "Café Zack — Zakaria Alizouaoui's gamified portfolio: a 3D simulation of the streets of Algiers.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
