@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { Ground } from "./Ground";
+import { Pipeline } from "./Pipeline";
 import { PlaceholderCharacter } from "./PlaceholderCharacter";
 
 /**
@@ -35,6 +36,7 @@ export function Scene() {
       <Suspense fallback={null}>
         <PlaceholderCharacter />
         <Ground />
+        <Pipeline />
       </Suspense>
 
       <OrbitControls
