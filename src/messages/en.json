@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "title": "Café Zack — Zakaria Alizouaoui",
+    "titleShort": "Café Zack",
+    "description": "Data, software, and platform engineering services from Algiers. Walk into Café Zack."
+  },
+  "hero": {
+    "booting": "café zack · booting…",
+    "instructions": "a portfolio simulation in algiers · drag to orbit · v0.0.1"
+  },
+  "locale": {
+    "switchTo": "Switch to {name}",
+    "names": {
+      "en": "English",
+      "fr": "Français"
+    }
+  }
+}
