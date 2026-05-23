@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-charcoal: #0a0a0a;
+  --color-cream: #faf7f2;
+  --color-ochre: #c2410c;
+  --color-med-blue: #0369a1;
+  --color-background: var(--color-charcoal);
+  --color-foreground: var(--color-cream);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--color-ochre);
+  color: var(--color-cream);
+}

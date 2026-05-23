@@ -1,0 +1,76 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/.vitest
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+bun-debug.log*
+
+# editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# deploy targets (kept as-needed but ignored locally)
+.vercel
+.wrangler/
+
+# bundle analysis
+.next/analyze/
+
+# cache
+.cache/
+.turbo/
+
+# --- Project-specific (Café Zack portfolio) ---
+
+# Reference originals (photos, resume PDF) — never ship to production
+_originals/
+
+# Blender source files — large binary, use Git LFS instead if we ever commit them
+blender/**/*.blend
+blender/**/*.blend1
+blender/**/*.fbx
+blender/**/*.obj
+
+# Local-only docs / scratch
+docs/_scratch/
+*.local.md
