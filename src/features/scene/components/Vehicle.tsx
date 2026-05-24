@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { type RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { useRef } from "react";
+import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useKeyboard } from "../hooks/useKeyboard";
 
@@ -21,15 +21,17 @@ const ANGVEL_DAMPING = 0.9;
  * facing direction, torque on yaw for steering (only when actually moving so
  * the car can't spin in place).
  *
- * Controls: WASD or arrow keys. No enter/exit yet (PR E), no chase camera
- * yet (PR B) — OrbitControls still owns the camera so you can drive the
- * box around and watch it from any angle.
+ * Controls: WASD or arrow keys. No enter/exit yet (PR E). The ChaseCamera
+ * (PR B) tracks the body via the optional `bodyRef` prop — when the scene
+ * passes one in, the camera follows the taxi; otherwise the component owns
+ * its own ref and drives standalone.
  *
  * Rotation locked to yaw only (no pitch/roll) so the box can't tip over —
  * simulates a low-CG vehicle without needing real wheel physics.
  */
-export function Vehicle() {
-  const bodyRef = useRef<RapierRigidBody>(null);
+export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRigidBody | null> }) {
+  const internalRef = useRef<RapierRigidBody>(null);
+  const bodyRef = externalRef ?? internalRef;
   const keys = useKeyboard();
 
   useFrame((_, delta) => {

@@ -1,13 +1,14 @@
 "use client";
 
-import { OrbitControls, Sky, Stars } from "@react-three/drei";
+import { Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import { Physics } from "@react-three/rapier";
-import { Suspense } from "react";
+import { Physics, type RapierRigidBody } from "@react-three/rapier";
+import { Suspense, useRef } from "react";
 import * as THREE from "three";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { ChaseCamera } from "./ChaseCamera";
 import { Ground } from "./Ground";
 import { PlaceholderCharacter } from "./PlaceholderCharacter";
 import { Vehicle } from "./Vehicle";
@@ -96,6 +97,9 @@ function SceneContent() {
   const p = PRESETS[timeOfDay];
   const isNight = timeOfDay === "night";
 
+  // Shared with the ChaseCamera so it can track the taxi each frame.
+  const taxiRef = useRef<RapierRigidBody>(null);
+
   return (
     <>
       <fog attach="fog" args={[p.fogColor, 18, 60]} />
@@ -143,20 +147,11 @@ function SceneContent() {
         <PlaceholderCharacter />
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
-          <Vehicle />
+          <Vehicle bodyRef={taxiRef} />
         </Physics>
       </Suspense>
 
-      <OrbitControls
-        enablePan={false}
-        enableDamping
-        dampingFactor={0.08}
-        minDistance={4}
-        maxDistance={20}
-        maxPolarAngle={Math.PI / 2.1}
-        autoRotate
-        autoRotateSpeed={0.15}
-      />
+      <ChaseCamera targetRef={taxiRef} />
 
       <EffectComposer>
         <Bloom
@@ -183,7 +178,9 @@ function SceneContent() {
  * "world IS the pipeline" abstraction to a Bruno-Simon-style city the
  * visitor can actually drive through.
  *
- * Drive with WASD or arrow keys. Camera follows in the next PR.
+ * Drive with WASD or arrow keys; a ChaseCamera (PR B) follows the taxi from
+ * behind. OrbitControls retired here — a programmatic follow cam and orbit
+ * controls can't both own camera.position.
  */
 export function Scene() {
   return (
