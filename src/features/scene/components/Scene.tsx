@@ -2,7 +2,9 @@
 
 import { OrbitControls, Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { Bloom, EffectComposer, KernelSize } from "@react-three/postprocessing";
 import { Suspense } from "react";
+import * as THREE from "three";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { Ground } from "./Ground";
@@ -149,7 +151,19 @@ function SceneContent() {
         minDistance={4}
         maxDistance={20}
         maxPolarAngle={Math.PI / 2.1}
+        autoRotate
+        autoRotateSpeed={0.15}
       />
+
+      <EffectComposer>
+        <Bloom
+          intensity={p.bloomIntensity}
+          luminanceThreshold={0.55}
+          luminanceSmoothing={0.85}
+          kernelSize={KernelSize.SMALL}
+          levels={3}
+        />
+      </EffectComposer>
     </>
   );
 }
@@ -173,7 +187,12 @@ export function Scene() {
     <Canvas
       shadows
       camera={{ position: [5, 3, 6], fov: 50 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.15,
+      }}
       dpr={[1, 1.5]}
     >
       <SceneContent />
