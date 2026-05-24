@@ -68,7 +68,7 @@ function PipeSegment({ yOffset, color, speed = 1 }: SegmentProps) {
 
   return (
     <mesh position={[0, yOffset, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-      <cylinderGeometry args={[0.09, 0.09, 5, 32, 1]} />
+      <cylinderGeometry args={[0.05, 0.05, 2.4, 24, 1]} />
       <shaderMaterial
         ref={matRef}
         vertexShader={VERTEX}
@@ -80,28 +80,25 @@ function PipeSegment({ yOffset, color, speed = 1 }: SegmentProps) {
 }
 
 /**
- * "The world IS the pipeline" — Phase 3 head-start spike.
+ * "The world IS the pipeline" — supporting detail, not the main event.
  *
- * Three horizontal pipes running along the X axis, stacked vertically
- * in bronze → silver → gold (medallion architecture: raw → transformed
- * → KPI). A moving stripe pattern inside each pipe reads as fluid flow;
- * a subtle fresnel rim gives the pipes physical presence in the scene.
+ * Tucked behind the character to the right, low to the ground, much
+ * smaller than the original spike. Three pipes still stacked in the
+ * medallion order (bronze → silver → gold) so the visual language
+ * is locked in, but the dominance has been pulled WAY back so the
+ * actual Algiers scene (sky, character, skyline) reads first.
  *
- * Each layer flows at a slightly different speed so they read as
- * distinct stages: bronze slowest (raw ingestion), gold fastest
- * (KPIs ready to serve).
- *
- * Next steps (Phases 4-5, see docs/design-brief-phase-1.md §4.5):
- * - Bend pipes around landmarks via TubeGeometry along curves
- * - Drive uSpeed from GitHub Events API / Kafka topic rate
- * - Add manhole cutaways at intersections for "peek beneath" reveals
+ * Phase 4-5 brings this back stronger via:
+ * - Manhole cutaways with the pipeline visible peeking up from below
+ * - TubeGeometry runs between landmarks following street paths
+ * - Real ingestion driving uSpeed (GitHub Events API / Kafka topic)
  */
 export function Pipeline() {
   return (
-    <group position={[0, 0, 2]}>
-      <PipeSegment yOffset={0.2} color="#A85B2A" speed={0.6} />
-      <PipeSegment yOffset={0.46} color="#7AA7D9" speed={0.85} />
-      <PipeSegment yOffset={0.72} color="#E8B549" speed={1.15} />
+    <group position={[2.8, 0, 2.5]}>
+      <PipeSegment yOffset={0.1} color="#A85B2A" speed={0.6} />
+      <PipeSegment yOffset={0.22} color="#7AA7D9" speed={0.85} />
+      <PipeSegment yOffset={0.34} color="#E8B549" speed={1.15} />
     </group>
   );
 }
