@@ -2,7 +2,7 @@
 
 import { OrbitControls, Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Bloom, EffectComposer, KernelSize } from "@react-three/postprocessing";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense } from "react";
 import * as THREE from "three";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
@@ -160,7 +160,9 @@ function SceneContent() {
           intensity={p.bloomIntensity}
           luminanceThreshold={0.55}
           luminanceSmoothing={0.85}
-          kernelSize={KernelSize.SMALL}
+          // KernelSize enum is in 'postprocessing' (not re-exported by
+          // @react-three/postprocessing). 1 = SMALL, the cheapest blur.
+          kernelSize={1}
           levels={3}
         />
       </EffectComposer>
