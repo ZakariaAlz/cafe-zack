@@ -3,13 +3,14 @@
 import { OrbitControls, Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { Physics } from "@react-three/rapier";
 import { Suspense } from "react";
 import * as THREE from "three";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { Ground } from "./Ground";
-import { Pipeline } from "./Pipeline";
 import { PlaceholderCharacter } from "./PlaceholderCharacter";
+import { Vehicle } from "./Vehicle";
 
 type Preset = {
   sunPosition: [number, number, number];
@@ -140,8 +141,10 @@ function SceneContent() {
       <Suspense fallback={null}>
         <AlgiersSilhouette />
         <PlaceholderCharacter />
-        <Ground />
-        <Pipeline />
+        <Physics gravity={[0, -9.81, 0]}>
+          <Ground />
+          <Vehicle />
+        </Physics>
       </Suspense>
 
       <OrbitControls
@@ -173,16 +176,14 @@ function SceneContent() {
 /**
  * Top-level R3F scene — Algiers under a time-of-day cycle.
  *
- * Performance tuning (post-iteration):
- * - dpr capped at 1.5x (was 2x) — cuts pixel count ~30%
- * - shadow map 1024 (was 2048) — quarter of the prior fill cost
- * - Bloom without mipmapBlur — much cheaper full-screen pass
- * - autoRotate removed — was fighting user input and causing
- *   constant re-renders; visitor controls the camera
- * - OrbitControls damping enabled — smooth feel without per-frame work
- * - Stars count 1500 (was 3500) — 60% fewer points at night
- * - Distant silhouette buildings + small pipe segments no longer
- *   cast shadows (off-screen / too small for the shadow to matter)
+ * Now physics-enabled (Rapier) — the drivable taxi spike is inside the
+ * <Physics> block alongside the Ground collider. Pipeline visualization
+ * removed from view (file kept on disk in case we re-introduce as
+ * decorative manhole detail later); was the focus shift away from the
+ * "world IS the pipeline" abstraction to a Bruno-Simon-style city the
+ * visitor can actually drive through.
+ *
+ * Drive with WASD or arrow keys. Camera follows in the next PR.
  */
 export function Scene() {
   return (

@@ -16,7 +16,7 @@ export function PlaceholderCharacter() {
   });
 
   return (
-    <mesh ref={ref} position={[0, 0.85, 0]} castShadow>
+    <mesh ref={ref} position={[4, 0.85, -2]} castShadow>
       <boxGeometry args={[0.55, 1.7, 0.3]} />
       <meshStandardMaterial color="#0A0A0A" roughness={0.45} metalness={0.05} />
     </mesh>
