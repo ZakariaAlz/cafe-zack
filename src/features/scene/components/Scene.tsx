@@ -2,7 +2,6 @@
 
 import { OrbitControls, Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense } from "react";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
@@ -151,10 +150,6 @@ function SceneContent() {
         maxDistance={20}
         maxPolarAngle={Math.PI / 2.1}
       />
-
-      <EffectComposer>
-        <Bloom intensity={p.bloomIntensity} luminanceThreshold={0.6} luminanceSmoothing={0.9} />
-      </EffectComposer>
     </>
   );
 }

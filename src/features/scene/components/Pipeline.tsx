@@ -35,8 +35,10 @@ const FRAGMENT = /* glsl */ `
     float fresnel = 1.0 - max(dot(vNormal, vViewDir), 0.0);
     fresnel = pow(fresnel, 2.5);
 
-    // Compose: dim base + bright flowing stripes + rim glow
-    vec3 col = uColor * 0.55 + uColor * stripe * 1.7 + uColor * fresnel * 0.9;
+    // Compose: dim base + bright flowing stripes + rim glow.
+    // Stripe and rim coefficients boosted (1.7->2.4, 0.9->1.3) to keep
+    // the "glow" feel after Bloom postprocess was removed for perf.
+    vec3 col = uColor * 0.55 + uColor * stripe * 2.4 + uColor * fresnel * 1.3;
 
     gl_FragColor = vec4(col, 1.0);
   }
