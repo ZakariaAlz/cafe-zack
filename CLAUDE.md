@@ -12,13 +12,19 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 
 ## Stack (locked)
 
-- **Next.js 15** App Router + **React 19** + **TypeScript strict**
+- **Next.js 16** (Turbopack) App Router + **React 19** + **TypeScript strict**
 - **Tailwind CSS v4** + **shadcn/ui** for 2D
 - **React Three Fiber** + **drei** + **@react-three/rapier** (physics) + **@react-three/postprocessing**
 - **next-intl** (EN primary, FR toggle)
 - **Howler.js** for positional audio · **Theatre.js** for cinematic cameras · **GSAP** + **Framer Motion** for 2D motion
 - **Bun** package manager + runner · **Biome** for lint+format · **Vitest** + **Playwright** for tests
 - Backend: Next.js Route Handlers using **only Web Fetch API** (edge-runtime-safe — runs on Cloudflare Pages, Vercel, or self-hosted without rewrites)
+
+## Local dev
+
+- `bun dev` → **http://localhost:3001** (port 3001, *not* 3000 — Metabase owns 3000 on this machine)
+- Green before every commit: `bun run typecheck` · `bun run check` (Biome lint+format, autofix) · `bun run build`
+- Tests: `bun test` (Vitest) · `bun run test:e2e` (Playwright)
 
 ## Repo layout
 
@@ -97,9 +103,13 @@ When writing any public-facing copy for services / case studies / README / marke
 - Don't add tracking that needs a cookie banner (use Cloudflare Web Analytics or Plausible)
 - Don't trademark-trip — "suited agent" not "Agent Smith"; no green-tinted lenses; no Hugo Weaving likeness
 
-## Open items
+## Current status
 
-Live status in the plan file. Currently blocking Phase 0:
-- **Bun install** (user must run `! curl -fsSL https://bun.sh/install | bash` in their prompt — auto-mode classifier denies it from Claude)
+Live status lives in the plan file; this is the short version for session pickup.
 
-After Bun is in, Phase 0 proceeds autonomously: scaffold → install deps → configure tooling → hello R3F → init git → write README → first commit.
+- ✅ **Phase 0** — scaffolded (Next 16 + R3F + Rapier), tooling configured, hello-R3F scene, git + README.
+- ✅ **Phase 0.5** — next-intl wired with EN/FR routing.
+- 🔭 **Scene spikes** (on `feat/scene-*` branches, not yet merged to `main`): sunset atmosphere + time-of-day cycle, Algiers silhouette, and the **drivable taxi**.
+- 🚕 **Taxi spike roadmap** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** Quaternius sedan model · enter/exit (PR E) · walk/drive switch · street geometry · taxi-call flow. Real models/landmarks/character still pending (Phases 2–4).
+
+Pick up from the latest `feat/scene-*` branch; check `git log` and the in-file PR-letter comments in `src/features/scene/components/` for exact next step.
