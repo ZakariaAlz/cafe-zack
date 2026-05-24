@@ -67,8 +67,8 @@ function PipeSegment({ yOffset, color, speed = 1 }: SegmentProps) {
   });
 
   return (
-    <mesh position={[0, yOffset, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-      <cylinderGeometry args={[0.05, 0.05, 2.4, 24, 1]} />
+    <mesh position={[0, yOffset, 0]} rotation={[0, 0, Math.PI / 2]}>
+      <cylinderGeometry args={[0.05, 0.05, 2.4, 16, 1]} />
       <shaderMaterial
         ref={matRef}
         vertexShader={VERTEX}

@@ -26,15 +26,6 @@ type Preset = {
   bloomIntensity: number;
 };
 
-/**
- * Lighting + sky presets per time of day. Tuned so each one reads as a
- * distinct mood at a glance:
- * - sunrise: cool blue still in the shadows, warm peach light from the east
- * - midday: bright blue sky, near-white sun overhead, minimal bloom
- * - sunset: saturated orange-to-blue gradient, sun low in the west, long shadows
- * - night: starfield over the bay, blue moonlight, bloom shines harder so the
- *   pipeline (and future neon) pops
- */
 const PRESETS: Record<TimeOfDay, Preset> = {
   sunrise: {
     sunPosition: [50, 4, 0],
@@ -49,7 +40,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     directionalPos: [12, 4, 5],
     directionalColor: "#FFE0B5",
     directionalIntensity: 1.6,
-    bloomIntensity: 0.55,
+    bloomIntensity: 0.4,
   },
   midday: {
     sunPosition: [10, 50, 0],
@@ -64,7 +55,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     directionalPos: [5, 12, 5],
     directionalColor: "#FFFFFF",
     directionalIntensity: 2.4,
-    bloomIntensity: 0.35,
+    bloomIntensity: 0.25,
   },
   sunset: {
     sunPosition: [-30, 2, 0],
@@ -79,7 +70,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     directionalPos: [-12, 3, 5],
     directionalColor: "#FFB070",
     directionalIntensity: 1.9,
-    bloomIntensity: 0.7,
+    bloomIntensity: 0.5,
   },
   night: {
     sunPosition: [0, -10, 0],
@@ -94,7 +85,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     directionalPos: [-5, 8, 5],
     directionalColor: "#5070A0",
     directionalIntensity: 0.5,
-    bloomIntensity: 1.2,
+    bloomIntensity: 0.8,
   },
 };
 
@@ -110,11 +101,18 @@ function SceneContent() {
       {isNight ? (
         <>
           <color attach="background" args={["#050310"]} />
-          <Stars radius={120} depth={60} count={3500} factor={4} saturation={0} fade speed={0.4} />
+          <Stars
+            radius={120}
+            depth={60}
+            count={1500}
+            factor={3.5}
+            saturation={0}
+            fade
+            speed={0.3}
+          />
         </>
       ) : (
         <Sky
-          key={timeOfDay}
           distance={450000}
           sunPosition={p.sunPosition}
           turbidity={p.turbidity}
@@ -131,11 +129,11 @@ function SceneContent() {
         intensity={p.directionalIntensity}
         color={p.directionalColor}
         castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-20}
-        shadow-camera-right={20}
-        shadow-camera-top={20}
-        shadow-camera-bottom={-20}
+        shadow-mapSize={[1024, 1024]}
+        shadow-camera-left={-15}
+        shadow-camera-right={15}
+        shadow-camera-top={15}
+        shadow-camera-bottom={-15}
       />
 
       <Suspense fallback={null}>
@@ -147,20 +145,15 @@ function SceneContent() {
 
       <OrbitControls
         enablePan={false}
+        enableDamping
+        dampingFactor={0.08}
         minDistance={4}
         maxDistance={20}
         maxPolarAngle={Math.PI / 2.1}
-        autoRotate
-        autoRotateSpeed={0.3}
       />
 
       <EffectComposer>
-        <Bloom
-          intensity={p.bloomIntensity}
-          luminanceThreshold={0.5}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
+        <Bloom intensity={p.bloomIntensity} luminanceThreshold={0.6} luminanceSmoothing={0.9} />
       </EffectComposer>
     </>
   );
@@ -169,18 +162,25 @@ function SceneContent() {
 /**
  * Top-level R3F scene — Algiers under a time-of-day cycle.
  *
- * The whole atmosphere (sky, lights, fog, bloom) is preset-driven from
- * the useTimeOfDay store. UI control lives outside the Canvas in
- * TimeOfDayControl; this component just subscribes and re-renders.
- *
- * The scene focuses on PLACE — AlgiersSilhouette gestures at the city
- * skyline (real Quaternius/Meshy buildings arrive in Phase 4). The
- * pipeline visualization is intentionally tucked off to the side and
- * shrunk so it reads as background infrastructure, not the main event.
+ * Performance tuning (post-iteration):
+ * - dpr capped at 1.5x (was 2x) — cuts pixel count ~30%
+ * - shadow map 1024 (was 2048) — quarter of the prior fill cost
+ * - Bloom without mipmapBlur — much cheaper full-screen pass
+ * - autoRotate removed — was fighting user input and causing
+ *   constant re-renders; visitor controls the camera
+ * - OrbitControls damping enabled — smooth feel without per-frame work
+ * - Stars count 1500 (was 3500) — 60% fewer points at night
+ * - Distant silhouette buildings + small pipe segments no longer
+ *   cast shadows (off-screen / too small for the shadow to matter)
  */
 export function Scene() {
   return (
-    <Canvas shadows camera={{ position: [5, 3, 6], fov: 50 }} gl={{ antialias: true }} dpr={[1, 2]}>
+    <Canvas
+      shadows
+      camera={{ position: [5, 3, 6], fov: 50 }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+      dpr={[1, 1.5]}
+    >
       <SceneContent />
     </Canvas>
   );
