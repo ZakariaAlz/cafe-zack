@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { ChaseCamera } from "./ChaseCamera";
+import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
 import { PlaceholderCharacter } from "./PlaceholderCharacter";
 import { Vehicle } from "./Vehicle";
@@ -148,6 +149,7 @@ function SceneContent() {
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
+          <GrandePoste taxiRef={taxiRef} />
         </Physics>
       </Suspense>
 

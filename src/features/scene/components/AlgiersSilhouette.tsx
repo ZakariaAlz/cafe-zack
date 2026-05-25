@@ -27,8 +27,9 @@ export function AlgiersSilhouette() {
         <meshStandardMaterial color="#A37A56" roughness={0.85} />
       </mesh>
 
-      {/* center-back — wider, lower (Casbah mass) */}
-      <mesh position={[0, 4, -12]}>
+      {/* east-back — wider, lower (Casbah mass); moved off the central
+          approach now that the real Grande Poste owns the z=-21 sightline */}
+      <mesh position={[12, 4, -13]}>
         <boxGeometry args={[8, 8, 5]} />
         <meshStandardMaterial color="#B58668" roughness={0.9} />
       </mesh>
@@ -56,10 +57,11 @@ export function AlgiersSilhouette() {
         <meshStandardMaterial color="#FAF7F2" roughness={0.6} />
       </mesh>
 
-      {/* a low Maqam-Echahid-style trio of arches — north horizon */}
-      {([-2, 0, 2] as const).map((x) => (
-        <mesh key={x} position={[x, 5, -16]}>
-          <boxGeometry args={[0.8, 10, 0.8]} />
+      {/* a low Maqam-Echahid-style trio — pushed to the far horizon behind
+          the Grande Poste so it reads as distant skyline, not an obstacle */}
+      {([-3, 0, 3] as const).map((x) => (
+        <mesh key={x} position={[x, 6, -29]}>
+          <boxGeometry args={[0.8, 12, 0.8]} />
           <meshStandardMaterial color="#8C5638" roughness={0.85} />
         </mesh>
       ))}

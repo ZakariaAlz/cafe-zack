@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useRef } from "react";
 import * as THREE from "three";
+import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
@@ -38,14 +39,18 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     const body = bodyRef.current;
     if (!body) return;
 
+    // Controls are locked while a landmark panel is open — the car coasts to a
+    // stop (cap + damping below still run) instead of driving off-screen.
+    const locked = useWorld.getState().activePanel !== null;
+
     const rot = body.rotation();
     QUAT.set(rot.x, rot.y, rot.z, rot.w);
     FORWARD.copy(FORWARD_AXIS).applyQuaternion(QUAT);
 
     // Throttle (forward / reverse impulse along the body's facing)
     let throttle = 0;
-    if (keys.current.forward) throttle += 1;
-    if (keys.current.backward) throttle -= 1;
+    if (!locked && keys.current.forward) throttle += 1;
+    if (!locked && keys.current.backward) throttle -= 1;
 
     if (throttle !== 0) {
       const impulse = ACCEL * throttle * delta * 60;
@@ -63,8 +68,8 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     // Steering torque — only effective when moving (arcade physics, no
     // pivot-in-place); scales with speed so high-speed steering is sharper
     let steer = 0;
-    if (keys.current.left) steer += 1;
-    if (keys.current.right) steer -= 1;
+    if (!locked && keys.current.left) steer += 1;
+    if (!locked && keys.current.right) steer -= 1;
 
     if (steer !== 0 && speed > 0.5) {
       const torque = steer * STEER * delta * 60 * Math.min(speed / MAX_LINEAR, 1);
