@@ -1,11 +1,12 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { type RapierRigidBody, RigidBody } from "@react-three/rapier";
+import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { TaxiModel } from "./TaxiModel";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
@@ -17,10 +18,13 @@ const MAX_LINEAR = 12;
 const ANGVEL_DAMPING = 0.9;
 
 /**
- * Drivable taxi spike. Yellow box (real Quaternius sedan model comes in PR C)
- * with simple arcade-style physics: forward/back impulse along the body's
- * facing direction, torque on yaw for steering (only when actually moving so
- * the car can't spin in place).
+ * Drivable taxi (PR C). The visual is a procedural Peugeot 504-style sedan
+ * (<TaxiModel>) with simple arcade-style physics: forward/back impulse along
+ * the body's facing direction, torque on yaw for steering (only when actually
+ * moving so the car can't spin in place).
+ *
+ * Physics uses an explicit CuboidCollider sized to the chassis only — the
+ * model's wheels and bumpers poke past it, but collision stays a tidy box.
  *
  * Controls: WASD or arrow keys. No enter/exit yet (PR E). The ChaseCamera
  * (PR B) tracks the body via the optional `bodyRef` prop — when the scene
@@ -85,27 +89,17 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     <RigidBody
       ref={bodyRef}
       position={[0, 1, 0]}
-      colliders="cuboid"
+      colliders={false}
       mass={300}
       linearDamping={0.6}
       angularDamping={0.5}
       enabledRotations={[false, true, false]}
     >
-      {/* main body — taxi yellow */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.6, 0.8, 3]} />
-        <meshStandardMaterial color="#F5C842" roughness={0.45} metalness={0.25} />
-      </mesh>
-      {/* lit roof sign for the taxi */}
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <boxGeometry args={[0.5, 0.22, 0.7]} />
-        <meshStandardMaterial
-          color="#FAF7F2"
-          emissive="#F5C842"
-          emissiveIntensity={0.7}
-          roughness={0.3}
-        />
-      </mesh>
+      {/* Chassis-only collision box; matches the old auto-cuboid half-extents
+          so the arcade tuning above is unchanged. Bottom sits at local y=-0.4,
+          where TaxiModel's wheels are sized to meet the road. */}
+      <CuboidCollider args={[0.8, 0.4, 1.55]} />
+      <TaxiModel />
     </RigidBody>
   );
 }
