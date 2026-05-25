@@ -39,7 +39,8 @@ MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/setting
 Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` + `github` MCP plugins.
 
 - **Disabled:** the `context7` and `playwright` *plugins* — they bundle npx-based servers that can't run without Node; our `.mcp.json` (HTTP/bunx) replaces them.
-- **Needs your auth (browser OAuth via `/mcp`), not installed-broken:** `figma` (mcp.figma.com — may hit paid Dev-seat limits, $0 watch) and `github` (api.githubcopilot.com — we already use the `gh` CLI, so optional).
+- **Needs your auth (browser OAuth via `/mcp`):** `figma` ✅ authenticated (mcp.figma.com — watch paid Dev-seat limits) · `github` ✗ HTTP 400 (api.githubcopilot.com needs Copilot; we use the `gh` CLI instead, so skip).
+- **Live browser verification:** the `playwright`/`chrome-devtools` MCPs need *system* Chrome, which isn't installed (sudo). Instead, run a headless **`bun <script>.mjs`** using `import { chromium } from "playwright"` (bundled chromium-1223 is present) with args `--enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`. WebGL renders; assert on the **DOM HUD** (prompts/panel text) since that mirrors store state. This is how PR E was verified.
 
 ## Repo layout
 
@@ -131,6 +132,7 @@ Live status lives in the plan file; this is the short version for session pickup
 - ✅ **Phase 0.5** — next-intl wired with EN/FR routing.
 - 🔭 **Scene spikes** (on `feat/scene-*` branches, not yet merged to `main`): sunset atmosphere + time-of-day cycle, Algiers silhouette, and the **drivable taxi**.
 - 🚕 **Taxi spike roadmap** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** procedural Peugeot 504-style taxi model ✅ · **E** enter/exit + on-foot walk ✅ · **HUD + controls** ✅ (controls split: **E** opens landmark panels, **F** enters/exits taxi; `DrivePrompt` shows the F hint; drive `mode`/`nearTaxi` now live in `useWorld`) · **street geometry** ✅ (`Street.tsx` — main road + cross street, lane dashes, sidewalks, night-glow lamps; visual only, `Ground` keeps collision) · **next: taxi-call flow**. Real landmarks/character rig still pending (Phases 2–4).
-- ⚠️ **Known gap:** no smoke tests on any `src/features/scene/` 3D component (jsdom can't run WebGL — needs `@react-three/test-renderer`). Deferred during the spike; revisit before merging to `main`. Also: PR E was **not yet verified live in a browser** — do this first next session via the Playwright/chrome-devtools MCP (now working).
+- ✅ **PR E verified live** (headless browser, 7/7 checks, 0 console errors): canvas+WebGL mount, drive→F→walk→F→re-enter, drive up to the Poste shows the E prompt, E opens the About panel. Taxi, street, lamps, suited agent all render correctly.
+- ⚠️ **Known gap:** no smoke tests on any `src/features/scene/` 3D component (jsdom can't run WebGL — needs `@react-three/test-renderer`). Deferred during the spike; revisit before merging to `main`.
 
 Pick up from the latest `feat/scene-*` branch; check `git log` and the in-file PR-letter comments in `src/features/scene/components/` for exact next step.
