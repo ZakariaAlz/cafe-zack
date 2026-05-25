@@ -54,9 +54,12 @@ export function GrandePoste({ playerRef }: { playerRef: RefObject<RapierRigidBod
 
   return (
     <group position={POSITION}>
-      {/* Footprint collider so the taxi bumps the building instead of clipping. */}
+      {/* Colliders so the car bumps the building instead of clipping: the main
+          hall, plus a low wall over the plinth/steps so it stops at the base
+          and "pulls up" to the landmark rather than climbing the facade. */}
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[6, 4, 3]} position={[0, 4, -2]} />
+        <CuboidCollider args={[6.5, 0.45, 4.6]} position={[0, 0.45, -1]} />
       </RigidBody>
 
       {/* Plinth + steps you "walk up" (plan: approach the steps). */}
