@@ -28,13 +28,18 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 
 ## Agent tooling (MCP + skills)
 
-Curated in `.mcp.json` (project scope, pre-approved in `.claude/settings.json`). If they don't show in `/mcp`, open `/mcp` once or restart to load.
+**This machine has Bun but NOT Node/npx** — so every MCP server must run via `bunx`, not `npx`. (`bunx <pkg>` works as a drop-in; `npx` = command not found.)
 
-- **context7** — pull *current* API docs before writing against fast-moving libs (R3F, drei, Next 16, Tailwind v4). Use it instead of guessing APIs.
-- **chrome-devtools** (Google) — FPS/perf profiling, console, network, DOM for the WebGL scene. Reach for this when diagnosing jank or load.
-- **playwright** (Microsoft) — drive a real browser to screenshot/verify UI changes (complements the `verify` + `run` skills).
-- **`frontend-design` skill** — use for any 2D/UI build (panels, landing, menus) to avoid generic AI aesthetics. Pair with the design references in the plan file.
-- Not installed (needs paid seat / desktop app, breaks $0): **Figma Dev Mode MCP** — revisit if we get real designs.
+MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/settings.json`). MCP config only loads at **startup** — after editing `.mcp.json` or installing plugins, **restart Claude Code** (or `/mcp`) or the in-session tools won't appear.
+
+- **context7** (HTTP) — pull *current* API docs before writing against fast-moving libs (R3F, drei, Next 16, Tailwind v4). Use instead of guessing APIs.
+- **chrome-devtools** (`bunx`) — FPS/perf profiling, console, network, DOM for the WebGL scene. Reach for it when diagnosing jank or load.
+- **playwright** (`bunx`) — drive a real browser to screenshot/verify UI (complements the `verify` + `run` skills).
+
+Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` + `github` MCP plugins.
+
+- **Disabled:** the `context7` and `playwright` *plugins* — they bundle npx-based servers that can't run without Node; our `.mcp.json` (HTTP/bunx) replaces them.
+- **Needs your auth (browser OAuth via `/mcp`), not installed-broken:** `figma` (mcp.figma.com — may hit paid Dev-seat limits, $0 watch) and `github` (api.githubcopilot.com — we already use the `gh` CLI, so optional).
 
 ## Repo layout
 

@@ -6,15 +6,13 @@
     },
     "chrome-devtools": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"],
-      "env": {}
+      "command": "bunx",
+      "args": ["chrome-devtools-mcp@latest"]
     },
     "playwright": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {}
+      "command": "bunx",
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }
