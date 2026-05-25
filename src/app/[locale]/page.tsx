@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { PanelsRoot } from "@/features/panels";
 import { Scene, TimeOfDayControl } from "@/features/scene";
 
 export default async function Home() {
@@ -21,6 +22,8 @@ export default async function Home() {
         <TimeOfDayControl />
         <LocaleSwitcher />
       </div>
+
+      <PanelsRoot />
     </main>
   );
 }
