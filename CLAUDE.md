@@ -110,6 +110,7 @@ Live status lives in the plan file; this is the short version for session pickup
 - ✅ **Phase 0** — scaffolded (Next 16 + R3F + Rapier), tooling configured, hello-R3F scene, git + README.
 - ✅ **Phase 0.5** — next-intl wired with EN/FR routing.
 - 🔭 **Scene spikes** (on `feat/scene-*` branches, not yet merged to `main`): sunset atmosphere + time-of-day cycle, Algiers silhouette, and the **drivable taxi**.
-- 🚕 **Taxi spike roadmap** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** Quaternius sedan model · enter/exit (PR E) · walk/drive switch · street geometry · taxi-call flow. Real models/landmarks/character still pending (Phases 2–4).
+- 🚕 **Taxi spike roadmap** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** procedural Peugeot 504-style taxi model ✅ (`TaxiModel.tsx` — went procedural instead of Quaternius to stay $0 and on-brand for the Algiers yellow taxi) · **next: PR E** enter/exit · then walk/drive switch · street geometry · taxi-call flow. Real landmarks/character still pending (Phases 2–4).
+- ⚠️ **Known gap:** no smoke tests on any `src/features/scene/` 3D component yet (jsdom can't run WebGL — needs `@react-three/test-renderer` setup). Deferred during the spike; revisit before merging the taxi work to `main`.
 
 Pick up from the latest `feat/scene-*` branch; check `git log` and the in-file PR-letter comments in `src/features/scene/components/` for exact next step.
