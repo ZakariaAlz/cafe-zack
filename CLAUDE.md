@@ -28,7 +28,7 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 
 ## Agent tooling (MCP + skills)
 
-**This machine has Bun but NOT Node/npx** — so every MCP server must run via `bunx`, not `npx`. (`bunx <pkg>` works as a drop-in; `npx` = command not found.)
+**Runtimes:** Bun is the package manager/runner. **Node v24 LTS** is now installed in userspace (`~/.local/node`, symlinked into `~/.bun/bin`), so `npx` works too. MCP servers in `.mcp.json` still run via `bunx` (works fine — no need to switch).
 
 MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/settings.json`). MCP config only loads at **startup** — after editing `.mcp.json` or installing plugins, **restart Claude Code** (or `/mcp`) or the in-session tools won't appear.
 
@@ -38,7 +38,7 @@ MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/setting
 
 Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` + `github` MCP plugins.
 
-- **Disabled:** the `context7` and `playwright` *plugins* — they bundle npx-based servers that can't run without Node; our `.mcp.json` (HTTP/bunx) replaces them.
+- **Disabled:** the `context7` and `playwright` *plugins* — kept off to avoid duplicating our `.mcp.json` servers (re-enable with `claude plugin enable <id>` if ever wanted; npx works now).
 - **Needs your auth (browser OAuth via `/mcp`):** `figma` ✅ authenticated (mcp.figma.com — watch paid Dev-seat limits) · `github` ✗ HTTP 400 (api.githubcopilot.com needs Copilot; we use the `gh` CLI instead, so skip).
 - **Live browser verification:** the `playwright`/`chrome-devtools` MCPs need *system* Chrome, which isn't installed (sudo). Instead, run a headless **`bun <script>.mjs`** using `import { chromium } from "playwright"` (bundled chromium-1223 is present) with args `--enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`. WebGL renders; assert on the **DOM HUD** (prompts/panel text) since that mirrors store state. This is how PR E was verified.
 
