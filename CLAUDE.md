@@ -4,7 +4,7 @@ Conventions, constraints, and pointers for Claude Code sessions on this repo. Ke
 
 ## Project
 
-**Café Zack** — a Bruno-Simon-grade gamified 3D portfolio for Zakaria Alizouaoui (Junior Data/Software Engineer, Algiers). The site is a simulation of the streets of Algiers with 5 iconic landmarks as section anchors: La Grande Poste (About), Casbah (Projects), Notre-Dame d'Afrique (Services), Maqam Echahid (Skills), fictional Café Zack (Contact). Player walks (or drives a vintage yellow Peugeot 504 taxi) through the open world as a black-suited Matrix-coded "agent" with sunglasses; face is revealed only at the café reveal moment.
+**Café Zack** — a Bruno-Simon-grade gamified 3D portfolio for Zakaria Alizouaoui (Junior Data/Software Engineer, Algiers). The site is a simulation of the streets of Algiers with 5 iconic landmarks as section anchors: La Grande Poste (About), Casbah (Projects), Notre-Dame d'Afrique (Services), Maqam Echahid (Skills), fictional Café Zack (Contact). Player walks (or drives a vintage **Renault 4** — Inspecteur Tahar's car, the iconic Algerian 4L) through the open world as a black-suited Matrix-coded "agent" with sunglasses; face is revealed only at the café reveal moment.
 
 The site is the credibility + lead-generation engine for Zakaria's freelance practice (data engineering services for MENA healthcare/pharma/telecom + international clients).
 
@@ -134,6 +134,6 @@ Live status lives in the plan file; this is the short version for session pickup
 - ✅ **CI/CD live** — `.github/workflows/ci.yml`: `quality` (biome ci, typecheck, build, vitest) + `e2e` (Playwright/chromium+swiftshader) on every push & PR. **`main` is branch-protected** (both checks required, strict, enforce-admins) → everything merges via PR through green CI. Watch with `gh run watch` / `gh pr checks`.
 - ✅ **Tests**: unit (driving geometry, drivePromptState, world-store), component (HUD via `tests/unit/render-intl.tsx`), e2e (`tests/e2e/drive-flow.spec.ts` — full drive/call/enter loop, 0 console errors). Scene 3D components are covered by e2e, not jsdom (WebGL/Rapier).
 - 🔧 **Runtimes**: Node v24 LTS now installed (see Agent tooling). Browser e2e uses bundled chromium + swiftshader (no system Chrome).
-- 🎯 **Phase 2 (current branch `feat/phase2-renault4`)**: (1) replace the procedural taxi with a **Renault 4 "Inspecteur Tahar"** (user pick; build procedurally like `TaxiModel`, or wire `useGLTF` if a licensed `.glb` lands in `public/models/`); (2) real landmark/character assets for the other 4 anchors; (3) **polish pass** — boot-text ("café zack · booting…") fade, building approach-stop so the cab can't climb the Poste steps.
+- 🎯 **Phase 2 (branch `feat/phase2-renault4`)**: (1) ✅ procedural **Renault 4** (`RenaultFour.tsx`) replaces the cab; HUD copy says "the R4" (en/fr); `TaxiModel` removed. (2) real landmark/character assets for the other 4 anchors. (3) **polish pass** — boot-text ("café zack · booting…") fade, building approach-stop so the car can't climb the Poste steps. (A licensed car `.glb` in `public/models/` + `useGLTF` could replace the procedural R4 later.)
 
-Pick up on `feat/phase2-renault4`; build the R4 first. Open a PR and let CI gate the merge — do not push to `main` directly (protected).
+Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (taxiRef, `taxiCalling`) — harmless; user-facing copy is "R4".

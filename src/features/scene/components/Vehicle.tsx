@@ -6,7 +6,7 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { TaxiModel } from "./TaxiModel";
+import { RenaultFour } from "./RenaultFour";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
@@ -18,10 +18,10 @@ const MAX_LINEAR = 12;
 const ANGVEL_DAMPING = 0.9;
 
 /**
- * Drivable taxi (PR C). The visual is a procedural Peugeot 504-style sedan
- * (<TaxiModel>) with simple arcade-style physics: forward/back impulse along
- * the body's facing direction, torque on yaw for steering (only when actually
- * moving so the car can't spin in place).
+ * Drivable car. The visual is a procedural Renault 4 (<RenaultFour> —
+ * Inspecteur Tahar's ride) with simple arcade-style physics: forward/back
+ * impulse along the body's facing direction, torque on yaw for steering (only
+ * when actually moving so the car can't spin in place).
  *
  * Physics uses an explicit CuboidCollider sized to the chassis only — the
  * model's wheels and bumpers poke past it, but collision stays a tidy box.
@@ -99,9 +99,9 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     >
       {/* Chassis-only collision box; matches the old auto-cuboid half-extents
           so the arcade tuning above is unchanged. Bottom sits at local y=-0.4,
-          where TaxiModel's wheels are sized to meet the road. */}
+          where the Renault 4's wheels are sized to meet the road. */}
       <CuboidCollider args={[0.8, 0.4, 1.55]} />
-      <TaxiModel />
+      <RenaultFour />
     </RigidBody>
   );
 }
