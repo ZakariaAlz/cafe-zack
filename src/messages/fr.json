@@ -6,10 +6,12 @@
   },
   "hero": {
     "booting": "café zack · démarrage…",
-    "instructions": "une simulation portfolio à alger · conduisez avec WASD · approchez un monument · v0.0.1"
+    "instructions": "une simulation portfolio à alger · conduisez avec WASD · appuyez sur F pour descendre et marcher · approchez un monument · v0.0.1"
   },
   "prompt": {
-    "enterGrandePoste": "Entrer à La Grande Poste"
+    "enterGrandePoste": "Entrer à La Grande Poste",
+    "driveTaxi": "Conduire le taxi",
+    "stepOut": "Descendre du taxi"
   },
   "about": {
     "eyebrow": "À propos · La Grande Poste",

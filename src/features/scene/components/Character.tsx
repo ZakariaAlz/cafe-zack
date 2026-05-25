@@ -6,7 +6,6 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { useDrive } from "../store/useDrive";
 
 const SPEED = 4;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
@@ -29,14 +28,15 @@ const DIR = new THREE.Vector3();
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
   const visualRef = useRef<THREE.Group>(null);
-  const mode = useDrive((s) => s.mode);
+  const mode = useWorld((s) => s.mode);
 
   useFrame(() => {
     const body = bodyRef.current;
     if (!body) return;
 
-    const onFoot = useDrive.getState().mode === "onFoot";
-    const panelOpen = useWorld.getState().activePanel !== null;
+    const { mode: m, activePanel } = useWorld.getState();
+    const onFoot = m === "onFoot";
+    const panelOpen = activePanel !== null;
     const linvel = body.linvel();
 
     // Parked (driving) or locked (panel open): kill horizontal drift, let

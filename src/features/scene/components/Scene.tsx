@@ -6,7 +6,7 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
-import { useDrive } from "../store/useDrive";
+import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { Character } from "./Character";
@@ -104,7 +104,7 @@ function SceneContent() {
   // which the chase camera follows and the landmark proximity reads.
   const taxiRef = useRef<RapierRigidBody>(null);
   const characterRef = useRef<RapierRigidBody>(null);
-  const mode = useDrive((s) => s.mode);
+  const mode = useWorld((s) => s.mode);
   const activeRef = mode === "driving" ? taxiRef : characterRef;
 
   return (

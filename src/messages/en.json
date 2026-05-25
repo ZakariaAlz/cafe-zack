@@ -6,10 +6,12 @@
   },
   "hero": {
     "booting": "café zack · booting…",
-    "instructions": "a portfolio simulation in algiers · drive with WASD · pull up to a landmark · v0.0.1"
+    "instructions": "a portfolio simulation in algiers · drive with WASD · press F to step out and walk · pull up to a landmark · v0.0.1"
   },
   "prompt": {
-    "enterGrandePoste": "Enter La Grande Poste"
+    "enterGrandePoste": "Enter La Grande Poste",
+    "driveTaxi": "Drive the taxi",
+    "stepOut": "Step out"
   },
   "about": {
     "eyebrow": "About · La Grande Poste",
