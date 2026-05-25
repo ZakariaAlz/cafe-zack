@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useWorld } from "@/lib/world-store";
 import { AboutPanel } from "./AboutPanel";
-import { DrivePrompt } from "./DrivePrompt";
+import { type DriveLabel, DrivePrompt } from "./DrivePrompt";
 import { LandmarkPrompt } from "./LandmarkPrompt";
 
 /**
@@ -19,6 +19,7 @@ export function PanelsRoot() {
   const close = useWorld((s) => s.close);
   const mode = useWorld((s) => s.mode);
   const nearTaxi = useWorld((s) => s.nearTaxi);
+  const taxiCalling = useWorld((s) => s.taxiCalling);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -30,14 +31,27 @@ export function PanelsRoot() {
     return () => window.removeEventListener("keydown", onKey);
   }, [nearby, activePanel, open]);
 
-  // F prompt shows while driving ("step out") or on foot near the taxi
-  // ("drive"); hidden whenever a panel is open so the overlay isn't cluttered.
-  const showDrive = !activePanel && (mode === "driving" || nearTaxi);
+  // The taxi prompt is contextual and hidden while a panel is open: step out
+  // (driving), arriving (mid-summon), drive (on foot, near it), or call it
+  // (on foot, away). Centred landmark E-prompt is separate (bottom centre).
+  let keyHint: string | null = "F";
+  let labelKey: DriveLabel = "stepOut";
+  if (mode === "onFoot") {
+    if (taxiCalling) {
+      keyHint = null;
+      labelKey = "arriving";
+    } else if (nearTaxi) {
+      labelKey = "driveTaxi";
+    } else {
+      keyHint = "C";
+      labelKey = "callTaxi";
+    }
+  }
 
   return (
     <>
       <LandmarkPrompt show={Boolean(nearby) && !activePanel} />
-      <DrivePrompt show={showDrive} labelKey={mode === "driving" ? "stepOut" : "driveTaxi"} />
+      <DrivePrompt show={!activePanel} keyHint={keyHint} labelKey={labelKey} />
       <AboutPanel
         open={activePanel === "grande-poste"}
         onOpenChange={(next) => (next ? open("grande-poste") : close())}

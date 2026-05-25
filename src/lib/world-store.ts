@@ -20,6 +20,9 @@ type State = {
   /** True when the on-foot agent is close enough to climb into the taxi. */
   nearTaxi: boolean;
   setNearTaxi: (near: boolean) => void;
+  /** True while the called taxi is gliding to the on-foot agent. */
+  taxiCalling: boolean;
+  setTaxiCalling: (calling: boolean) => void;
 };
 
 /**
@@ -39,4 +42,6 @@ export const useWorld = create<State>((set) => ({
   setMode: (mode) => set({ mode }),
   nearTaxi: false,
   setNearTaxi: (near) => set({ nearTaxi: near }),
+  taxiCalling: false,
+  setTaxiCalling: (calling) => set({ taxiCalling: calling }),
 }));

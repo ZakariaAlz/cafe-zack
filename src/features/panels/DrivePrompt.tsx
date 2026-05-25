@@ -4,18 +4,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { DURATION, EASE } from "@/lib/motion";
 
+export type DriveLabel = "driveTaxi" | "stepOut" | "callTaxi" | "arriving";
+
 /**
- * The F-key vehicle affordance — distinct from the centred landmark prompt
- * (which uses E). Sits bottom-left so the two never overlap when you drive up
- * to a landmark on foot. `labelKey` switches between "drive the taxi" (on foot,
- * near it) and "step out" (while driving).
+ * The taxi affordance — distinct from the centred landmark prompt (which uses
+ * E). Sits bottom-left so the two never overlap. `keyHint` is the key cap to
+ * show (F to drive/step out, C to call) or null while the taxi is arriving.
  */
 export function DrivePrompt({
   show,
+  keyHint,
   labelKey,
 }: {
   show: boolean;
-  labelKey: "driveTaxi" | "stepOut";
+  keyHint: string | null;
+  labelKey: DriveLabel;
 }) {
   const t = useTranslations("prompt");
 
@@ -30,9 +33,11 @@ export function DrivePrompt({
           className="pointer-events-none fixed bottom-6 left-6 z-20"
         >
           <div className="flex items-center gap-2.5 rounded-full border border-cream/15 bg-charcoal/60 px-4 py-2 backdrop-blur-md">
-            <kbd className="rounded-md border border-cream/25 bg-cream/10 px-2 py-0.5 font-mono text-cream text-xs">
-              F
-            </kbd>
+            {keyHint && (
+              <kbd className="rounded-md border border-cream/25 bg-cream/10 px-2 py-0.5 font-mono text-cream text-xs">
+                {keyHint}
+              </kbd>
+            )}
             <span className="text-cream/85 text-xs">{t(labelKey)}</span>
           </div>
         </motion.div>
