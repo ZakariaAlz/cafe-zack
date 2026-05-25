@@ -62,6 +62,11 @@ Path alias: `@/*` → `src/*`. Never relative-import across `features/`.
 - No co-author footer unless the user explicitly asks
 - Prefer many small commits over one large one
 
+## Pushing (automatic)
+
+- **Push small commits as you go — never wait to be asked.** Make focused commits and push them; don't batch a session's work into one push at the end.
+- This is enforced by a **Stop hook** in `.claude/settings.json` that runs `git push -u origin <branch>` at the end of every turn (skips detached HEAD and `main`/`master` — branch first per the rule below). If you ever clone fresh and the hook doesn't fire, open `/hooks` once or restart to reload it.
+
 ## Branch naming
 
 `feat/<kebab-case>`, `fix/<kebab-case>`, `chore/<kebab-case>`, `docs/<kebab-case>`. Example: `feat/scene-casbah-doors`.
