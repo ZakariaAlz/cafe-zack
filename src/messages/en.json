@@ -6,14 +6,14 @@
   },
   "hero": {
     "booting": "café zack · booting…",
-    "instructions": "a portfolio simulation in algiers · drive with WASD · F to step out and walk · C to call the taxi back · pull up to a landmark · v0.0.1"
+    "instructions": "a portfolio simulation in algiers · drive with WASD · F to step out and walk · C to call the R4 back · pull up to a landmark · v0.0.1"
   },
   "prompt": {
     "enterGrandePoste": "Enter La Grande Poste",
-    "driveTaxi": "Drive the taxi",
+    "driveTaxi": "Drive the R4",
     "stepOut": "Step out",
-    "callTaxi": "Call the taxi",
-    "arriving": "Taxi arriving…"
+    "callTaxi": "Call the R4",
+    "arriving": "R4 arriving…"
   },
   "about": {
     "eyebrow": "About · La Grande Poste",

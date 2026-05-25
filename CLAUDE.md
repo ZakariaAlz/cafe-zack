@@ -4,7 +4,7 @@ Conventions, constraints, and pointers for Claude Code sessions on this repo. Ke
 
 ## Project
 
-**Café Zack** — a Bruno-Simon-grade gamified 3D portfolio for Zakaria Alizouaoui (Junior Data/Software Engineer, Algiers). The site is a simulation of the streets of Algiers with 5 iconic landmarks as section anchors: La Grande Poste (About), Casbah (Projects), Notre-Dame d'Afrique (Services), Maqam Echahid (Skills), fictional Café Zack (Contact). Player walks (or drives a vintage yellow Peugeot 504 taxi) through the open world as a black-suited Matrix-coded "agent" with sunglasses; face is revealed only at the café reveal moment.
+**Café Zack** — a Bruno-Simon-grade gamified 3D portfolio for Zakaria Alizouaoui (Junior Data/Software Engineer, Algiers). The site is a simulation of the streets of Algiers with 5 iconic landmarks as section anchors: La Grande Poste (About), Casbah (Projects), Notre-Dame d'Afrique (Services), Maqam Echahid (Skills), fictional Café Zack (Contact). Player walks (or drives a vintage **Renault 4** — Inspecteur Tahar's car, the iconic Algerian 4L) through the open world as a black-suited Matrix-coded "agent" with sunglasses; face is revealed only at the café reveal moment.
 
 The site is the credibility + lead-generation engine for Zakaria's freelance practice (data engineering services for MENA healthcare/pharma/telecom + international clients).
 
@@ -130,9 +130,10 @@ Live status lives in the plan file; this is the short version for session pickup
 
 - ✅ **Phase 0** — scaffolded (Next 16 + R3F + Rapier), tooling configured, hello-R3F scene, git + README.
 - ✅ **Phase 0.5** — next-intl wired with EN/FR routing.
-- 🔭 **Scene spikes** (on `feat/scene-*` branches, not yet merged to `main`): sunset atmosphere + time-of-day cycle, Algiers silhouette, and the **drivable taxi**.
-- 🚕 **Taxi spike — COMPLETE** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** procedural Peugeot 504 taxi ✅ · **E** enter/exit + on-foot walk ✅ · **HUD + controls** ✅ (**E** = landmark panels, **F** = enter/exit taxi, **C** = call taxi; `DrivePrompt` is contextual; drive `mode`/`nearTaxi`/`taxiCalling` live in `useWorld`) · **street geometry** ✅ (`Street.tsx`) · **taxi-call flow** ✅ (`DriveController` glides the taxi to the on-foot agent, eased + nose-first, over 1.3s). **Next: decide merge-to-`main` vs Phase 2** (real landmark/character assets) — the spike has served its purpose.
-- ✅ **PR E verified live** (headless browser, 7/7 checks, 0 console errors): canvas+WebGL mount, drive→F→walk→F→re-enter, drive up to the Poste shows the E prompt, E opens the About panel. Taxi, street, lamps, suited agent all render correctly.
-- ⚠️ **Known gap:** no smoke tests on any `src/features/scene/` 3D component (jsdom can't run WebGL — needs `@react-three/test-renderer`). Deferred during the spike; revisit before merging to `main`.
+- ✅ **Taxi spike — MERGED to `main`** (PR #6). Drivable taxi (Rapier + WASD), chase camera, procedural taxi model, on-foot suited agent (**F** enter/exit), **C** call-taxi (glides to you), street network, La Grande Poste + About panel (**E**). Controls/HUD live in `useWorld` (`mode`/`nearTaxi`/`taxiCalling`); pure logic in `scene/lib/driving.ts` + `panels/drivePrompt.ts`.
+- ✅ **CI/CD live** — `.github/workflows/ci.yml`: `quality` (biome ci, typecheck, build, vitest) + `e2e` (Playwright/chromium+swiftshader) on every push & PR. **`main` is branch-protected** (both checks required, strict, enforce-admins) → everything merges via PR through green CI. Watch with `gh run watch` / `gh pr checks`.
+- ✅ **Tests**: unit (driving geometry, drivePromptState, world-store), component (HUD via `tests/unit/render-intl.tsx`), e2e (`tests/e2e/drive-flow.spec.ts` — full drive/call/enter loop, 0 console errors). Scene 3D components are covered by e2e, not jsdom (WebGL/Rapier).
+- 🔧 **Runtimes**: Node v24 LTS now installed (see Agent tooling). Browser e2e uses bundled chromium + swiftshader (no system Chrome).
+- 🎯 **Phase 2 (branch `feat/phase2-renault4`)**: (1) ✅ procedural **Renault 4** (`RenaultFour.tsx`) replaces the cab; HUD copy says "the R4" (en/fr); `TaxiModel` removed. (2) real landmark/character assets for the other 4 anchors. (3) **polish pass** — boot-text ("café zack · booting…") fade, building approach-stop so the car can't climb the Poste steps. (A licensed car `.glb` in `public/models/` + `useGLTF` could replace the procedural R4 later.)
 
-Pick up from the latest `feat/scene-*` branch; check `git log` and the in-file PR-letter comments in `src/features/scene/components/` for exact next step.
+Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (taxiRef, `taxiCalling`) — harmless; user-facing copy is "R4".

@@ -2,9 +2,9 @@ import { expect, type Page, test } from "@playwright/test";
 
 // Exact text so HUD pills don't collide with the (lowercase) hero hint line.
 const stepOut = (p: Page) => p.getByText("Step out", { exact: true });
-const driveTaxi = (p: Page) => p.getByText("Drive the taxi", { exact: true });
-const callTaxi = (p: Page) => p.getByText("Call the taxi", { exact: true });
-const arriving = (p: Page) => p.getByText("Taxi arriving…", { exact: true });
+const driveTaxi = (p: Page) => p.getByText("Drive the R4", { exact: true });
+const callTaxi = (p: Page) => p.getByText("Call the R4", { exact: true });
+const arriving = (p: Page) => p.getByText("R4 arriving…", { exact: true });
 const enterPoste = (p: Page) => p.getByText("Enter La Grande Poste", { exact: true });
 
 test("drive · step out · call · re-enter · open landmark panel", async ({ page }) => {
