@@ -3,8 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { DURATION, EASE } from "@/lib/motion";
-
-export type DriveLabel = "driveTaxi" | "stepOut" | "callTaxi" | "arriving";
+import type { DriveLabel } from "./drivePrompt";
 
 /**
  * The taxi affordance — distinct from the centred landmark prompt (which uses

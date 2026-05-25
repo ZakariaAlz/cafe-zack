@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { useWorld } from "@/lib/world-store";
 import { AboutPanel } from "./AboutPanel";
-import { type DriveLabel, DrivePrompt } from "./DrivePrompt";
+import { DrivePrompt } from "./DrivePrompt";
+import { drivePromptState } from "./drivePrompt";
 import { LandmarkPrompt } from "./LandmarkPrompt";
 
 /**
@@ -31,22 +32,9 @@ export function PanelsRoot() {
     return () => window.removeEventListener("keydown", onKey);
   }, [nearby, activePanel, open]);
 
-  // The taxi prompt is contextual and hidden while a panel is open: step out
-  // (driving), arriving (mid-summon), drive (on foot, near it), or call it
-  // (on foot, away). Centred landmark E-prompt is separate (bottom centre).
-  let keyHint: string | null = "F";
-  let labelKey: DriveLabel = "stepOut";
-  if (mode === "onFoot") {
-    if (taxiCalling) {
-      keyHint = null;
-      labelKey = "arriving";
-    } else if (nearTaxi) {
-      labelKey = "driveTaxi";
-    } else {
-      keyHint = "C";
-      labelKey = "callTaxi";
-    }
-  }
+  // Contextual taxi prompt (pure decision in drivePromptState); hidden while a
+  // panel is open. The centred landmark E-prompt is separate (bottom centre).
+  const { keyHint, labelKey } = drivePromptState(mode, nearTaxi, taxiCalling);
 
   return (
     <>

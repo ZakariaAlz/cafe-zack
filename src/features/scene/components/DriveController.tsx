@@ -6,6 +6,7 @@ import { type RefObject, useCallback, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useInteractKey } from "../hooks/useInteractKey";
+import { easeOutCubic, exitSpot, faceYaw, summonTarget, withinRadius } from "../lib/driving";
 
 // How close the agent must be to the taxi to climb in.
 const ENTER_RADIUS = 3;
@@ -51,9 +52,8 @@ export function DriveController({
     // Glide a called taxi toward the agent's captured target.
     if (taxiCalling && taxi) {
       elapsed.current += delta;
-      const p = Math.min(elapsed.current / SUMMON_TIME, 1);
-      const eased = 1 - (1 - p) ** 3; // easeOutCubic
-      POS.copy(START).lerp(TARGET, eased);
+      const p = elapsed.current / SUMMON_TIME;
+      POS.copy(START).lerp(TARGET, easeOutCubic(p));
       taxi.setTranslation({ x: POS.x, y: POS.y, z: POS.z }, true);
       taxi.setLinvel({ x: 0, y: 0, z: 0 }, true);
       taxi.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -68,9 +68,7 @@ export function DriveController({
     if (!taxi || !agent) return;
     const t = taxi.translation();
     const c = agent.translation();
-    const dx = t.x - c.x;
-    const dz = t.z - c.z;
-    const near = dx * dx + dz * dz <= ENTER_RADIUS * ENTER_RADIUS;
+    const near = withinRadius(t, c, ENTER_RADIUS);
     if (near !== nearTaxi) setNearTaxi(near);
   });
 
@@ -85,16 +83,14 @@ export function DriveController({
     const t = taxi.translation();
 
     if (mode === "driving") {
-      agent.setTranslation({ x: t.x + EXIT_OFFSET, y: t.y + 0.4, z: t.z }, true);
+      const spot = exitSpot(t, EXIT_OFFSET);
+      agent.setTranslation({ x: spot.x, y: t.y + 0.4, z: spot.z }, true);
       agent.setLinvel({ x: 0, y: 0, z: 0 }, true);
       setMode("onFoot");
       return;
     }
 
-    const c = agent.translation();
-    const dx = t.x - c.x;
-    const dz = t.z - c.z;
-    if (dx * dx + dz * dz <= ENTER_RADIUS * ENTER_RADIUS) setMode("driving");
+    if (withinRadius(t, agent.translation(), ENTER_RADIUS)) setMode("driving");
   }, [taxiRef, characterRef]);
 
   // C — call the taxi to you (only on foot, away from it).
@@ -107,12 +103,12 @@ export function DriveController({
     if (mode !== "onFoot" || nearTaxi || taxiCalling) return;
 
     const t = taxi.translation();
-    const c = agent.translation();
+    const target = summonTarget(agent.translation(), SUMMON_OFFSET);
     START.set(t.x, t.y, t.z);
-    TARGET.set(c.x - SUMMON_OFFSET, t.y, c.z); // keep the taxi's resting height
+    TARGET.set(target.x, t.y, target.z); // keep the taxi's resting height
 
-    // Face the direction of travel (forward is -Z): yaw = atan2(-dx, -dz).
-    const yaw = Math.atan2(START.x - TARGET.x, START.z - TARGET.z);
+    // Face travel direction so the cab glides in nose-first.
+    const yaw = faceYaw(START, TARGET);
     taxi.setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) }, true);
 
     elapsed.current = 0;
