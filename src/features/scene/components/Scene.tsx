@@ -14,6 +14,7 @@ import { ChaseCamera } from "./ChaseCamera";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
+import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
 type Preset = {
@@ -151,6 +152,7 @@ function SceneContent() {
 
       <Suspense fallback={null}>
         <AlgiersSilhouette />
+        <Street />
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
