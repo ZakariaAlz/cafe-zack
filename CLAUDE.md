@@ -26,6 +26,16 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 - Green before every commit: `bun run typecheck` · `bun run check` (Biome lint+format, autofix) · `bun run build`
 - Tests: `bun test` (Vitest) · `bun run test:e2e` (Playwright)
 
+## Agent tooling (MCP + skills)
+
+Curated in `.mcp.json` (project scope, pre-approved in `.claude/settings.json`). If they don't show in `/mcp`, open `/mcp` once or restart to load.
+
+- **context7** — pull *current* API docs before writing against fast-moving libs (R3F, drei, Next 16, Tailwind v4). Use it instead of guessing APIs.
+- **chrome-devtools** (Google) — FPS/perf profiling, console, network, DOM for the WebGL scene. Reach for this when diagnosing jank or load.
+- **playwright** (Microsoft) — drive a real browser to screenshot/verify UI changes (complements the `verify` + `run` skills).
+- **`frontend-design` skill** — use for any 2D/UI build (panels, landing, menus) to avoid generic AI aesthetics. Pair with the design references in the plan file.
+- Not installed (needs paid seat / desktop app, breaks $0): **Figma Dev Mode MCP** — revisit if we get real designs.
+
 ## Repo layout
 
 ```
