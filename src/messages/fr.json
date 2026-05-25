@@ -6,7 +6,36 @@
   },
   "hero": {
     "booting": "café zack · démarrage…",
-    "instructions": "une simulation portfolio à alger · glissez pour orbiter · v0.0.1"
+    "instructions": "une simulation portfolio à alger · conduisez avec WASD · F pour descendre et marcher · C pour rappeler le taxi · approchez un monument · v0.0.1"
+  },
+  "prompt": {
+    "enterGrandePoste": "Entrer à La Grande Poste",
+    "driveTaxi": "Conduire le taxi",
+    "stepOut": "Descendre du taxi",
+    "callTaxi": "Appeler le taxi",
+    "arriving": "Le taxi arrive…"
+  },
+  "about": {
+    "eyebrow": "À propos · La Grande Poste",
+    "place": "Alger, Algérie",
+    "name": "Zakaria Alizouaoui",
+    "role": "Ingénieur Data & Logiciel",
+    "bio1": "Ingénieur basé à Alger, je construis la mécanique discrète qui rend les données utiles — pipelines, entrepôts, et les tableaux de bord que les équipes ouvrent vraiment chaque matin.",
+    "bio2": "Je travaille sur toute la chaîne : ingestion et transformation, plateforme et DevOps, et les applications web qui mettent les chiffres sous les yeux des gens. J'accueille désormais quelques clients freelance au Maghreb et au-delà.",
+    "languagesLabel": "Langues",
+    "focusLabel": "Expertise",
+    "languages": {
+      "ar": "العربية",
+      "fr": "Français",
+      "en": "English"
+    },
+    "focus": {
+      "data": "Data Engineering",
+      "software": "Logiciel",
+      "platform": "Plateforme & DevOps"
+    },
+    "ctaPrimary": "Réserver un appel",
+    "ctaSecondary": "Fermer"
   },
   "locale": {
     "switchTo": "Passer en {name}",

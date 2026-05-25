@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { Scene } from "@/features/scene";
+import { PanelsRoot } from "@/features/panels";
+import { Scene, TimeOfDayControl } from "@/features/scene";
 
 export default async function Home() {
   const t = await getTranslations("hero");
@@ -17,9 +18,12 @@ export default async function Home() {
         {t("instructions")}
       </div>
 
-      <div className="absolute right-4 top-4 z-10">
+      <div className="absolute right-4 top-4 z-10 flex items-center gap-4">
+        <TimeOfDayControl />
         <LocaleSwitcher />
       </div>
+
+      <PanelsRoot />
     </main>
   );
 }

@@ -6,7 +6,36 @@
   },
   "hero": {
     "booting": "café zack · booting…",
-    "instructions": "a portfolio simulation in algiers · drag to orbit · v0.0.1"
+    "instructions": "a portfolio simulation in algiers · drive with WASD · F to step out and walk · C to call the taxi back · pull up to a landmark · v0.0.1"
+  },
+  "prompt": {
+    "enterGrandePoste": "Enter La Grande Poste",
+    "driveTaxi": "Drive the taxi",
+    "stepOut": "Step out",
+    "callTaxi": "Call the taxi",
+    "arriving": "Taxi arriving…"
+  },
+  "about": {
+    "eyebrow": "About · La Grande Poste",
+    "place": "Algiers, Algeria",
+    "name": "Zakaria Alizouaoui",
+    "role": "Data & Software Engineer",
+    "bio1": "Algiers-based engineer building the unglamorous machinery that makes data useful — pipelines, warehouses, and the dashboards teams actually open every morning.",
+    "bio2": "I work across the stack: ingestion and transformation, platform and DevOps, and the web apps that put the numbers in front of people. Now taking on a handful of freelance clients across MENA and beyond.",
+    "languagesLabel": "Languages",
+    "focusLabel": "Focus",
+    "languages": {
+      "ar": "العربية",
+      "fr": "Français",
+      "en": "English"
+    },
+    "focus": {
+      "data": "Data Engineering",
+      "software": "Software",
+      "platform": "Platform & DevOps"
+    },
+    "ctaPrimary": "Book a free call",
+    "ctaSecondary": "Close"
   },
   "locale": {
     "switchTo": "Switch to {name}",

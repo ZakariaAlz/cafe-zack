@@ -1,31 +1,149 @@
 "use client";
 
-import { OrbitControls } from "@react-three/drei";
+import { Sky, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { Physics, type RapierRigidBody } from "@react-three/rapier";
+import { Suspense, useRef } from "react";
+import * as THREE from "three";
+import { useWorld } from "@/lib/world-store";
+import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
+import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { Character } from "./Character";
+import { ChaseCamera } from "./ChaseCamera";
+import { DriveController } from "./DriveController";
+import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
-import { PlaceholderCharacter } from "./PlaceholderCharacter";
+import { Street } from "./Street";
+import { Vehicle } from "./Vehicle";
 
-/**
- * Top-level R3F scene. Phase 0 is just lights + ground + a placeholder block
- * where the suited agent will go. Real character + landmarks land in Phase 2-4.
- *
- * Lighting is tuned for the sunset palette (warm directional, cool ambient).
- * Fog matches the charcoal background so the world fades to night at distance.
- */
-export function Scene() {
+type Preset = {
+  sunPosition: [number, number, number];
+  turbidity: number;
+  rayleigh: number;
+  fogColor: string;
+  ambientColor: string;
+  ambientIntensity: number;
+  hemisphereSky: string;
+  hemisphereGround: string;
+  hemisphereIntensity: number;
+  directionalPos: [number, number, number];
+  directionalColor: string;
+  directionalIntensity: number;
+  bloomIntensity: number;
+};
+
+const PRESETS: Record<TimeOfDay, Preset> = {
+  sunrise: {
+    sunPosition: [50, 4, 0],
+    turbidity: 5,
+    rayleigh: 1.0,
+    fogColor: "#5A3A2A",
+    ambientColor: "#A0C0E0",
+    ambientIntensity: 0.22,
+    hemisphereSky: "#FFE5C2",
+    hemisphereGround: "#A85B2A",
+    hemisphereIntensity: 0.5,
+    directionalPos: [12, 4, 5],
+    directionalColor: "#FFE0B5",
+    directionalIntensity: 1.6,
+    bloomIntensity: 0.4,
+  },
+  midday: {
+    sunPosition: [10, 50, 0],
+    turbidity: 8,
+    rayleigh: 0.5,
+    fogColor: "#9DBEDC",
+    ambientColor: "#FFFFFF",
+    ambientIntensity: 0.5,
+    hemisphereSky: "#87CEEB",
+    hemisphereGround: "#A85B2A",
+    hemisphereIntensity: 0.4,
+    directionalPos: [5, 12, 5],
+    directionalColor: "#FFFFFF",
+    directionalIntensity: 2.4,
+    bloomIntensity: 0.25,
+  },
+  sunset: {
+    sunPosition: [-30, 2, 0],
+    turbidity: 8,
+    rayleigh: 2.5,
+    fogColor: "#4A2018",
+    ambientColor: "#7AA7D9",
+    ambientIntensity: 0.15,
+    hemisphereSky: "#FF8A4C",
+    hemisphereGround: "#C2410C",
+    hemisphereIntensity: 0.7,
+    directionalPos: [-12, 3, 5],
+    directionalColor: "#FFB070",
+    directionalIntensity: 1.9,
+    bloomIntensity: 0.5,
+  },
+  night: {
+    sunPosition: [0, -10, 0],
+    turbidity: 0.1,
+    rayleigh: 0.01,
+    fogColor: "#0A0820",
+    ambientColor: "#2A2050",
+    ambientIntensity: 0.2,
+    hemisphereSky: "#1E1B2C",
+    hemisphereGround: "#0A0820",
+    hemisphereIntensity: 0.3,
+    directionalPos: [-5, 8, 5],
+    directionalColor: "#5070A0",
+    directionalIntensity: 0.5,
+    bloomIntensity: 0.8,
+  },
+};
+
+function SceneContent() {
+  const timeOfDay = useTimeOfDay((s) => s.timeOfDay);
+  const p = PRESETS[timeOfDay];
+  const isNight = timeOfDay === "night";
+
+  // The two controllable bodies; `activeRef` is whichever the player drives,
+  // which the chase camera follows and the landmark proximity reads.
+  const taxiRef = useRef<RapierRigidBody>(null);
+  const characterRef = useRef<RapierRigidBody>(null);
+  const mode = useWorld((s) => s.mode);
+  const activeRef = mode === "driving" ? taxiRef : characterRef;
+
   return (
-    <Canvas shadows camera={{ position: [4, 3, 5], fov: 50 }} gl={{ antialias: true }} dpr={[1, 2]}>
-      <color attach="background" args={["#0A0A0A"]} />
-      <fog attach="fog" args={["#0A0A0A", 10, 35]} />
+    <>
+      <fog attach="fog" args={[p.fogColor, 18, 60]} />
 
-      <ambientLight intensity={0.35} color="#7AA7D9" />
+      {isNight ? (
+        <>
+          <color attach="background" args={["#050310"]} />
+          <Stars
+            radius={120}
+            depth={60}
+            count={1500}
+            factor={3.5}
+            saturation={0}
+            fade
+            speed={0.3}
+          />
+        </>
+      ) : (
+        <Sky
+          distance={450000}
+          sunPosition={p.sunPosition}
+          turbidity={p.turbidity}
+          rayleigh={p.rayleigh}
+          mieCoefficient={0.005}
+          mieDirectionalG={0.92}
+        />
+      )}
+
+      <hemisphereLight args={[p.hemisphereSky, p.hemisphereGround, p.hemisphereIntensity]} />
+      <ambientLight intensity={p.ambientIntensity} color={p.ambientColor} />
       <directionalLight
-        position={[6, 9, 5]}
-        intensity={1.4}
-        color="#FFD9A8"
+        position={p.directionalPos}
+        intensity={p.directionalIntensity}
+        color={p.directionalColor}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-15}
         shadow-camera-right={15}
         shadow-camera-top={15}
@@ -33,18 +151,66 @@ export function Scene() {
       />
 
       <Suspense fallback={null}>
-        <PlaceholderCharacter />
-        <Ground />
+        <AlgiersSilhouette />
+        <Street />
+        <Physics gravity={[0, -9.81, 0]}>
+          <Ground />
+          <Vehicle bodyRef={taxiRef} />
+          <Character bodyRef={characterRef} />
+          <GrandePoste playerRef={activeRef} />
+        </Physics>
       </Suspense>
 
-      <OrbitControls
-        enablePan={false}
-        minDistance={3}
-        maxDistance={15}
-        maxPolarAngle={Math.PI / 2.1}
-        autoRotate
-        autoRotateSpeed={0.4}
+      <ChaseCamera
+        targetRef={activeRef}
+        seat={mode === "driving" ? [0, 3.5, 8] : [0, 2.2, 4.5]}
+        lookLift={mode === "driving" ? 1.2 : 1}
       />
+      <DriveController taxiRef={taxiRef} characterRef={characterRef} />
+
+      <EffectComposer>
+        <Bloom
+          intensity={p.bloomIntensity}
+          luminanceThreshold={0.55}
+          luminanceSmoothing={0.85}
+          // KernelSize enum is in 'postprocessing' (not re-exported by
+          // @react-three/postprocessing). 1 = SMALL, the cheapest blur.
+          kernelSize={1}
+          levels={3}
+        />
+      </EffectComposer>
+    </>
+  );
+}
+
+/**
+ * Top-level R3F scene — Algiers under a time-of-day cycle.
+ *
+ * Now physics-enabled (Rapier) — the drivable taxi spike is inside the
+ * <Physics> block alongside the Ground collider. Pipeline visualization
+ * removed from view (file kept on disk in case we re-introduce as
+ * decorative manhole detail later); was the focus shift away from the
+ * "world IS the pipeline" abstraction to a Bruno-Simon-style city the
+ * visitor can actually drive through.
+ *
+ * Drive with WASD or arrow keys; a ChaseCamera (PR B) follows the taxi from
+ * behind. OrbitControls retired here — a programmatic follow cam and orbit
+ * controls can't both own camera.position.
+ */
+export function Scene() {
+  return (
+    <Canvas
+      shadows
+      camera={{ position: [5, 3, 6], fov: 50 }}
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.15,
+      }}
+      dpr={[1, 1.5]}
+    >
+      <SceneContent />
     </Canvas>
   );
 }

@@ -12,13 +12,35 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 
 ## Stack (locked)
 
-- **Next.js 15** App Router + **React 19** + **TypeScript strict**
+- **Next.js 16** (Turbopack) App Router + **React 19** + **TypeScript strict**
 - **Tailwind CSS v4** + **shadcn/ui** for 2D
 - **React Three Fiber** + **drei** + **@react-three/rapier** (physics) + **@react-three/postprocessing**
 - **next-intl** (EN primary, FR toggle)
 - **Howler.js** for positional audio · **Theatre.js** for cinematic cameras · **GSAP** + **Framer Motion** for 2D motion
 - **Bun** package manager + runner · **Biome** for lint+format · **Vitest** + **Playwright** for tests
 - Backend: Next.js Route Handlers using **only Web Fetch API** (edge-runtime-safe — runs on Cloudflare Pages, Vercel, or self-hosted without rewrites)
+
+## Local dev
+
+- `bun dev` → **http://localhost:3001** (port 3001, *not* 3000 — Metabase owns 3000 on this machine)
+- Green before every commit: `bun run typecheck` · `bun run check` (Biome lint+format, autofix) · `bun run build`
+- Tests: `bun test` (Vitest) · `bun run test:e2e` (Playwright)
+
+## Agent tooling (MCP + skills)
+
+**Runtimes:** Bun is the package manager/runner. **Node v24 LTS** is now installed in userspace (`~/.local/node`, symlinked into `~/.bun/bin`), so `npx` works too. MCP servers in `.mcp.json` still run via `bunx` (works fine — no need to switch).
+
+MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/settings.json`). MCP config only loads at **startup** — after editing `.mcp.json` or installing plugins, **restart Claude Code** (or `/mcp`) or the in-session tools won't appear.
+
+- **context7** (HTTP) — pull *current* API docs before writing against fast-moving libs (R3F, drei, Next 16, Tailwind v4). Use instead of guessing APIs.
+- **chrome-devtools** (`bunx`) — FPS/perf profiling, console, network, DOM for the WebGL scene. Reach for it when diagnosing jank or load.
+- **playwright** (`bunx`) — drive a real browser to screenshot/verify UI (complements the `verify` + `run` skills).
+
+Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` + `github` MCP plugins.
+
+- **Disabled:** the `context7` and `playwright` *plugins* — kept off to avoid duplicating our `.mcp.json` servers (re-enable with `claude plugin enable <id>` if ever wanted; npx works now).
+- **Needs your auth (browser OAuth via `/mcp`):** `figma` ✅ authenticated (mcp.figma.com — watch paid Dev-seat limits) · `github` ✗ HTTP 400 (api.githubcopilot.com needs Copilot; we use the `gh` CLI instead, so skip).
+- **Live browser verification:** the `playwright`/`chrome-devtools` MCPs need *system* Chrome, which isn't installed (sudo). Instead, run a headless **`bun <script>.mjs`** using `import { chromium } from "playwright"` (bundled chromium-1223 is present) with args `--enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`. WebGL renders; assert on the **DOM HUD** (prompts/panel text) since that mirrors store state. This is how PR E was verified.
 
 ## Repo layout
 
@@ -55,6 +77,11 @@ Path alias: `@/*` → `src/*`. Never relative-import across `features/`.
 - Body wraps at 72 chars, explains *why* not *what*
 - No co-author footer unless the user explicitly asks
 - Prefer many small commits over one large one
+
+## Pushing (automatic)
+
+- **Push small commits as you go — never wait to be asked.** Make focused commits and push them; don't batch a session's work into one push at the end.
+- This is enforced by a **Stop hook** in `.claude/settings.json` that runs `git push -u origin <branch>` at the end of every turn (skips detached HEAD and `main`/`master` — branch first per the rule below). If you ever clone fresh and the hook doesn't fire, open `/hooks` once or restart to reload it.
 
 ## Branch naming
 
@@ -97,9 +124,15 @@ When writing any public-facing copy for services / case studies / README / marke
 - Don't add tracking that needs a cookie banner (use Cloudflare Web Analytics or Plausible)
 - Don't trademark-trip — "suited agent" not "Agent Smith"; no green-tinted lenses; no Hugo Weaving likeness
 
-## Open items
+## Current status
 
-Live status in the plan file. Currently blocking Phase 0:
-- **Bun install** (user must run `! curl -fsSL https://bun.sh/install | bash` in their prompt — auto-mode classifier denies it from Claude)
+Live status lives in the plan file; this is the short version for session pickup.
 
-After Bun is in, Phase 0 proceeds autonomously: scaffold → install deps → configure tooling → hello R3F → init git → write README → first commit.
+- ✅ **Phase 0** — scaffolded (Next 16 + R3F + Rapier), tooling configured, hello-R3F scene, git + README.
+- ✅ **Phase 0.5** — next-intl wired with EN/FR routing.
+- 🔭 **Scene spikes** (on `feat/scene-*` branches, not yet merged to `main`): sunset atmosphere + time-of-day cycle, Algiers silhouette, and the **drivable taxi**.
+- 🚕 **Taxi spike — COMPLETE** (PRs A–G on `feat/scene-drivable-taxi-spike`): **A** drivable box ✅ · **B** chase camera ✅ · **C** procedural Peugeot 504 taxi ✅ · **E** enter/exit + on-foot walk ✅ · **HUD + controls** ✅ (**E** = landmark panels, **F** = enter/exit taxi, **C** = call taxi; `DrivePrompt` is contextual; drive `mode`/`nearTaxi`/`taxiCalling` live in `useWorld`) · **street geometry** ✅ (`Street.tsx`) · **taxi-call flow** ✅ (`DriveController` glides the taxi to the on-foot agent, eased + nose-first, over 1.3s). **Next: decide merge-to-`main` vs Phase 2** (real landmark/character assets) — the spike has served its purpose.
+- ✅ **PR E verified live** (headless browser, 7/7 checks, 0 console errors): canvas+WebGL mount, drive→F→walk→F→re-enter, drive up to the Poste shows the E prompt, E opens the About panel. Taxi, street, lamps, suited agent all render correctly.
+- ⚠️ **Known gap:** no smoke tests on any `src/features/scene/` 3D component (jsdom can't run WebGL — needs `@react-three/test-renderer`). Deferred during the spike; revisit before merging to `main`.
+
+Pick up from the latest `feat/scene-*` branch; check `git log` and the in-file PR-letter comments in `src/features/scene/components/` for exact next step.

@@ -1,14 +1,96 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Café Zack design system — dark-first (the site lives at night / sunset).
+ * Brand palette feeds the shadcn semantic contract so primitives (Button,
+ * Dialog, …) inherit the Algiers look automatically. One motion language is
+ * defined here and mirrored in src/lib/motion.ts for JS-driven animation.
+ */
+:root {
+  /* Brand palette */
+  --charcoal: #0a0a0a;
+  --cream: #faf7f2;
+  --ochre: #c2410c; /* sunset ochre — primary action */
+  --med-blue: #0369a1; /* Mediterranean blue — accent */
+
+  /* shadcn semantic surfaces (dark theme) */
+  --background: var(--charcoal);
+  --foreground: var(--cream);
+  --card: oklch(0.19 0.006 60); /* lifted charcoal */
+  --card-foreground: var(--cream);
+  --popover: oklch(0.16 0.006 60);
+  --popover-foreground: var(--cream);
+  --primary: var(--ochre);
+  --primary-foreground: var(--cream);
+  --secondary: oklch(0.27 0.02 250);
+  --secondary-foreground: var(--cream);
+  --muted: oklch(0.22 0.005 60);
+  --muted-foreground: oklch(0.72 0.015 80);
+  --accent: var(--med-blue);
+  --accent-foreground: var(--cream);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: var(--cream);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: var(--ochre);
+
+  --radius: 0.625rem;
+}
 
 @theme inline {
-  --color-charcoal: #0a0a0a;
-  --color-cream: #faf7f2;
-  --color-ochre: #c2410c;
-  --color-med-blue: #0369a1;
-  --color-background: var(--color-charcoal);
-  --color-foreground: var(--color-cream);
+  /* Brand names (keep existing bg-charcoal / text-cream utilities working) */
+  --color-charcoal: var(--charcoal);
+  --color-cream: var(--cream);
+  --color-ochre: var(--ochre);
+  --color-med-blue: var(--med-blue);
+
+  /* Semantic colors (shadcn contract) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Fluid display type scale — hero / landmark typography */
+  --text-headline: clamp(1.75rem, 1.1rem + 3vw, 3rem);
+  --text-headline--line-height: 1.05;
+  --text-headline--letter-spacing: -0.02em;
+  --text-display: clamp(2.75rem, 1.5rem + 6vw, 6rem);
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.03em;
+
+  /* Motion language — mirror of src/lib/motion.ts (keep the two in sync) */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 600ms;
 }
 
 html,
@@ -22,10 +104,50 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden; /* fullscreen canvas route — scrollable pages opt out via .lenis */
+}
+
+/* Lenis smooth scroll: only scrollable (SSR) pages opt in (SmoothScroll adds
+   .lenis to <html>). The 3D route keeps overflow:hidden and owns the camera. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
   overflow: hidden;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
 }
 
 ::selection {
   background: var(--color-ochre);
   color: var(--color-cream);
+}
+
+/* Respect users who'd rather not see motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
