@@ -6,6 +6,7 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { useDrive } from "../store/useDrive";
 import { TaxiModel } from "./TaxiModel";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
@@ -43,9 +44,11 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     const body = bodyRef.current;
     if (!body) return;
 
-    // Controls are locked while a landmark panel is open — the car coasts to a
-    // stop (cap + damping below still run) instead of driving off-screen.
-    const locked = useWorld.getState().activePanel !== null;
+    // Controls are locked while a landmark panel is open, or while the player
+    // is out on foot — the car coasts to a stop (cap + damping below still run)
+    // instead of driving off-screen or responding to walk input.
+    const locked =
+      useDrive.getState().mode !== "driving" || useWorld.getState().activePanel !== null;
 
     const rot = body.rotation();
     QUAT.set(rot.x, rot.y, rot.z, rot.w);

@@ -6,12 +6,14 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
+import { useDrive } from "../store/useDrive";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
+import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
-import { PlaceholderCharacter } from "./PlaceholderCharacter";
 import { Vehicle } from "./Vehicle";
 
 type Preset = {
@@ -98,8 +100,12 @@ function SceneContent() {
   const p = PRESETS[timeOfDay];
   const isNight = timeOfDay === "night";
 
-  // Shared with the ChaseCamera so it can track the taxi each frame.
+  // The two controllable bodies; `activeRef` is whichever the player drives,
+  // which the chase camera follows and the landmark proximity reads.
   const taxiRef = useRef<RapierRigidBody>(null);
+  const characterRef = useRef<RapierRigidBody>(null);
+  const mode = useDrive((s) => s.mode);
+  const activeRef = mode === "driving" ? taxiRef : characterRef;
 
   return (
     <>
@@ -145,15 +151,20 @@ function SceneContent() {
 
       <Suspense fallback={null}>
         <AlgiersSilhouette />
-        <PlaceholderCharacter />
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
-          <GrandePoste taxiRef={taxiRef} />
+          <Character bodyRef={characterRef} />
+          <GrandePoste playerRef={activeRef} />
         </Physics>
       </Suspense>
 
-      <ChaseCamera targetRef={taxiRef} />
+      <ChaseCamera
+        targetRef={activeRef}
+        seat={mode === "driving" ? [0, 3.5, 8] : [0, 2.2, 4.5]}
+        lookLift={mode === "driving" ? 1.2 : 1}
+      />
+      <DriveController taxiRef={taxiRef} characterRef={characterRef} />
 
       <EffectComposer>
         <Bloom

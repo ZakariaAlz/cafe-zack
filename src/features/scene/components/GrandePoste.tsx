@@ -29,13 +29,15 @@ const TRIGGER_RADIUS = 9;
  * camera (±15), so casting would cost fill for nothing (same call the
  * AlgiersSilhouette makes).
  */
-export function GrandePoste({ taxiRef }: { taxiRef: RefObject<RapierRigidBody | null> }) {
+export function GrandePoste({ playerRef }: { playerRef: RefObject<RapierRigidBody | null> }) {
   const inside = useRef(false);
 
   // Proximity trigger — flip world.nearby only on boundary crossings (not
-  // every frame) so we don't thrash the store. getState() = no re-render here.
+  // every frame) so we don't thrash the store. Tracks whichever body the
+  // player currently controls (taxi or on-foot agent). getState() = no
+  // re-render here.
   useFrame(() => {
-    const body = taxiRef.current;
+    const body = playerRef.current;
     if (!body) return;
     const t = body.translation();
     const dx = t.x - POSITION[0];
