@@ -10,6 +10,7 @@ const LABEL: Record<LandmarkId, string> = {
   "grande-poste": "enterGrandePoste",
   casbah: "enterCasbah",
   "notre-dame": "enterNotreDame",
+  maqam: "enterMaqam",
 };
 
 /**

@@ -12,6 +12,7 @@
     "enterGrandePoste": "Entrer à La Grande Poste",
     "enterCasbah": "Entrer dans la Casbah",
     "enterNotreDame": "Entrer à Notre-Dame d'Afrique",
+    "enterMaqam": "Entrer à Maqam Echahid",
     "driveTaxi": "Conduire la R4",
     "stepOut": "Descendre",
     "callTaxi": "Appeler la R4",
@@ -62,6 +63,17 @@
     "footer": "Aussi : audits de données, migrations d'entrepôts et missions de sauvetage ponctuelles.",
     "ctaPrimary": "Réserver un appel",
     "close": "Fermer"
+  },
+  "skills": {
+    "eyebrow": "Compétences · Maqam Echahid",
+    "title": "La boîte à outils",
+    "intro": "Les outils que je choisis parce qu'ils tiennent en production, pas parce qu'ils sont à la mode.",
+    "groups": {
+      "data": "Ingénierie data",
+      "platform": "Plateforme & DevOps",
+      "web": "Web",
+      "stores": "Bases & entrepôts"
+    }
   },
   "about": {
     "eyebrow": "À propos · La Grande Poste",

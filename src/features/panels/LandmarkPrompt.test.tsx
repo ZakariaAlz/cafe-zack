@@ -24,4 +24,9 @@ describe("LandmarkPrompt", () => {
     renderIntl(<LandmarkPrompt landmark="notre-dame" />);
     expect(screen.getByText("Enter Notre-Dame d'Afrique")).toBeInTheDocument();
   });
+
+  it("follows the nearby landmark to the Maqam label", () => {
+    renderIntl(<LandmarkPrompt landmark="maqam" />);
+    expect(screen.getByText("Enter Maqam Echahid")).toBeInTheDocument();
+  });
 });
