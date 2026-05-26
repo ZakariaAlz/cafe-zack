@@ -13,6 +13,7 @@
     "enterCasbah": "Entrer dans la Casbah",
     "enterNotreDame": "Entrer à Notre-Dame d'Afrique",
     "enterMaqam": "Entrer à Maqam Echahid",
+    "enterCafeZack": "Entrer au Café Zack",
     "driveTaxi": "Conduire la R4",
     "stepOut": "Descendre",
     "callTaxi": "Appeler la R4",
@@ -73,6 +74,21 @@
       "platform": "Plateforme & DevOps",
       "web": "Web",
       "stores": "Bases & entrepôts"
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact · Café Zack",
+    "title": "Prenez une chaise",
+    "intro": "Dites-moi ce que vous construisez. Je lis tout et je réponds sous 24 h.",
+    "name": "Nom",
+    "email": "Email",
+    "message": "De quoi avez-vous besoin ?",
+    "submit": "Envoyer",
+    "sent": "Merci — message bien reçu. Je vous réponds sous 24 h.",
+    "errors": {
+      "name": "Votre nom, s'il vous plaît.",
+      "email": "Un email valide pour vous répondre.",
+      "message": "Une ligne ou deux sur le projet."
     }
   },
   "about": {

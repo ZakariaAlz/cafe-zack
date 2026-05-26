@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useWorld } from "@/lib/world-store";
 import { AboutPanel } from "./AboutPanel";
+import { ContactPanel } from "./ContactPanel";
 import { DrivePrompt } from "./DrivePrompt";
 import { drivePromptState } from "./drivePrompt";
 import { LandmarkPrompt } from "./LandmarkPrompt";
@@ -58,6 +59,10 @@ export function PanelsRoot() {
       <SkillsPanel
         open={activePanel === "maqam"}
         onOpenChange={(next) => (next ? open("maqam") : close())}
+      />
+      <ContactPanel
+        open={activePanel === "cafe-zack"}
+        onOpenChange={(next) => (next ? open("cafe-zack") : close())}
       />
     </>
   );

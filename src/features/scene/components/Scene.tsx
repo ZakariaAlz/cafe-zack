@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
@@ -164,6 +165,7 @@ function SceneContent() {
           <Casbah playerRef={activeRef} />
           <NotreDameDAfrique playerRef={activeRef} />
           <MaqamEchahid playerRef={activeRef} />
+          <CafeZack playerRef={activeRef} />
         </Physics>
       </Suspense>
 

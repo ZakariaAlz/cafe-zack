@@ -29,4 +29,9 @@ describe("LandmarkPrompt", () => {
     renderIntl(<LandmarkPrompt landmark="maqam" />);
     expect(screen.getByText("Enter Maqam Echahid")).toBeInTheDocument();
   });
+
+  it("follows the nearby landmark to the Café Zack label", () => {
+    renderIntl(<LandmarkPrompt landmark="cafe-zack" />);
+    expect(screen.getByText("Enter Café Zack")).toBeInTheDocument();
+  });
 });
