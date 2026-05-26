@@ -137,7 +137,11 @@ Live status lives in the plan file; this is the short version for session pickup
 - ✅ **Phase 2 so far** (all merged to `main` via CI):
   - **Renault 4** (`RenaultFour.tsx`) replaces the cab — Inspecteur Tahar's 4L; HUD copy is "the R4" (en/fr); `TaxiModel` removed.
   - **Polish pass**: boot-text (`BootText.tsx`) fades ~2.8s after load; `GrandePoste` got a plinth/steps collider so the car pulls up and stops instead of climbing the facade.
-  - **Casbah** (`Casbah.tsx`) — procedural whitewashed-cube cluster (seeded), watchtower, doorway, footprint collider; placed at `[-22,0,-12]` (west). **Now interactive**: proximity trigger → "Enter the Casbah" prompt → E opens the **`ProjectsPanel`** (3 outcome-framed case studies, en/fr). `LandmarkId = "grande-poste" | "casbah"`; `LandmarkPrompt` is landmark-aware. So far 2 of 5 anchors are live (Grande Poste/About, Casbah/Projects).
-- 🎯 **Next**: the remaining 3 anchors — **Notre-Dame d'Afrique** (Services), **Maqam Echahid** (Skills), **Café Zack** (Contact + the face-reveal moment) — each = procedural structure + proximity + panel (extend `LandmarkId`, add panel + i18n + tests, same pattern as Casbah). Then the character rig. (A licensed car/landmark `.glb` in `public/models/` + `useGLTF` can replace any procedural model later. To add a landmark panel test, remember Radix needs the ResizeObserver/matchMedia polyfills already in `tests/unit/setup.ts`.)
+  - **Landmarks live: 3 of 5.** Each = procedural structure + proximity trigger → landmark-aware prompt → E opens a Radix panel (en/fr), same pattern:
+    - **Grande Poste** → About (`GrandePoste.tsx` + `AboutPanel`), north `[0,0,-21]`.
+    - **Casbah** → Projects (`Casbah.tsx` + `ProjectsPanel`, 3 case studies), west `[-22,0,-12]`.
+    - **Notre-Dame d'Afrique** → Services (`NotreDameDAfrique.tsx` + `ServicesPanel`, 4-card menu), east `[22,0,-10]`.
+  - `LandmarkId = "grande-poste" | "casbah" | "notre-dame"`; `LandmarkPrompt` LABEL maps each to a `prompt.enter*` key.
+- 🎯 **Next**: the last 2 anchors — **Maqam Echahid** (Skills) and **Café Zack** (Contact + the face-reveal moment) — same pattern (extend `LandmarkId`, structure + proximity + panel + i18n + tests). Then the character rig. (Licensed `.glb` + `useGLTF` can replace any procedural model later. New landmark-panel tests: Radix needs the ResizeObserver/matchMedia polyfills already in `tests/unit/setup.ts`.)
 
 Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (`taxiRef`, `taxiCalling`) — harmless; user-facing copy is "R4".
