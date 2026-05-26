@@ -5,25 +5,20 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { type ContactInput, contactSchema } from "@/lib/contact";
 import { fadeUp, staggerChildren } from "@/lib/motion";
 
-const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  message: z.string().min(10),
-});
-type Values = z.infer<typeof schema>;
+type Values = ContactInput;
 
 /**
  * Contact panel — the Café Zack section and the site's conversion point.
- * Validated form (react-hook-form + zod); on submit it shows a thank-you
- * state. TODO(phase-5): POST to an edge Route Handler (/api/contact) + Resend.
+ * Validated form (react-hook-form + zod, shared schema) that POSTs to the edge
+ * /api/contact route; shows a thank-you state on success, an error otherwise.
  */
 export function ContactPanel({
   open,
@@ -34,16 +29,27 @@ export function ContactPanel({
 }) {
   const t = useTranslations("contact");
   const [sent, setSent] = useState(false);
+  const [failed, setFailed] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver: zodResolver(contactSchema) });
 
-  const onSubmit = async (_values: Values) => {
-    // TODO(phase-5): POST to /api/contact (edge Route Handler) + Resend email.
-    await new Promise((r) => setTimeout(r, 350));
-    setSent(true);
+  const onSubmit = async (values: Values) => {
+    setFailed(false);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const json = (await res.json()) as { ok?: boolean };
+      if (res.ok && json.ok) setSent(true);
+      else setFailed(true);
+    } catch {
+      setFailed(true);
+    }
   };
 
   const field = (name: keyof Values) =>
@@ -54,7 +60,10 @@ export function ContactPanel({
       open={open}
       onOpenChange={(o) => {
         onOpenChange(o);
-        if (!o) setSent(false);
+        if (!o) {
+          setSent(false);
+          setFailed(false);
+        }
       }}
     >
       <DialogContent
@@ -124,6 +133,7 @@ export function ContactPanel({
                 />
                 {field("message")}
               </div>
+              {failed && <p className="text-destructive/90 text-xs">{t("failed")}</p>}
               <Button type="submit" disabled={isSubmitting}>
                 {t("submit")}
               </Button>
