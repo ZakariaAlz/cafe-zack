@@ -85,6 +85,7 @@
     "message": "De quoi avez-vous besoin ?",
     "submit": "Envoyer",
     "sent": "Merci — message bien reçu. Je vous réponds sous 24 h.",
+    "failed": "L'envoi a échoué. Réessayez, ou écrivez-moi directement.",
     "errors": {
       "name": "Votre nom, s'il vous plaît.",
       "email": "Un email valide pour vous répondre.",

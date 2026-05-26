@@ -85,6 +85,7 @@
     "message": "What do you need?",
     "submit": "Send it over",
     "sent": "Thanks — message received. I'll be in touch within a day.",
+    "failed": "Something went wrong sending that. Try again, or email me directly.",
     "errors": {
       "name": "Your name, please.",
       "email": "A valid email so I can reply.",
