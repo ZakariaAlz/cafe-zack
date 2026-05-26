@@ -10,10 +10,31 @@
   },
   "prompt": {
     "enterGrandePoste": "Entrer à La Grande Poste",
+    "enterCasbah": "Entrer dans la Casbah",
     "driveTaxi": "Conduire la R4",
     "stepOut": "Descendre",
     "callTaxi": "Appeler la R4",
     "arriving": "La R4 arrive…"
+  },
+  "projects": {
+    "eyebrow": "Projets · La Casbah",
+    "title": "Travaux choisis",
+    "intro": "Quelques réalisations, décrites par ce qui a changé pour l'équipe — les noms restent privés.",
+    "items": {
+      "health": {
+        "title": "Plateforme de données santé",
+        "outcome": "Des dossiers hospitaliers épars réunis dans un entrepôt unique : les cliniciens lisent des tableaux de bord du jour au lieu de tableurs vieux d'une semaine."
+      },
+      "telecom": {
+        "title": "Analytique d'usage télécom",
+        "outcome": "Un pipeline en flux transformant les événements réseau bruts en métriques de churn et d'usage que l'équipe growth consulte chaque matin."
+      },
+      "ops": {
+        "title": "Automatisation du reporting",
+        "outcome": "Un rapport mensuel manuel remplacé par un pipeline en libre-service ; l'équipe finance clôture les comptes plusieurs jours plus tôt."
+      }
+    },
+    "close": "Fermer"
   },
   "about": {
     "eyebrow": "À propos · La Grande Poste",

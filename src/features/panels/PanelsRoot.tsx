@@ -6,6 +6,7 @@ import { AboutPanel } from "./AboutPanel";
 import { DrivePrompt } from "./DrivePrompt";
 import { drivePromptState } from "./drivePrompt";
 import { LandmarkPrompt } from "./LandmarkPrompt";
+import { ProjectsPanel } from "./ProjectsPanel";
 
 /**
  * 2D overlay root — mounts alongside the Canvas (not inside it). Reads the
@@ -38,11 +39,15 @@ export function PanelsRoot() {
 
   return (
     <>
-      <LandmarkPrompt show={Boolean(nearby) && !activePanel} />
+      <LandmarkPrompt landmark={activePanel ? null : nearby} />
       <DrivePrompt show={!activePanel} keyHint={keyHint} labelKey={labelKey} />
       <AboutPanel
         open={activePanel === "grande-poste"}
         onOpenChange={(next) => (next ? open("grande-poste") : close())}
+      />
+      <ProjectsPanel
+        open={activePanel === "casbah"}
+        onOpenChange={(next) => (next ? open("casbah") : close())}
       />
     </>
   );

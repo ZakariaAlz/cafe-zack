@@ -10,10 +10,31 @@
   },
   "prompt": {
     "enterGrandePoste": "Enter La Grande Poste",
+    "enterCasbah": "Enter the Casbah",
     "driveTaxi": "Drive the R4",
     "stepOut": "Step out",
     "callTaxi": "Call the R4",
     "arriving": "R4 arriving…"
+  },
+  "projects": {
+    "eyebrow": "Projects · The Casbah",
+    "title": "Selected work",
+    "intro": "A few builds, framed by what changed for the team — names kept private.",
+    "items": {
+      "health": {
+        "title": "Healthcare data platform",
+        "outcome": "Pulled scattered hospital records into one warehouse so clinicians read same-day dashboards instead of week-old spreadsheets."
+      },
+      "telecom": {
+        "title": "Telecom usage analytics",
+        "outcome": "A streaming pipeline turning raw network events into the churn and usage metrics the growth team now checks every morning."
+      },
+      "ops": {
+        "title": "Reporting automation",
+        "outcome": "Replaced a manual monthly report with a self-serve pipeline; the finance team closes the books days earlier."
+      }
+    },
+    "close": "Close"
   },
   "about": {
     "eyebrow": "About · La Grande Poste",
