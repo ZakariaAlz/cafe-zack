@@ -11,6 +11,11 @@ const SPEED = 4;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
 
+// Face-reveal: the suited head warms from near-black to skin as the sunglasses
+// come off (the Café Zack payoff).
+const HEAD_HIDDEN = new THREE.Color("#1B1B20");
+const HEAD_REVEALED = new THREE.Color("#C8A988");
+
 /**
  * The suited agent (PR E) — a velocity-driven capsule the player walks while
  * out of the taxi. Mirrors the Vehicle's dynamic-body approach (snappy linvel
@@ -28,9 +33,30 @@ const DIR = new THREE.Vector3();
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
   const visualRef = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Mesh>(null);
+  const glassesRef = useRef<THREE.Mesh>(null);
+  const eyesRef = useRef<THREE.Group>(null);
+  const reveal = useRef(0); // 0 = sunglasses on, 1 = face revealed
   const mode = useWorld((s) => s.mode);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    // Face-reveal animation — ease toward the store flag (one-way in practice).
+    const target = useWorld.getState().faceRevealed ? 1 : 0;
+    reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
+    const r = reveal.current;
+    if (glassesRef.current) {
+      glassesRef.current.position.y = 0.61 + r * 0.34; // lift up off the face
+      glassesRef.current.scale.setScalar(Math.max(0.0001, 1 - r));
+    }
+    if (eyesRef.current) eyesRef.current.scale.setScalar(r);
+    if (headRef.current) {
+      (headRef.current.material as THREE.MeshStandardMaterial).color.lerpColors(
+        HEAD_HIDDEN,
+        HEAD_REVEALED,
+        r,
+      );
+    }
+
     const body = bodyRef.current;
     if (!body) return;
 
@@ -92,13 +118,28 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
           <boxGeometry args={[0.62, 0.18, 0.32]} />
           <meshStandardMaterial color="#0E0E12" roughness={0.45} metalness={0.08} />
         </mesh>
-        {/* head */}
-        <mesh position={[0, 0.6, 0]} castShadow>
+        {/* head — warms from near-black to skin on the reveal */}
+        <mesh ref={headRef} position={[0, 0.6, 0]} castShadow>
           <sphereGeometry args={[0.16, 20, 16]} />
           <meshStandardMaterial color="#1B1B20" roughness={0.5} />
         </mesh>
-        {/* sunglasses bar — suited agent, no green tint (see CLAUDE.md) */}
-        <mesh position={[0, 0.61, 0.14]}>
+        {/* eyes — hidden (scale 0) until the reveal animates them in */}
+        <group ref={eyesRef} scale={0}>
+          {[-0.06, 0.06].map((ex) => (
+            <group key={ex} position={[ex, 0.625, 0.145]}>
+              <mesh>
+                <sphereGeometry args={[0.032, 12, 12]} />
+                <meshStandardMaterial color="#F4ECE0" roughness={0.4} />
+              </mesh>
+              <mesh position={[0, 0, 0.022]}>
+                <sphereGeometry args={[0.016, 10, 10]} />
+                <meshStandardMaterial color="#1A140E" roughness={0.5} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+        {/* sunglasses bar — lifts off + shrinks on the reveal (no green tint) */}
+        <mesh ref={glassesRef} position={[0, 0.61, 0.14]}>
           <boxGeometry args={[0.26, 0.07, 0.05]} />
           <meshStandardMaterial color="#000000" roughness={0.2} metalness={0.5} />
         </mesh>

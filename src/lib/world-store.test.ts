@@ -9,6 +9,7 @@ describe("world-store", () => {
       mode: "driving",
       nearTaxi: false,
       taxiCalling: false,
+      faceRevealed: false,
     });
   });
 
@@ -39,5 +40,11 @@ describe("world-store", () => {
     expect(useWorld.getState().taxiCalling).toBe(true);
     useWorld.getState().setTaxiCalling(false);
     expect(useWorld.getState().taxiCalling).toBe(false);
+  });
+
+  it("reveals the face once (the café moment)", () => {
+    expect(useWorld.getState().faceRevealed).toBe(false);
+    useWorld.getState().revealFace();
+    expect(useWorld.getState().faceRevealed).toBe(true);
   });
 });

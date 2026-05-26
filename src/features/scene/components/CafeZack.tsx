@@ -41,6 +41,11 @@ export function CafeZack({ playerRef }: { playerRef: RefObject<RapierRigidBody |
       if (near) w.setNearby("cafe-zack");
       else if (w.nearby === "cafe-zack") w.setNearby(null);
     }
+    // The café reveal: arriving on foot takes the agent's sunglasses off (once).
+    if (near) {
+      const w = useWorld.getState();
+      if (w.mode === "onFoot" && !w.faceRevealed) w.revealFace();
+    }
   });
 
   // String lights along the storefront eave.

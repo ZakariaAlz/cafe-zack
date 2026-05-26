@@ -110,6 +110,7 @@ function SceneContent() {
   const taxiRef = useRef<RapierRigidBody>(null);
   const characterRef = useRef<RapierRigidBody>(null);
   const mode = useWorld((s) => s.mode);
+  const faceRevealed = useWorld((s) => s.faceRevealed);
   const activeRef = mode === "driving" ? taxiRef : characterRef;
 
   return (
@@ -171,8 +172,10 @@ function SceneContent() {
 
       <ChaseCamera
         targetRef={activeRef}
-        seat={mode === "driving" ? [0, 3.5, 8] : [0, 2.2, 4.5]}
-        lookLift={mode === "driving" ? 1.2 : 1}
+        // On-foot cam pushes in to a tighter, more intimate framing once the
+        // face is revealed (the café cinematic beat).
+        seat={mode === "driving" ? [0, 3.5, 8] : faceRevealed ? [0, 1.9, 3.4] : [0, 2.2, 4.5]}
+        lookLift={mode === "driving" ? 1.2 : faceRevealed ? 0.8 : 1}
       />
       <DriveController taxiRef={taxiRef} characterRef={characterRef} />
 
