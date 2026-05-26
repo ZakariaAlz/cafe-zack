@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { Casbah } from "./Casbah";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
 import { DriveController } from "./DriveController";
@@ -158,6 +159,7 @@ function SceneContent() {
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} />
           <GrandePoste playerRef={activeRef} />
+          <Casbah />
         </Physics>
       </Suspense>
 
