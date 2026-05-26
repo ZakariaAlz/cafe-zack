@@ -12,6 +12,7 @@
     "enterGrandePoste": "Enter La Grande Poste",
     "enterCasbah": "Enter the Casbah",
     "enterNotreDame": "Enter Notre-Dame d'Afrique",
+    "enterMaqam": "Enter Maqam Echahid",
     "driveTaxi": "Drive the R4",
     "stepOut": "Step out",
     "callTaxi": "Call the R4",
@@ -62,6 +63,17 @@
     "footer": "Also: data audits, warehouse migrations, and one-off rescue work.",
     "ctaPrimary": "Book a free call",
     "close": "Close"
+  },
+  "skills": {
+    "eyebrow": "Skills · Maqam Echahid",
+    "title": "The toolkit",
+    "intro": "The tools I reach for — chosen because they hold up in production, not because they trend.",
+    "groups": {
+      "data": "Data Engineering",
+      "platform": "Platform & DevOps",
+      "web": "Web",
+      "stores": "Stores & warehouses"
+    }
   },
   "about": {
     "eyebrow": "About · La Grande Poste",
