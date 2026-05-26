@@ -23,6 +23,10 @@ type State = {
   /** True while the called taxi is gliding to the on-foot agent. */
   taxiCalling: boolean;
   setTaxiCalling: (calling: boolean) => void;
+  /** The café reveal: once the on-foot agent reaches Café Zack, the sunglasses
+   * come off (one-way — the face stays revealed). */
+  faceRevealed: boolean;
+  revealFace: () => void;
 };
 
 /**
@@ -44,4 +48,6 @@ export const useWorld = create<State>((set) => ({
   setNearTaxi: (near) => set({ nearTaxi: near }),
   taxiCalling: false,
   setTaxiCalling: (calling) => set({ taxiCalling: calling }),
+  faceRevealed: false,
+  revealFace: () => set({ faceRevealed: true }),
 }));
