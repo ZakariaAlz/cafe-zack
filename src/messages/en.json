@@ -11,6 +11,7 @@
   "prompt": {
     "enterGrandePoste": "Enter La Grande Poste",
     "enterCasbah": "Enter the Casbah",
+    "enterNotreDame": "Enter Notre-Dame d'Afrique",
     "driveTaxi": "Drive the R4",
     "stepOut": "Step out",
     "callTaxi": "Call the R4",
@@ -34,6 +35,32 @@
         "outcome": "Replaced a manual monthly report with a self-serve pipeline; the finance team closes the books days earlier."
       }
     },
+    "close": "Close"
+  },
+  "services": {
+    "eyebrow": "Services · Notre-Dame d'Afrique",
+    "title": "What I build",
+    "intro": "Data engineering for teams that need their numbers to be trustworthy — framed by the outcome, not the buzzwords.",
+    "items": {
+      "pipelines": {
+        "title": "Data pipelines",
+        "outcome": "Ingestion and transformation that stay fresh and traceable — and don't break at 2am."
+      },
+      "warehouse": {
+        "title": "Warehouses & models",
+        "outcome": "A warehouse and documented models your analysts can actually query — one source of truth."
+      },
+      "dashboards": {
+        "title": "Dashboards",
+        "outcome": "The metrics your team actually checks every morning, not a wall of charts nobody opens."
+      },
+      "platform": {
+        "title": "Platform & DevOps",
+        "outcome": "CI/CD, infra, and monitoring so shipping data is boring and safe."
+      }
+    },
+    "footer": "Also: data audits, warehouse migrations, and one-off rescue work.",
+    "ctaPrimary": "Book a free call",
     "close": "Close"
   },
   "about": {

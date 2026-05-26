@@ -11,6 +11,7 @@
   "prompt": {
     "enterGrandePoste": "Entrer à La Grande Poste",
     "enterCasbah": "Entrer dans la Casbah",
+    "enterNotreDame": "Entrer à Notre-Dame d'Afrique",
     "driveTaxi": "Conduire la R4",
     "stepOut": "Descendre",
     "callTaxi": "Appeler la R4",
@@ -34,6 +35,32 @@
         "outcome": "Un rapport mensuel manuel remplacé par un pipeline en libre-service ; l'équipe finance clôture les comptes plusieurs jours plus tôt."
       }
     },
+    "close": "Fermer"
+  },
+  "services": {
+    "eyebrow": "Services · Notre-Dame d'Afrique",
+    "title": "Ce que je construis",
+    "intro": "De l'ingénierie data pour les équipes qui ont besoin de chiffres fiables — décrite par le résultat, pas par les mots à la mode.",
+    "items": {
+      "pipelines": {
+        "title": "Pipelines de données",
+        "outcome": "Ingestion et transformation fraîches et traçables — qui ne cassent pas à 2h du matin."
+      },
+      "warehouse": {
+        "title": "Entrepôts & modèles",
+        "outcome": "Un entrepôt et des modèles documentés que vos analystes peuvent vraiment interroger — une seule source de vérité."
+      },
+      "dashboards": {
+        "title": "Tableaux de bord",
+        "outcome": "Les métriques que votre équipe consulte chaque matin, pas un mur de graphiques que personne n'ouvre."
+      },
+      "platform": {
+        "title": "Plateforme & DevOps",
+        "outcome": "CI/CD, infra et supervision pour que livrer de la donnée soit ennuyeux et sûr."
+      }
+    },
+    "footer": "Aussi : audits de données, migrations d'entrepôts et missions de sauvetage ponctuelles.",
+    "ctaPrimary": "Réserver un appel",
     "close": "Fermer"
   },
   "about": {

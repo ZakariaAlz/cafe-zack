@@ -15,6 +15,7 @@ import { ChaseCamera } from "./ChaseCamera";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
+import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
@@ -160,6 +161,7 @@ function SceneContent() {
           <Character bodyRef={characterRef} />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
+          <NotreDameDAfrique playerRef={activeRef} />
         </Physics>
       </Suspense>
 
