@@ -2,8 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 
 // Exact text so HUD pills don't collide with the (lowercase) hero hint line.
 const stepOut = (p: Page) => p.getByText("Step out", { exact: true });
-const driveTaxi = (p: Page) => p.getByText("Drive the R4", { exact: true });
-const callTaxi = (p: Page) => p.getByText("Call the R4", { exact: true });
+const driveR4 = (p: Page) => p.getByText("Drive the R4", { exact: true });
+const callR4 = (p: Page) => p.getByText("Call the R4", { exact: true });
 const arriving = (p: Page) => p.getByText("R4 arriving…", { exact: true });
 const enterPoste = (p: Page) => p.getByText("Enter La Grande Poste", { exact: true });
 
@@ -14,36 +14,36 @@ test("drive · step out · call · re-enter · open landmark panel", async ({ pa
 
   await page.goto("/");
   await page.waitForSelector("canvas");
-  // R3F + Rapier init before the physics-driven HUD reacts to input.
-  await page.waitForTimeout(4000);
+  // Let R3F + Rapier initialise — the HUD (DOM) mounts before the physics
+  // bodies exist, so input only takes effect after this settle.
+  await page.waitForTimeout(5000);
   await page.mouse.click(640, 360); // focus for key events
+  await expect(stepOut(page)).toBeVisible({ timeout: 15_000 });
 
-  // Starts driving.
-  await expect(stepOut(page)).toBeVisible();
-
-  // F → on foot beside the taxi.
+  // F → on foot beside the car.
   await page.keyboard.press("f");
-  await expect(driveTaxi(page)).toBeVisible();
+  await expect(driveR4(page)).toBeVisible();
 
-  // Walk away (W = forward = -Z) → out of range → can call.
+  // Walk away (W) — hold until we're out of range and can call it.
   await page.keyboard.down("w");
-  await page.waitForTimeout(1800);
+  await expect(callR4(page)).toBeVisible({ timeout: 10_000 });
   await page.keyboard.up("w");
-  await expect(callTaxi(page)).toBeVisible();
 
-  // C → summon; the cab glides in (~1.3s) and we're back in range.
+  // C → summon; the car glides back into range.
   await page.keyboard.press("c");
   await expect(arriving(page)).toBeVisible();
-  await expect(driveTaxi(page)).toBeVisible({ timeout: 5000 });
+  await expect(driveR4(page)).toBeVisible({ timeout: 10_000 });
 
-  // F → back in, then drive up to the Grande Poste and open the panel.
+  // F → back in, then drive up to the Poste. Hold W until the prompt fires —
+  // the approach-stop collider parks the car in range, so holding is safe and
+  // the distance covered is frame-rate independent.
   await page.keyboard.press("f");
   await expect(stepOut(page)).toBeVisible();
   await page.keyboard.down("w");
-  await page.waitForTimeout(4000);
+  await expect(enterPoste(page)).toBeVisible({ timeout: 20_000 });
   await page.keyboard.up("w");
-  await expect(enterPoste(page)).toBeVisible();
 
+  // E → open the About panel.
   await page.keyboard.press("e");
   await expect(page.getByText("Zakaria Alizouaoui")).toBeVisible();
 
