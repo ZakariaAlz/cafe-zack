@@ -9,6 +9,7 @@ import type { LandmarkId } from "@/lib/world-store";
 const LABEL: Record<LandmarkId, string> = {
   "grande-poste": "enterGrandePoste",
   casbah: "enterCasbah",
+  "notre-dame": "enterNotreDame",
 };
 
 /**
