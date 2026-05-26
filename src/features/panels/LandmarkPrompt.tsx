@@ -3,19 +3,27 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { DURATION, EASE } from "@/lib/motion";
+import type { LandmarkId } from "@/lib/world-store";
+
+/** Per-landmark prompt label (keys under the `prompt` i18n namespace). */
+const LABEL: Record<LandmarkId, string> = {
+  "grande-poste": "enterGrandePoste",
+  casbah: "enterCasbah",
+};
 
 /**
- * The "press E" affordance that fades in when the taxi is within a landmark's
- * trigger radius. Single landmark (Grande Poste) for now; generalizes to a
- * label lookup when more landmarks come online.
+ * The "press E" affordance that fades in when the player is within a landmark's
+ * trigger radius. Driven by `world.nearby`; the label follows whichever
+ * landmark is in range.
  */
-export function LandmarkPrompt({ show }: { show: boolean }) {
+export function LandmarkPrompt({ landmark }: { landmark: LandmarkId | null }) {
   const t = useTranslations("prompt");
 
   return (
-    <AnimatePresence>
-      {show && (
+    <AnimatePresence mode="wait">
+      {landmark && (
         <motion.div
+          key={landmark}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
@@ -26,7 +34,7 @@ export function LandmarkPrompt({ show }: { show: boolean }) {
             <kbd className="rounded-md border border-cream/25 bg-cream/10 px-2 py-0.5 font-mono text-cream text-xs">
               E
             </kbd>
-            <span className="text-cream/90 text-sm">{t("enterGrandePoste")}</span>
+            <span className="text-cream/90 text-sm">{t(LABEL[landmark])}</span>
           </div>
         </motion.div>
       )}

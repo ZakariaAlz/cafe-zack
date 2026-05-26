@@ -4,14 +4,19 @@ import { renderIntl } from "../../../tests/unit/render-intl";
 import { LandmarkPrompt } from "./LandmarkPrompt";
 
 describe("LandmarkPrompt", () => {
-  it("renders nothing when hidden", () => {
-    const { container } = renderIntl(<LandmarkPrompt show={false} />);
+  it("renders nothing when no landmark is in range", () => {
+    const { container } = renderIntl(<LandmarkPrompt landmark={null} />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("shows the E key cap and the landmark label when near", () => {
-    renderIntl(<LandmarkPrompt show />);
+  it("shows the E key cap and the Grande Poste label", () => {
+    renderIntl(<LandmarkPrompt landmark="grande-poste" />);
     expect(screen.getByText("E")).toBeInTheDocument();
     expect(screen.getByText("Enter La Grande Poste")).toBeInTheDocument();
+  });
+
+  it("follows the nearby landmark to the Casbah label", () => {
+    renderIntl(<LandmarkPrompt landmark="casbah" />);
+    expect(screen.getByText("Enter the Casbah")).toBeInTheDocument();
   });
 });

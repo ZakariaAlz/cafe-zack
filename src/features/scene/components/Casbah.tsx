@@ -1,7 +1,9 @@
 "use client";
 
-import { CuboidCollider, RigidBody } from "@react-three/rapier";
-import { useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
+import { type RefObject, useMemo, useRef } from "react";
+import { useWorld } from "@/lib/world-store";
 
 /**
  * The Casbah of Algiers — the Projects anchor. The real Casbah is a dense
@@ -10,13 +12,15 @@ import { useMemo } from "react";
  * (rising toward the back), some double-stacked, with small dark windows, a
  * citadel watchtower, and an arched doorway facing the road.
  *
- * Structure-only for now: visual + a single footprint collider so the car
- * bumps it. Proximity trigger + Projects panel come next (mirroring the
- * GrandePoste/About wiring). Deterministic layout via a seeded RNG so it never
- * flickers between renders. A real .glb can replace the <group> later.
+ * Visual + a footprint collider so the car bumps it, plus a proximity trigger
+ * (same pattern as GrandePoste) that flips `world.nearby` to "casbah" so the
+ * HUD shows the prompt and E opens the Projects panel. Deterministic layout
+ * via a seeded RNG so it never flickers between renders. A real .glb can
+ * replace the <group> later.
  */
 
 const POSITION: [number, number, number] = [-22, 0, -12];
+const TRIGGER_RADIUS = 11;
 const WHITES = ["#EDE6D4", "#E7DFCB", "#F1ECDB", "#E0D6BE", "#EAE2CF"];
 const WINDOW = "#241A12";
 const DOOR = "#2E2116";
@@ -76,8 +80,28 @@ function buildCasbah(): House[] {
   return houses;
 }
 
-export function Casbah() {
+export function Casbah({ playerRef }: { playerRef: RefObject<RapierRigidBody | null> }) {
   const houses = useMemo(buildCasbah, []);
+  const inside = useRef(false);
+
+  // Proximity trigger — flip world.nearby only on boundary crossings so we
+  // don't thrash the store. getState() = no re-render here.
+  useFrame(() => {
+    const body = playerRef.current;
+    if (!body) return;
+    const t = body.translation();
+    const dx = t.x - POSITION[0];
+    const dz = t.z - POSITION[2];
+    const near = dx * dx + dz * dz < TRIGGER_RADIUS * TRIGGER_RADIUS;
+    if (near !== inside.current) {
+      inside.current = near;
+      const w = useWorld.getState();
+      // Only claim/release `nearby` for ourselves — don't stomp another
+      // landmark's trigger if radii ever overlap.
+      if (near) w.setNearby("casbah");
+      else if (w.nearby === "casbah") w.setNearby(null);
+    }
+  });
 
   return (
     <group position={POSITION}>

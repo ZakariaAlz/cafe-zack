@@ -159,7 +159,7 @@ function SceneContent() {
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} />
           <GrandePoste playerRef={activeRef} />
-          <Casbah />
+          <Casbah playerRef={activeRef} />
         </Physics>
       </Suspense>
 
