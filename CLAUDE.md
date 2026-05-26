@@ -137,11 +137,12 @@ Live status lives in the plan file; this is the short version for session pickup
 - ✅ **Phase 2 so far** (all merged to `main` via CI):
   - **Renault 4** (`RenaultFour.tsx`) replaces the cab — Inspecteur Tahar's 4L; HUD copy is "the R4" (en/fr); `TaxiModel` removed.
   - **Polish pass**: boot-text (`BootText.tsx`) fades ~2.8s after load; `GrandePoste` got a plinth/steps collider so the car pulls up and stops instead of climbing the facade.
-  - **Landmarks live: 3 of 5.** Each = procedural structure + proximity trigger → landmark-aware prompt → E opens a Radix panel (en/fr), same pattern:
+  - **Landmarks live: 4 of 5.** Each = procedural structure + proximity trigger → landmark-aware prompt → E opens a Radix panel (en/fr), same pattern:
     - **Grande Poste** → About (`GrandePoste.tsx` + `AboutPanel`), north `[0,0,-21]`.
     - **Casbah** → Projects (`Casbah.tsx` + `ProjectsPanel`, 3 case studies), west `[-22,0,-12]`.
     - **Notre-Dame d'Afrique** → Services (`NotreDameDAfrique.tsx` + `ServicesPanel`, 4-card menu), east `[22,0,-10]`.
-  - `LandmarkId = "grande-poste" | "casbah" | "notre-dame"`; `LandmarkPrompt` LABEL maps each to a `prompt.enter*` key.
-- 🎯 **Next**: the last 2 anchors — **Maqam Echahid** (Skills) and **Café Zack** (Contact + the face-reveal moment) — same pattern (extend `LandmarkId`, structure + proximity + panel + i18n + tests). Then the character rig. (Licensed `.glb` + `useGLTF` can replace any procedural model later. New landmark-panel tests: Radix needs the ResizeObserver/matchMedia polyfills already in `tests/unit/setup.ts`.)
+    - **Maqam Echahid** → Skills (`MaqamEchahid.tsx` + `SkillsPanel`, grouped tech chips), south `[0,0,22]`.
+  - `LandmarkId = "grande-poste" | "casbah" | "notre-dame" | "maqam"`; `LandmarkPrompt` LABEL maps each to a `prompt.enter*` key.
+- 🎯 **Next**: the **last anchor — Café Zack** (Contact + the **face-reveal moment** — the agent's sunglasses come off; this is the emotional finale, so it's more than a panel: a cinematic beat + a contact form). Then the **character rig** (real RPM + Mixamo, replacing the placeholder `Character` capsule). (Licensed `.glb` + `useGLTF` can replace any procedural model later. New landmark-panel tests: Radix needs the ResizeObserver/matchMedia polyfills already in `tests/unit/setup.ts`. Note: on-foot chase cam always faces north, so south-placed landmarks frame best when driven up to — not a gameplay issue.)
 
 Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (`taxiRef`, `taxiCalling`) — harmless; user-facing copy is "R4".
