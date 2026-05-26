@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
-/** Section anchors in the open world. 4 of 5 wired so far. */
-export type LandmarkId = "grande-poste" | "casbah" | "notre-dame" | "maqam";
+/** Section anchors in the open world. All 5 wired. */
+export type LandmarkId = "grande-poste" | "casbah" | "notre-dame" | "maqam" | "cafe-zack";
 
 /** Whether the player is driving the taxi or walking as the suited agent. */
 export type DriveMode = "driving" | "onFoot";
