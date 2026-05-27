@@ -143,11 +143,14 @@ Live status lives in the plan file; this is the short version for session pickup
     - **Notre-Dame d'Afrique** → Services (`NotreDameDAfrique.tsx` + `ServicesPanel`, 4-card menu), east `[22,0,-10]`.
     - **Maqam Echahid** → Skills (`MaqamEchahid.tsx` + `SkillsPanel`, grouped tech chips), south `[0,0,22]`.
     - **Café Zack** → Contact (`CafeZack.tsx` + `ContactPanel` — validated react-hook-form + zod form, thank-you state), southeast `[15,0,12]`. Warm glowing storefront. `Input`/`Textarea`/`Label` primitives added.
-  - `LandmarkId = "grande-poste" | "casbah" | "notre-dame" | "maqam" | "cafe-zack"`; `LandmarkPrompt` LABEL maps each to a `prompt.enter*` key.
-- 🎯 **Next**:
-  1. **Café Zack face-reveal cinematic** — the agent's sunglasses come off (the emotional payoff); a Theatre.js/GSAP beat at the café, distinct from the Contact panel.
-  2. **Contact backend** — wire `ContactPanel` to an edge Route Handler (`/api/contact`) + Resend (currently shows a client-side thank-you only; see the TODO).
-  3. **Character rig** — real RPM + Mixamo, replacing the placeholder `Character` capsule.
-- Notes: licensed `.glb` + `useGLTF` can replace any procedural model later; new landmark-panel tests need the Radix ResizeObserver/matchMedia polyfills already in `tests/unit/setup.ts`; on-foot chase cam always faces north, so south-placed landmarks frame best when driven up to (not a gameplay issue).
+  - `LandmarkId` = the 5 anchors above; `LandmarkPrompt` LABEL maps each to a `prompt.enter*` key.
+  - **Face-reveal cinematic** ✅ — arriving at Café Zack on foot reveals the agent's face (sunglasses lift off, eyes fade in, head warms) + camera push-in. `faceRevealed`/`revealFace` in `useWorld`; animated in `Character`.
+  - **Contact backend** ✅ — `ContactPanel` POSTs to the edge `src/app/api/contact/route.ts` (Web Fetch only) → **Resend** HTTP API. Shared schema `lib/contact.ts`. Graceful no-mail mode for $0/local; **set `RESEND_API_KEY` + `CONTACT_TO` (opt. `RESEND_FROM`) to go live.** Route tests in node env.
+  - **Articulated agent** ✅ — `Character` is now a limbed figure (arms/legs/torso/head) with a movement-driven walk cycle. (Interim — the literal RPM+Mixamo rig is asset-gated.)
+- 🎯 **Next / open**:
+  - **Real character rig** — RPM avatar + Mixamo anims (asset-gated: needs the user to create the avatar / drop a `.glb` in `public/models/`, then wire `useGLTF` + `useAnimations`). Same constraint class as the car.
+  - **Contact go-live** — set the Resend env vars (above) on the host.
+  - Other Phase 2–4 items: real landmark `.glb`s, audio (Howler), achievements, deploy.
+- Notes: licensed `.glb` + `useGLTF` can replace any procedural model later; new landmark-panel/Dialog tests need the Radix ResizeObserver/matchMedia polyfills in `tests/unit/setup.ts`; API route tests use `// @vitest-environment node`; on-foot chase cam faces north, so south landmarks frame best when driven up to (not a gameplay issue).
 
 Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (`taxiRef`, `taxiCalling`) — harmless; user-facing copy is "R4".
