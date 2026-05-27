@@ -11,24 +11,28 @@ const SPEED = 4;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
 
+// Walk cycle: stride frequency + max limb swing (radians).
+const STRIDE = 9;
+const SWING = 0.5;
+
 // Face-reveal: the suited head warms from near-black to skin as the sunglasses
 // come off (the Café Zack payoff).
 const HEAD_HIDDEN = new THREE.Color("#1B1B20");
 const HEAD_REVEALED = new THREE.Color("#C8A988");
 
+const SUIT = "#0E0E12";
+const SUIT_DARK = "#0B0B0D";
+
 /**
- * The suited agent (PR E) — a velocity-driven capsule the player walks while
- * out of the taxi. Mirrors the Vehicle's dynamic-body approach (snappy linvel
- * instead of impulses) so it collides with the ground and landmark colliders
- * for free; rotations are locked and the *visual* turns to face movement.
+ * The suited agent — an articulated low-poly figure (torso, two legs, two
+ * arms, head) with a movement-driven walk cycle: legs and arms swing in
+ * opposition and the body bobs while walking, easing to a rest pose when
+ * still. Velocity-driven capsule body (mirrors the Vehicle) so it collides
+ * for free; the visual rotates to face the heading.
  *
- * Movement is world-relative: W drives -Z (away from the chase camera, into
- * the screen), matching the camera's fixed behind-the-back seat on foot.
- * Input is gated to onFoot mode and ignored while a panel is open. While
- * driving the agent is hidden and parked (DriveController teleports it beside
- * the taxi on exit).
- *
- * Visual is the placeholder suited silhouette (real RPM + Mixamo rig: Phase 2).
+ * Carries the Café Zack face-reveal (sunglasses off + eyes + warm head). A
+ * real RPM + Mixamo rig can replace the visual group later (useGLTF) — the
+ * body, controller, and reveal hooks stay.
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
@@ -36,7 +40,13 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
   const headRef = useRef<THREE.Mesh>(null);
   const glassesRef = useRef<THREE.Mesh>(null);
   const eyesRef = useRef<THREE.Group>(null);
+  const lLegRef = useRef<THREE.Group>(null);
+  const rLegRef = useRef<THREE.Group>(null);
+  const lArmRef = useRef<THREE.Group>(null);
+  const rArmRef = useRef<THREE.Group>(null);
   const reveal = useRef(0); // 0 = sunglasses on, 1 = face revealed
+  const phase = useRef(0); // walk-cycle phase
+  const swing = useRef(0); // eased 0→1 walk intensity
   const mode = useWorld((s) => s.mode);
 
   useFrame((_, delta) => {
@@ -45,7 +55,7 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
     const r = reveal.current;
     if (glassesRef.current) {
-      glassesRef.current.position.y = 0.61 + r * 0.34; // lift up off the face
+      glassesRef.current.position.y = 0.71 + r * 0.34;
       glassesRef.current.scale.setScalar(Math.max(0.0001, 1 - r));
     }
     if (eyesRef.current) eyesRef.current.scale.setScalar(r);
@@ -65,28 +75,37 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     const panelOpen = activePanel !== null;
     const linvel = body.linvel();
 
-    // Parked (driving) or locked (panel open): kill horizontal drift, let
-    // gravity keep it resting on the ground.
+    let moving = false;
     if (!onFoot || panelOpen) {
       body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
-      return;
+    } else {
+      let x = 0;
+      let z = 0;
+      if (keys.current.forward) z -= 1;
+      if (keys.current.backward) z += 1;
+      if (keys.current.left) x -= 1;
+      if (keys.current.right) x += 1;
+      DIR.set(x, 0, z);
+      if (DIR.lengthSq() > 0) {
+        moving = true;
+        DIR.normalize();
+        body.setLinvel({ x: DIR.x * SPEED, y: linvel.y, z: DIR.z * SPEED }, true);
+        if (visualRef.current) visualRef.current.rotation.y = Math.atan2(DIR.x, DIR.z);
+      } else {
+        body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
+      }
     }
 
-    let x = 0;
-    let z = 0;
-    if (keys.current.forward) z -= 1;
-    if (keys.current.backward) z += 1;
-    if (keys.current.left) x -= 1;
-    if (keys.current.right) x += 1;
-
-    DIR.set(x, 0, z);
-    if (DIR.lengthSq() > 0) {
-      DIR.normalize();
-      body.setLinvel({ x: DIR.x * SPEED, y: linvel.y, z: DIR.z * SPEED }, true);
-      // Face the heading (body rotations are locked, so rotate the mesh).
-      if (visualRef.current) visualRef.current.rotation.y = Math.atan2(DIR.x, DIR.z);
-    } else {
-      body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
+    // Walk cycle: advance phase while moving, ease the swing in/out, drive limbs.
+    swing.current += ((moving ? 1 : 0) - swing.current) * (1 - Math.exp(-delta * 10));
+    if (moving) phase.current += delta * STRIDE;
+    const s = Math.sin(phase.current) * SWING * swing.current;
+    if (lLegRef.current) lLegRef.current.rotation.x = s;
+    if (rLegRef.current) rLegRef.current.rotation.x = -s;
+    if (lArmRef.current) lArmRef.current.rotation.x = -s;
+    if (rArmRef.current) rArmRef.current.rotation.x = s;
+    if (visualRef.current) {
+      visualRef.current.position.y = Math.abs(Math.sin(phase.current)) * 0.05 * swing.current;
     }
   });
 
@@ -100,33 +119,68 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
       enabledRotations={[false, false, false]}
     >
       {/* Capsule ~1.7 tall: total = 2*halfHeight + 2*radius = 1.1 + 0.6. Bottom
-          sits at local y=-0.85, so the visual's feet are modelled to meet it. */}
+          sits at local y=-0.85, so the figure's feet are modelled to meet it. */}
       <CapsuleCollider args={[0.55, 0.3]} />
       <group ref={visualRef} visible={mode === "onFoot"}>
-        {/* legs */}
-        <mesh position={[0, -0.5, 0]} castShadow>
-          <boxGeometry args={[0.4, 0.7, 0.28]} />
-          <meshStandardMaterial color="#0B0B0D" roughness={0.5} metalness={0.05} />
+        {/* legs — pivot at the hips, swing fore/aft */}
+        {(
+          [
+            ["l", -0.12, lLegRef],
+            ["r", 0.12, rLegRef],
+          ] as const
+        ).map(([id, x, ref]) => (
+          <group key={id} ref={ref} position={[x, -0.15, 0]}>
+            <mesh position={[0, -0.35, 0]} castShadow>
+              <boxGeometry args={[0.17, 0.7, 0.22]} />
+              <meshStandardMaterial color={SUIT_DARK} roughness={0.5} metalness={0.05} />
+            </mesh>
+            {/* shoe */}
+            <mesh position={[0, -0.68, 0.04]} castShadow>
+              <boxGeometry args={[0.18, 0.1, 0.3]} />
+              <meshStandardMaterial color="#070708" roughness={0.4} metalness={0.1} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* pelvis + jacket */}
+        <mesh position={[0, 0.04, 0]} castShadow>
+          <boxGeometry args={[0.44, 0.34, 0.28]} />
+          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
         </mesh>
-        {/* suit torso */}
-        <mesh position={[0, 0.06, 0]} castShadow>
-          <boxGeometry args={[0.52, 0.62, 0.3]} />
-          <meshStandardMaterial color="#0E0E12" roughness={0.45} metalness={0.08} />
+        <mesh position={[0, 0.32, 0]} castShadow>
+          <boxGeometry args={[0.5, 0.5, 0.3]} />
+          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
         </mesh>
         {/* shoulders */}
-        <mesh position={[0, 0.3, 0]} castShadow>
-          <boxGeometry args={[0.62, 0.18, 0.32]} />
-          <meshStandardMaterial color="#0E0E12" roughness={0.45} metalness={0.08} />
+        <mesh position={[0, 0.56, 0]} castShadow>
+          <boxGeometry args={[0.66, 0.16, 0.32]} />
+          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
         </mesh>
+
+        {/* arms — pivot at the shoulders, swing opposite the legs */}
+        {(
+          [
+            ["l", -0.35, lArmRef],
+            ["r", 0.35, rArmRef],
+          ] as const
+        ).map(([id, x, ref]) => (
+          <group key={id} ref={ref} position={[x, 0.54, 0]}>
+            <mesh position={[0, -0.26, 0]} castShadow>
+              <boxGeometry args={[0.13, 0.54, 0.15]} />
+              <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
+            </mesh>
+          </group>
+        ))}
+
         {/* head — warms from near-black to skin on the reveal */}
-        <mesh ref={headRef} position={[0, 0.6, 0]} castShadow>
+        <mesh ref={headRef} position={[0, 0.74, 0]} castShadow>
           <sphereGeometry args={[0.16, 20, 16]} />
           <meshStandardMaterial color="#1B1B20" roughness={0.5} />
         </mesh>
         {/* eyes — hidden (scale 0) until the reveal animates them in */}
         <group ref={eyesRef} scale={0}>
           {[-0.06, 0.06].map((ex) => (
-            <group key={ex} position={[ex, 0.625, 0.145]}>
+            <group key={ex} position={[ex, 0.76, 0.145]}>
               <mesh>
                 <sphereGeometry args={[0.032, 12, 12]} />
                 <meshStandardMaterial color="#F4ECE0" roughness={0.4} />
@@ -139,7 +193,7 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
           ))}
         </group>
         {/* sunglasses bar — lifts off + shrinks on the reveal (no green tint) */}
-        <mesh ref={glassesRef} position={[0, 0.61, 0.14]}>
+        <mesh ref={glassesRef} position={[0, 0.71, 0.14]}>
           <boxGeometry args={[0.26, 0.07, 0.05]} />
           <meshStandardMaterial color="#000000" roughness={0.2} metalness={0.5} />
         </mesh>
