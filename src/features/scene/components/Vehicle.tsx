@@ -63,28 +63,35 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
       body.applyImpulse({ x: FORWARD.x * impulse, y: 0, z: FORWARD.z * impulse }, true);
     }
 
-    // Cap linear velocity so the cap doesn't fly off
     const linvel = body.linvel();
     const speed = Math.hypot(linvel.x, linvel.z);
-    if (speed > MAX_LINEAR) {
-      const scale = MAX_LINEAR / speed;
-      body.setLinvel({ x: linvel.x * scale, y: linvel.y, z: linvel.z * scale }, true);
-    }
 
-    // Steering torque — only effective when moving (arcade physics, no
-    // pivot-in-place); scales with speed so high-speed steering is sharper
+    // Steering — crisp: full authority by ~speed 4 so it's not twitchy at a
+    // crawl but turns sharply once rolling.
     let steer = 0;
     if (!locked && keys.current.left) steer += 1;
     if (!locked && keys.current.right) steer -= 1;
-
-    if (steer !== 0 && speed > 0.5) {
-      const torque = steer * STEER * delta * 60 * Math.min(speed / MAX_LINEAR, 1);
+    if (steer !== 0 && speed > 0.4) {
+      const torque = steer * STEER * delta * 60 * Math.min(speed / 4, 1);
       body.applyTorqueImpulse({ x: 0, y: torque, z: 0 }, true);
     }
 
-    // Damp angular velocity so the car doesn't keep yawing after key release
+    // Tyre grip — the drift fix. A physics box keeps sliding sideways after a
+    // turn; split the velocity into forward + lateral and bleed off most of
+    // the lateral each frame so the car tracks its heading instead of
+    // drifting. Forward speed is capped here too. (Frame-rate independent.)
+    const vForward = linvel.x * FORWARD.x + linvel.z * FORWARD.z;
+    const latKeep = Math.exp(-delta * 9);
+    const latX = (linvel.x - FORWARD.x * vForward) * latKeep;
+    const latZ = (linvel.z - FORWARD.z * vForward) * latKeep;
+    const fwd = Math.max(-MAX_LINEAR, Math.min(MAX_LINEAR, vForward));
+    body.setLinvel({ x: FORWARD.x * fwd + latX, y: linvel.y, z: FORWARD.z * fwd + latZ }, true);
+
+    // Settle the yaw spin fast once you let go of steering, so the car stops
+    // turning crisply instead of coasting around.
     const angvel = body.angvel();
-    body.setAngvel({ x: 0, y: angvel.y * ANGVEL_DAMPING, z: 0 }, true);
+    const yawDamp = steer !== 0 ? ANGVEL_DAMPING : 0.8;
+    body.setAngvel({ x: 0, y: angvel.y * yawDamp, z: 0 }, true);
   });
 
   return (

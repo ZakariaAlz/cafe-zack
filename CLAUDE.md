@@ -147,10 +147,15 @@ Live status lives in the plan file; this is the short version for session pickup
   - **Face-reveal cinematic** ✅ — arriving at Café Zack on foot reveals the agent's face (sunglasses lift off, eyes fade in, head warms) + camera push-in. `faceRevealed`/`revealFace` in `useWorld`; animated in `Character`.
   - **Contact backend** ✅ — `ContactPanel` POSTs to the edge `src/app/api/contact/route.ts` (Web Fetch only) → **Resend** HTTP API. Shared schema `lib/contact.ts`. Graceful no-mail mode for $0/local; **set `RESEND_API_KEY` + `CONTACT_TO` (opt. `RESEND_FROM`) to go live.** Route tests in node env.
   - **Articulated agent** ✅ — `Character` is now a limbed figure (arms/legs/torso/head) with a movement-driven walk cycle. (Interim — the literal RPM+Mixamo rig is asset-gated.)
-- 🎯 **Next / open**:
-  - **Real character rig** — RPM avatar + Mixamo anims (asset-gated: needs the user to create the avatar / drop a `.glb` in `public/models/`, then wire `useGLTF` + `useAnimations`). Same constraint class as the car.
-  - **Contact go-live** — set the Resend env vars (above) on the host.
-  - Other Phase 2–4 items: real landmark `.glb`s, audio (Howler), achievements, deploy.
-- Notes: licensed `.glb` + `useGLTF` can replace any procedural model later; new landmark-panel/Dialog tests need the Radix ResizeObserver/matchMedia polyfills in `tests/unit/setup.ts`; API route tests use `// @vitest-environment node`; on-foot chase cam faces north, so south landmarks frame best when driven up to (not a gameplay issue).
+## Direction v2 — "alive open world + café second-game" (active)
+
+User reset the bar after the procedural spike read as lifeless. New mandate: a **living, stylized open-world Algiers** (Bruno-Simon energy, NOT photoreal — that needs assets/budget we don't have) + the café as a **separate 2D game** with a full 3D→2D transition. Take real risks.
+
+- **Asset strategy = HYBRID.** The user sources the HERO Algerian icons (real R4 / Algerian car, accurate **Maqam Echahid**, Notre-Dame, Casbah refs) from free Sketchfab/Poly Pizza and drops them in `public/models/` (I can't download auth-gated assets). I build the useGLTF/draco pipeline, fetch CC0 generics (traffic cars, props) where direct-URL, write rich procedural glue, and wire + animate everything.
+- **Café = Hollow-Knight-mood 2D** (user's pick; flagged as the hardest art bar — go atmospheric hand-drawn, iterate with the user). Full transition from the 3D world into a separate 2D layer.
+- **Roadmap (in order, each its own CI-gated PR):** (1) crisp controls (kill drift) + lit running agent ⏳ · (2) ambient traffic · (3) bay/beach + world life · (4) audio (Howler) · (5) useGLTF pipeline + RPM rig scaffold · (6) achievements · (7) the café 2D game. See the task list.
+- **Known prior shortfalls to fix as we go:** R4/Maqam/Casbah look like boxes (→ real assets via hybrid + richer procedural); agent read as a shadow (→ lit charcoal suit + walk cycle); car drifted on turns (→ tyre-grip fix in Vehicle).
+- Still open from v1: contact go-live (set `RESEND_API_KEY` + `CONTACT_TO` on host); real character rig (asset-gated).
+- Notes: licensed `.glb` + `useGLTF` replaces any procedural model later; Radix/Dialog tests need the ResizeObserver/matchMedia polyfills in `tests/unit/setup.ts`; API route tests use `// @vitest-environment node`.
 
 Open a PR and let CI gate the merge — do not push to `main` directly (protected). Internal naming still uses "taxi" (`taxiRef`, `taxiCalling`) — harmless; user-facing copy is "R4".
