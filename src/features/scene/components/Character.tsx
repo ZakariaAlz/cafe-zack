@@ -7,21 +7,23 @@ import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
 
-const SPEED = 4;
+const SPEED = 4.8;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
 
-// Walk cycle: stride frequency + max limb swing (radians).
-const STRIDE = 9;
-const SWING = 0.5;
+// Walk/jog cycle: stride frequency + max limb swing (radians).
+const STRIDE = 11;
+const SWING = 0.62;
 
 // Face-reveal: the suited head warms from near-black to skin as the sunglasses
 // come off (the Café Zack payoff).
 const HEAD_HIDDEN = new THREE.Color("#1B1B20");
 const HEAD_REVEALED = new THREE.Color("#C8A988");
 
-const SUIT = "#0E0E12";
-const SUIT_DARK = "#0B0B0D";
+// Charcoal suit — lifted out of near-black so the agent reads as a figure in
+// dusk light instead of a flat shadow (a touch of sheen via metalness).
+const SUIT = "#2B2B34";
+const SUIT_DARK = "#202028";
 
 /**
  * The suited agent — an articulated low-poly figure (torso, two legs, two
