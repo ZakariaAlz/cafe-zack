@@ -8,8 +8,9 @@
  * Run with:  bun run scripts/optimize-assets.ts
  */
 
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { NodeIO } from "@gltf-transform/core";
@@ -42,7 +43,9 @@ type Manifest = {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MODELS_DIR = path.join(ROOT, "public", "models");
 const OUT_DIR = path.join(MODELS_DIR, "optimized");
+const STAGING_DIR = path.join(MODELS_DIR, "_staging");
 const MANIFEST_PATH = path.join(MODELS_DIR, "manifest.json");
+const BLENDER_INPUTS = new Set([".fbx", ".blend", ".obj"]);
 
 async function loadManifest(): Promise<Manifest> {
   const raw = await readFile(MANIFEST_PATH, "utf-8");
@@ -55,10 +58,11 @@ async function fileSize(p: string): Promise<number> {
 
 /**
  * For a .gltf input, sums the gltf JSON + every external buffer + every external
- * image referenced by URI. For a .glb input, returns the file size directly.
+ * image referenced by URI. For binary inputs (.glb / .fbx / .blend / .obj) just
+ * returns the single file size.
  */
 async function sourceBundleSize(inputPath: string): Promise<number> {
-  if (inputPath.toLowerCase().endsWith(".glb")) return fileSize(inputPath);
+  if (!inputPath.toLowerCase().endsWith(".gltf")) return fileSize(inputPath);
   const json = JSON.parse(await readFile(inputPath, "utf-8")) as {
     buffers?: { uri?: string }[];
     images?: { uri?: string }[];
@@ -89,12 +93,38 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
+async function blenderExport(input: string, output: string): Promise<void> {
+  const pyScript = path.join(ROOT, "scripts", "blender_export.py");
+  const result = spawnSync("blender", ["-b", "--python", pyScript, "--", input, output], {
+    stdio: ["ignore", "pipe", "inherit"],
+  });
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `Blender export failed (${input}). Make sure Blender is installed:  sudo apt install -y blender`,
+    );
+  }
+}
+
+async function ensureGltfInput(rawInputPath: string, assetOutput: string): Promise<string> {
+  const ext = path.extname(rawInputPath).toLowerCase();
+  if (ext === ".gltf" || ext === ".glb") return rawInputPath;
+  if (!BLENDER_INPUTS.has(ext)) {
+    throw new Error(`Unsupported input extension '${ext}' for ${rawInputPath}`);
+  }
+  await mkdir(STAGING_DIR, { recursive: true });
+  const stem = path.basename(assetOutput, path.extname(assetOutput));
+  const stagedGltf = path.join(STAGING_DIR, `${stem}.gltf`);
+  await blenderExport(rawInputPath, stagedGltf);
+  return stagedGltf;
+}
+
 async function optimizeOne(
   asset: Asset,
 ): Promise<{ bytes: number; sha256: string; sourceBytes: number }> {
-  const inputPath = path.join(MODELS_DIR, asset.input);
+  const rawInputPath = path.join(MODELS_DIR, asset.input);
   const outputPath = path.join(OUT_DIR, asset.output);
-  const sourceBytes = await sourceBundleSize(inputPath);
+  const sourceBytes = await sourceBundleSize(rawInputPath);
+  const inputPath = await ensureGltfInput(rawInputPath, asset.output);
 
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
     "draco3d.decoder": await draco3d.createDecoderModule(),
@@ -138,6 +168,7 @@ async function optimizeOne(
 
 async function main(): Promise<void> {
   await mkdir(OUT_DIR, { recursive: true });
+  await rm(STAGING_DIR, { recursive: true, force: true });
   const manifest = await loadManifest();
   const built: Manifest["built"] = {};
   const builtAt = new Date().toISOString();
@@ -170,6 +201,7 @@ async function main(): Promise<void> {
     const totalRatio = ((1 - totalOut / totalIn) * 100).toFixed(1);
     console.log(`\nTotal: ${formatBytes(totalIn)} → ${formatBytes(totalOut)} (−${totalRatio}%)`);
   }
+  await rm(STAGING_DIR, { recursive: true, force: true });
 }
 
 main().catch((err) => {
