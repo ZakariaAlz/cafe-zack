@@ -19,10 +19,10 @@ const DIR = new THREE.Vector3();
 // by that amount to line up.
 const FEET_OFFSET = -0.85;
 
-// Mixamo rigs in the 1940s Spy pack come out from Blender slightly oversized
-// for our world scale — capsule is ~1.7 m tall; the model is ~1.85 m as
-// exported. A small scale brings the silhouette inside the collider.
-const MODEL_SCALE = 0.92;
+// The Mixamo source for this pack authors in centimetres; Blender's FBX
+// importer keeps those units, so the GLB exports at 100× scene scale. 0.01
+// brings the silhouette to a realistic ~1.7 m, matching the capsule.
+const MODEL_SCALE = 0.01;
 
 // Cross-fade time between Walking and Idle. Long enough not to look snappy.
 const ANIM_FADE = 0.2;
