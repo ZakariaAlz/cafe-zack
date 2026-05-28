@@ -14,11 +14,7 @@ import { chromium } from "playwright";
 const URL = "http://localhost:3001/";
 
 const browser = await chromium.launch({
-  args: [
-    "--enable-unsafe-swiftshader",
-    "--use-gl=angle",
-    "--use-angle=swiftshader",
-  ],
+  args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"],
 });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
 const page = await ctx.newPage();
