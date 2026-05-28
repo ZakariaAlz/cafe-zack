@@ -71,6 +71,14 @@ blender/**/*.blend1
 blender/**/*.fbx
 blender/**/*.obj
 
+# 3D asset raw sources — kept locally as input to scripts/optimize-assets.ts,
+# never shipped. Only the compressed output in public/models/optimized/ is committed.
+/public/models/**
+!/public/models/optimized/
+!/public/models/optimized/**
+!/public/models/README.md
+!/public/models/manifest.json
+
 # Local-only docs / scratch
 docs/_scratch/
 *.local.md

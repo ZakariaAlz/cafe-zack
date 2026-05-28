@@ -1,0 +1,18 @@
+{
+  "_comment": "Source-of-truth for shipped 3D assets. scripts/optimize-assets.ts reads `assets`, compresses each entry, and writes the result to public/models/optimized/<output>. Each entry: { input, output, role }. Inputs are paths under public/models/ (raw, gitignored). Outputs are committed.",
+  "assets": [
+    {
+      "input": "businessman_gltf/scene.gltf",
+      "output": "agent-suit.glb",
+      "role": "Player character — black-suited Matrix-coded agent (Phase 2 swap)"
+    }
+  ],
+  "built": {
+    "agent-suit.glb": {
+      "bytes": 8296140,
+      "sha256": "e71762526b7f6d1afa206e3d5b4d4e1d0024133a4b65f2c8c4968cf66fa20163",
+      "sourceBytes": 21682688,
+      "builtAt": "2026-05-28T14:47:54.400Z"
+    }
+  }
+}

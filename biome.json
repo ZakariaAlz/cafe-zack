@@ -21,7 +21,9 @@
       "!**/build",
       "!**/coverage",
       "!**/playwright-report",
-      "!**/test-results"
+      "!**/test-results",
+      "!**/public/decoders",
+      "!**/public/models"
     ]
   },
   "formatter": {
