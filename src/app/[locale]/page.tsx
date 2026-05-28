@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { BootText } from "@/components/BootText";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { AudioGate, MusicHUD } from "@/features/audio";
 import { PanelsRoot } from "@/features/panels";
 import { Scene, TimeOfDayControl } from "@/features/scene";
 
@@ -19,9 +20,11 @@ export default async function Home() {
 
       <div className="absolute right-4 top-4 z-10 flex items-center gap-4">
         <TimeOfDayControl />
+        <MusicHUD />
         <LocaleSwitcher />
       </div>
 
+      <AudioGate />
       <PanelsRoot />
     </main>
   );

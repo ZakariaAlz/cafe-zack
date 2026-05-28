@@ -6,6 +6,7 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
+import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
@@ -112,6 +113,7 @@ function SceneContent() {
   const mode = useWorld((s) => s.mode);
   const faceRevealed = useWorld((s) => s.faceRevealed);
   const activeRef = mode === "driving" ? taxiRef : characterRef;
+  useAmbientZone(activeRef);
 
   return (
     <>

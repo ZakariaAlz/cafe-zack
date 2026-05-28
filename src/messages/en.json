@@ -114,6 +114,10 @@
     "ctaPrimary": "Book a free call",
     "ctaSecondary": "Close"
   },
+  "audio": {
+    "mute": "Mute music",
+    "unmute": "Unmute music"
+  },
   "locale": {
     "switchTo": "Switch to {name}",
     "names": {
