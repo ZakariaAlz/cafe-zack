@@ -1,6 +1,6 @@
 "use client";
 
-import { Sky, Stars } from "@react-three/drei";
+import { Environment, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
@@ -24,9 +24,7 @@ import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
 type Preset = {
-  sunPosition: [number, number, number];
-  turbidity: number;
-  rayleigh: number;
+  skyFile: string;
   fogColor: string;
   ambientColor: string;
   ambientIntensity: number;
@@ -39,11 +37,12 @@ type Preset = {
   bloomIntensity: number;
 };
 
+// Equirectangular HDRI skies live at /textures/sky-*.jpg (downsampled from
+// the 16K originals by scripts/build-skybox.ts). The HDRI replaces the
+// procedural Sky shader so the horizon reads as real Algiers atmosphere.
 const PRESETS: Record<TimeOfDay, Preset> = {
   sunrise: {
-    sunPosition: [50, 4, 0],
-    turbidity: 5,
-    rayleigh: 1.0,
+    skyFile: "/textures/sky-sunset.jpg",
     fogColor: "#5A3A2A",
     ambientColor: "#A0C0E0",
     ambientIntensity: 0.22,
@@ -56,9 +55,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     bloomIntensity: 0.4,
   },
   midday: {
-    sunPosition: [10, 50, 0],
-    turbidity: 8,
-    rayleigh: 0.5,
+    skyFile: "/textures/sky-day.jpg",
     fogColor: "#9DBEDC",
     ambientColor: "#FFFFFF",
     ambientIntensity: 0.5,
@@ -71,9 +68,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     bloomIntensity: 0.25,
   },
   sunset: {
-    sunPosition: [-30, 2, 0],
-    turbidity: 8,
-    rayleigh: 2.5,
+    skyFile: "/textures/sky-sunset.jpg",
     fogColor: "#4A2018",
     ambientColor: "#7AA7D9",
     ambientIntensity: 0.15,
@@ -86,9 +81,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     bloomIntensity: 0.5,
   },
   night: {
-    sunPosition: [0, -10, 0],
-    turbidity: 0.1,
-    rayleigh: 0.01,
+    skyFile: "/textures/sky-night.jpg",
     fogColor: "#0A0820",
     ambientColor: "#2A2050",
     ambientIntensity: 0.2,
@@ -118,30 +111,13 @@ function SceneContent() {
 
   return (
     <>
-      <fog attach="fog" args={[p.fogColor, 18, 60]} />
+      {/* Fog pushed out so the world reads as open — was 18→60 (plateau-sized),
+          now 40→220 with a much larger Ground beneath. */}
+      <fog attach="fog" args={[p.fogColor, 40, 220]} />
 
-      {isNight ? (
-        <>
-          <color attach="background" args={["#050310"]} />
-          <Stars
-            radius={120}
-            depth={60}
-            count={1500}
-            factor={3.5}
-            saturation={0}
-            fade
-            speed={0.3}
-          />
-        </>
-      ) : (
-        <Sky
-          distance={450000}
-          sunPosition={p.sunPosition}
-          turbidity={p.turbidity}
-          rayleigh={p.rayleigh}
-          mieCoefficient={0.005}
-          mieDirectionalG={0.92}
-        />
+      <Environment files={p.skyFile} background backgroundBlurriness={0} />
+      {isNight && (
+        <Stars radius={300} depth={120} count={2200} factor={4} saturation={0} fade speed={0.3} />
       )}
 
       <hemisphereLight args={[p.hemisphereSky, p.hemisphereGround, p.hemisphereIntensity]} />

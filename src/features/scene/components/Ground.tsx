@@ -3,18 +3,18 @@
 import { RigidBody } from "@react-three/rapier";
 
 /**
- * Ochre street plane — placeholder for the Algiers ground. Real
- * cobblestone / asphalt textures with Polyhaven materials land in Phase 4.
+ * Algiers ground plane. Was a 60×60 plateau (the user described it as
+ * "a plateau in the sky"); now a 320×320 disc so the horizon recedes and
+ * the world reads as open. Top surface stays flush with y=0 so all
+ * existing landmark positions and physics tuning are unchanged.
  *
- * Wrapped in a fixed RigidBody so the Rapier vehicle has something to
- * drive on. The visual mesh is a 1-unit-thick box (top surface flush with
- * y=0) instead of a plane, so the cuboid collider has actual volume.
+ * Real cobblestone / asphalt PBR materials land in a follow-up pass.
  */
 export function Ground() {
   return (
     <RigidBody type="fixed" colliders="cuboid" friction={1.2}>
       <mesh position={[0, -0.5, 0]} receiveShadow>
-        <boxGeometry args={[60, 1, 60]} />
+        <boxGeometry args={[320, 1, 320]} />
         <meshStandardMaterial color="#C2410C" roughness={0.95} metalness={0} />
       </mesh>
     </RigidBody>

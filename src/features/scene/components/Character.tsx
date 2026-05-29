@@ -35,15 +35,21 @@ const ANIM_FADE = 0.2;
  * Walking/Idle animations driven by the keyboard. The Eyewear mesh (the
  * sunglasses) animates to scale 0 on the Café Zack face-reveal beat.
  *
- * Velocity-driven capsule rigid body — same controller as before, only the
- * visual changed. The model is cloned (SkeletonUtils) so re-mounts during
- * HMR don't end up aliasing the cached scene from useGLTF.
+ * Movement is camera-relative — the chase cam is world-fixed on foot (the
+ * user orbits it with mouse drag), so we project camera-forward onto the
+ * XZ plane and build the desired world velocity from input. Without this,
+ * pressing W would always move toward world -Z regardless of where the
+ * user was looking.
+ *
+ * The refined suit-and-tie businessman GLB (manifest: agent-businessman.glb)
+ * is staged for a follow-up swap — direct use with SkeletonUtils.clone
+ * corrupted its multi-skin bindings under the auto-fit transform; needs a
+ * proper retarget + bone-graft pass before it ships.
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
   const camera = useThree((s) => s.camera);
   const { scene, animations } = useModel("agent-spy.glb");
-  // Clone keeps each mounted instance independent — and survives HMR cleanly.
   const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
@@ -88,11 +94,10 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     if (!onFoot || panelOpen) {
       body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
     } else {
-      // Camera-relative input. The chase cam is world-fixed on foot (the user
-      // controls its yaw with mouse drag), so "forward" has to mean "into the
-      // screen" or pressing W flips relative to the camera the moment they
-      // orbit. Project the camera's forward onto the XZ plane, derive right
-      // from forward × up, then build the desired world velocity from input.
+      // Camera-relative input. The chase cam is world-fixed on foot, so
+      // "forward" has to mean "into the screen" or W flips relative to the
+      // camera the moment you orbit. Project camera-forward onto the XZ
+      // plane and derive right via forward × up.
       CAM_FWD.set(0, 0, -1).applyQuaternion(camera.quaternion);
       CAM_FWD.y = 0;
       if (CAM_FWD.lengthSq() < 1e-6) CAM_FWD.set(0, 0, -1);
