@@ -22,9 +22,9 @@
       "role": "Djamaa el-Djedid mosque — decorative POI along the route between landmarks; not yet a panel anchor."
     },
     {
-      "input": "businessman_gltf/scene.gltf",
+      "input": "businessman-game-ready/source/eric2.fbx",
       "output": "agent-businessman.glb",
-      "role": "Refined suit character — Adobe-Fuse-style PBR human in a tailored suit (~21 MB source with sidecar textures). No baked animations on the source, so face-reveal uses a hair/glasses mesh instead of the previous 1940s Spy's Eyewearmesh. Walk/Idle animations grafted from the agent-spy rig at load time."
+      "role": "Refined suit character — a normal-proportioned man in a tailored suit (3.1 MB source). Replaces the 1940s Spy whose oversized hands and cartoon proportions read as a Sherlock Holmes caricature. Static FBX (no baked animations) — Character.tsx animates a programmatic walk bob until we wire a Mixamo retarget pass."
     }
   ],
   "built": {
@@ -32,31 +32,31 @@
       "bytes": 3988016,
       "sha256": "8832f10a2ea24b9509f096b97ccc60d87f2b72318d9b9830a8ce7bfe99dc5fa2",
       "sourceBytes": 12754550,
-      "builtAt": "2026-05-29T18:05:52.975Z"
+      "builtAt": "2026-05-29T19:56:29.166Z"
     },
     "maqam-echahid.glb": {
       "bytes": 91208,
       "sha256": "1a72de7048ed4ba0d56cfbd1e16cb2b73e6151b85167da106adb4823e3df95b8",
       "sourceBytes": 1189984,
-      "builtAt": "2026-05-29T18:05:52.975Z"
+      "builtAt": "2026-05-29T19:56:29.166Z"
     },
     "casbah-house.glb": {
       "bytes": 386296,
       "sha256": "0aa7a25396733268eddd8558030a1ec72112dd76c13e01e8348f286fe385a534",
       "sourceBytes": 556300,
-      "builtAt": "2026-05-29T18:05:52.975Z"
+      "builtAt": "2026-05-29T19:56:29.166Z"
     },
     "djamaa-djedid.glb": {
       "bytes": 41040,
       "sha256": "b3053de3acb7f460af661942a5a0081e58d07cf9d663a256921d68434877e4d5",
       "sourceBytes": 93484,
-      "builtAt": "2026-05-29T18:05:52.975Z"
+      "builtAt": "2026-05-29T19:56:29.166Z"
     },
     "agent-businessman.glb": {
-      "bytes": 8296140,
-      "sha256": "e71762526b7f6d1afa206e3d5b4d4e1d0024133a4b65f2c8c4968cf66fa20163",
-      "sourceBytes": 21682688,
-      "builtAt": "2026-05-29T18:05:52.975Z"
+      "bytes": 992508,
+      "sha256": "2299107e703acbf6eece679977f4064efbaf0594c99112a4ba61c9893af5f7ef",
+      "sourceBytes": 3165404,
+      "builtAt": "2026-05-29T19:56:29.166Z"
     }
   }
 }

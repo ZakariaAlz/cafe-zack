@@ -6,7 +6,7 @@
   },
   "hero": {
     "booting": "café zack · démarrage…",
-    "instructions": "une simulation portfolio à alger · conduisez avec WASD · F pour descendre et marcher · C pour rappeler la R4 · glissez pour regarder autour · molette pour zoomer · approchez un monument · v0.0.1"
+    "instructions": "une simulation portfolio à alger · conduisez avec WASD · maintenez Maj pour foncer · F pour descendre et marcher · C pour rappeler la R4 · glissez pour regarder autour · molette pour zoomer · approchez un monument · v0.0.1"
   },
   "prompt": {
     "enterGrandePoste": "Entrer à La Grande Poste",

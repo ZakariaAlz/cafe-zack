@@ -7,26 +7,40 @@ import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { fitModelToHeight } from "../lib/fitModel";
 import { useModel } from "../lib/useModel";
+import { useTimeOfDay } from "../store/useTimeOfDay";
 
 /**
- * Maqam Echahid (Martyrs' Memorial) — the Skills anchor at the south terminus.
- * Real monument: three towering concrete palm fronds meeting at an apex over
- * an eternal flame. GLB sourced from a community Blender model.
+ * Maqam Echahid (Martyrs' Memorial) — the Skills anchor. Three white concrete
+ * palm fronds curving up to a central tower; the real monument stands at 92 m
+ * over Algiers. We render it at 30 m here so it dominates the south end of
+ * the world without swallowing the rest.
  *
- * The procedural cylinder plinth that used to anchor the box-fronds is gone —
- * the GLB has its own base baked in, and the cylinder was visibly clipping
- * with it. Eternal-flame + point light still live in code so the south
- * anchor reads warm at any time of day.
+ * At night, the fronds are floodlit GREEN from below (matching the live
+ * monument's nightly lighting) with a warm red/amber accent at the central
+ * tower. Two SpotLights track the visible fronds and a stone plaza disc
+ * carries the silhouette down to ground level. Daytime keeps the fronds
+ * naturally lit by the HDRI / sun + a soft ambient glow on the tower.
  *
  * Proximity trigger flips world.nearby → "maqam" so the HUD prompts and E
  * opens the Skills panel.
  */
 
-const POSITION: [number, number, number] = [0, 0, 22];
-const TRIGGER_RADIUS = 13;
-const TARGET_HEIGHT = 15;
+// Pushed south from the old [0,0,22] so the wider 30 m footprint clears the
+// road network and the player can approach across the plaza before the
+// trigger fires.
+const POSITION: [number, number, number] = [0, 0, 40];
+const TRIGGER_RADIUS = 18;
+const TARGET_HEIGHT = 30;
+const PLAZA_RADIUS = 12;
 
-const FLAME = "#FF7A1A";
+const GREEN = "#3DFF8C";
+const TOWER_GLOW = "#FF6A22";
+const STONE = "#C8C2B5";
+
+// Spotlights mounted at the plaza edge, pointing up toward the apex so the
+// fronds catch the green wash like the real monument's stage rig.
+const SPOT_RADIUS = 5;
+const SPOT_TARGET_Y = TARGET_HEIGHT * 0.7;
 
 export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBody | null> }) {
   const { scene } = useModel("maqam-echahid.glb");
@@ -36,6 +50,11 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
     return c;
   }, [scene]);
   const inside = useRef(false);
+  const timeOfDay = useTimeOfDay((s) => s.timeOfDay);
+  const isNight = timeOfDay === "night";
+  const isDusk = timeOfDay === "sunset" || timeOfDay === "sunrise";
+  const spotIntensity = isNight ? 10 : isDusk ? 3 : 0;
+  const towerIntensity = isNight ? 4 : isDusk ? 2 : 1;
 
   useFrame(() => {
     const body = playerRef.current;
@@ -54,23 +73,71 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
   return (
     <group position={POSITION}>
       <RigidBody type="fixed" colliders={false}>
-        {/* Footprint collider sized to the rendered GLB so the player bumps
-            but can't walk through it. */}
-        <CuboidCollider args={[6, 8, 6]} position={[0, 8, 0]} />
+        <CuboidCollider args={[10, 15, 10]} position={[0, 15, 0]} />
       </RigidBody>
+
+      {/* Stone esplanade disc — the real Maqam sits on a wide plaza, not on
+          the road. Visually grounds the GLB and gives the player something to
+          walk onto before the colliders. */}
+      <mesh position={[0, -0.05, 0]} receiveShadow>
+        <cylinderGeometry args={[PLAZA_RADIUS, PLAZA_RADIUS + 0.5, 0.2, 48]} />
+        <meshStandardMaterial color={STONE} roughness={0.95} />
+      </mesh>
 
       <primitive object={cloned} />
 
-      <mesh position={[0, 1, 0]}>
-        <coneGeometry args={[0.5, 1.5, 14]} />
+      {/* Three floodlights at 120°, mounted at the plaza edge pointing UP at
+          the fronds. Green at night, dim warm during dusk, off in daylight. */}
+      {[0, 120, 240].map((deg) => {
+        const rad = (deg * Math.PI) / 180;
+        const x = Math.cos(rad) * SPOT_RADIUS;
+        const z = Math.sin(rad) * SPOT_RADIUS;
+        return (
+          <group key={deg}>
+            <spotLight
+              position={[x, 0.4, z]}
+              target-position={[x * 0.55, SPOT_TARGET_Y, z * 0.55]}
+              color={GREEN}
+              intensity={spotIntensity}
+              angle={Math.PI / 8}
+              penumbra={0.35}
+              distance={TARGET_HEIGHT * 1.3}
+              decay={1.6}
+              castShadow={false}
+            />
+            {/* Visible green fixture so the spot's source is legible at
+                ground level. */}
+            <mesh position={[x, 0.25, z]}>
+              <cylinderGeometry args={[0.3, 0.35, 0.5, 12]} />
+              <meshStandardMaterial
+                color={GREEN}
+                emissive={GREEN}
+                emissiveIntensity={isNight ? 2.5 : 0.4}
+                roughness={0.4}
+              />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {/* Central tower accent — the real monument has a red/amber halo at the
+          top of the inner tower. Sits roughly where the three fronds meet. */}
+      <mesh position={[0, TARGET_HEIGHT * 0.78, 0]}>
+        <sphereGeometry args={[0.6, 16, 12]} />
         <meshStandardMaterial
-          color={FLAME}
-          emissive={FLAME}
-          emissiveIntensity={2}
-          roughness={0.4}
+          color={TOWER_GLOW}
+          emissive={TOWER_GLOW}
+          emissiveIntensity={towerIntensity}
+          roughness={0.3}
         />
       </mesh>
-      <pointLight position={[0, 1.8, 0]} color={FLAME} intensity={6} distance={12} decay={2} />
+      <pointLight
+        position={[0, TARGET_HEIGHT * 0.78, 0]}
+        color={TOWER_GLOW}
+        intensity={towerIntensity * 4}
+        distance={20}
+        decay={1.8}
+      />
     </group>
   );
 }

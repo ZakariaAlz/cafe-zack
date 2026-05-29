@@ -5,6 +5,8 @@ export type MovementKeys = {
   backward: boolean;
   left: boolean;
   right: boolean;
+  /** Held while either Shift key is down — bumps walk + drive speed. */
+  sprint: boolean;
 };
 
 /**
@@ -20,6 +22,7 @@ export function useKeyboard() {
     backward: false,
     left: false,
     right: false,
+    sprint: false,
   });
 
   useEffect(() => {
@@ -41,6 +44,8 @@ export function useKeyboard() {
         case "D":
         case "ArrowRight":
           return "right";
+        case "Shift":
+          return "sprint";
         default:
           return null;
       }

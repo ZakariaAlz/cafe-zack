@@ -15,6 +15,8 @@ const FORWARD = new THREE.Vector3();
 const ACCEL = 8;
 const STEER = 5;
 const MAX_LINEAR = 12;
+const MAX_LINEAR_SPRINT = 18;
+const ACCEL_SPRINT_MULT = 1.5;
 const ANGVEL_DAMPING = 0.9;
 
 /**
@@ -53,13 +55,19 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     QUAT.set(rot.x, rot.y, rot.z, rot.w);
     FORWARD.copy(FORWARD_AXIS).applyQuaternion(QUAT);
 
-    // Throttle (forward / reverse impulse along the body's facing)
+    // Throttle (forward / reverse impulse along the body's facing). Holding
+    // Shift bumps both acceleration and the forward-speed cap so the R4 can
+    // get out of its own way without feeling reckless under default press.
     let throttle = 0;
     if (!locked && keys.current.forward) throttle += 1;
     if (!locked && keys.current.backward) throttle -= 1;
 
+    const sprinting = !locked && keys.current.sprint;
+    const accelScale = sprinting && throttle > 0 ? ACCEL_SPRINT_MULT : 1;
+    const speedCap = sprinting && throttle > 0 ? MAX_LINEAR_SPRINT : MAX_LINEAR;
+
     if (throttle !== 0) {
-      const impulse = ACCEL * throttle * delta * 60;
+      const impulse = ACCEL * accelScale * throttle * delta * 60;
       body.applyImpulse({ x: FORWARD.x * impulse, y: 0, z: FORWARD.z * impulse }, true);
     }
 
@@ -84,7 +92,7 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     const latKeep = Math.exp(-delta * 9);
     const latX = (linvel.x - FORWARD.x * vForward) * latKeep;
     const latZ = (linvel.z - FORWARD.z * vForward) * latKeep;
-    const fwd = Math.max(-MAX_LINEAR, Math.min(MAX_LINEAR, vForward));
+    const fwd = Math.max(-MAX_LINEAR, Math.min(speedCap, vForward));
     body.setLinvel({ x: FORWARD.x * fwd + latX, y: linvel.y, z: FORWARD.z * fwd + latZ }, true);
 
     // Settle the yaw spin fast once you let go of steering, so the car stops
