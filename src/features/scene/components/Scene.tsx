@@ -177,9 +177,12 @@ function SceneContent() {
       <ChaseCamera
         targetRef={activeRef}
         // On-foot cam pushes in to a tighter, more intimate framing once the
-        // face is revealed (the café cinematic beat).
+        // face is revealed (the café cinematic beat). Drive mode lets the
+        // seat swing with the car's heading so steering feels natural; on
+        // foot we leave the seat world-fixed so drag-orbit can inspect freely.
         seat={mode === "driving" ? [0, 3.5, 8] : faceRevealed ? [0, 1.9, 3.4] : [0, 2.2, 4.5]}
         lookLift={mode === "driving" ? 1.2 : faceRevealed ? 0.8 : 1}
+        followBodyYaw={mode === "driving"}
       />
       <DriveController taxiRef={taxiRef} characterRef={characterRef} />
 

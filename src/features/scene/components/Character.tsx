@@ -1,7 +1,7 @@
 "use client";
 
 import { useAnimations } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -13,6 +13,9 @@ import { useModel } from "../lib/useModel";
 const SPEED = 4.8;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
+const CAM_FWD = new THREE.Vector3();
+const CAM_RIGHT = new THREE.Vector3();
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
 // Mixamo characters export with their feet at the model origin (Y=0). The
 // capsule body's local origin sits 0.85 above the ground, so drop the visual
@@ -38,6 +41,7 @@ const ANIM_FADE = 0.2;
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
+  const camera = useThree((s) => s.camera);
   const { scene, animations } = useModel("agent-spy.glb");
   // Clone keeps each mounted instance independent — and survives HMR cleanly.
   const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -84,13 +88,21 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     if (!onFoot || panelOpen) {
       body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
     } else {
-      let x = 0;
-      let z = 0;
-      if (keys.current.forward) z -= 1;
-      if (keys.current.backward) z += 1;
-      if (keys.current.left) x -= 1;
-      if (keys.current.right) x += 1;
-      DIR.set(x, 0, z);
+      // Camera-relative input. The chase cam is world-fixed on foot (the user
+      // controls its yaw with mouse drag), so "forward" has to mean "into the
+      // screen" or pressing W flips relative to the camera the moment they
+      // orbit. Project the camera's forward onto the XZ plane, derive right
+      // from forward × up, then build the desired world velocity from input.
+      CAM_FWD.set(0, 0, -1).applyQuaternion(camera.quaternion);
+      CAM_FWD.y = 0;
+      if (CAM_FWD.lengthSq() < 1e-6) CAM_FWD.set(0, 0, -1);
+      CAM_FWD.normalize();
+      CAM_RIGHT.crossVectors(CAM_FWD, WORLD_UP).normalize();
+
+      const fwdInput = (keys.current.forward ? 1 : 0) - (keys.current.backward ? 1 : 0);
+      const rightInput = (keys.current.right ? 1 : 0) - (keys.current.left ? 1 : 0);
+
+      DIR.copy(CAM_FWD).multiplyScalar(fwdInput).addScaledVector(CAM_RIGHT, rightInput);
       if (DIR.lengthSq() > 0) {
         moving = true;
         DIR.normalize();

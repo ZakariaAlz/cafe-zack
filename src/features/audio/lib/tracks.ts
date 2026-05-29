@@ -1,7 +1,7 @@
 "use client";
 
 import { Howl } from "howler";
-import type { Zone } from "./audio-store";
+import { useAudio, type Zone } from "./audio-store";
 
 /**
  * Ambient tracks — xDeviruchi "16-bit Fantasy & Adventure" pack (CC0-ish
@@ -43,12 +43,22 @@ function ensurePool(): Pool {
   return next;
 }
 
-/** Sets the master volume on every track. Mute multiplies it. */
+/**
+ * Push the current mute/volume state to every track immediately. Used by
+ * MusicHUD's effect so the user gets instant feedback on toggle. The
+ * previously-gated `howl.volume() > 0 ? v : 0` form silently dropped unmute
+ * because the active track was already at 0 when we tried to bring it back
+ * up — now we read the active zone from the store and fade only that one to
+ * `volume`, leaving inactive zones at 0.
+ */
 export function setMasterVolume(volume: number, muted: boolean): void {
   if (!pool) return;
-  const v = muted ? 0 : volume;
-  for (const howl of Object.values(pool)) {
-    if (howl) howl.volume(howl.volume() > 0 ? v : 0);
+  const activeZone = useAudio.getState().zone;
+  const activeTarget = muted ? 0 : volume;
+  for (const [name, howl] of Object.entries(pool) as [Zone, Howl | null][]) {
+    if (!howl) continue;
+    const want = name === activeZone ? activeTarget : 0;
+    howl.fade(howl.volume(), want, 200);
   }
 }
 

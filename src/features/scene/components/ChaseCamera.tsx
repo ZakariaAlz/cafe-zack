@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 
 const SEAT = new THREE.Vector3();
+const BODY_QUAT = new THREE.Quaternion();
 const ORBIT_QUAT = new THREE.Quaternion();
 const ORBIT_EULER = new THREE.Euler(0, 0, 0, "YXZ");
 const DESIRED = new THREE.Vector3();
@@ -25,31 +26,31 @@ const WHEEL_SENS = 0.0012;
 
 /**
  * Chase camera with drag-to-orbit + wheel-to-zoom. Follows a RigidBody from a
- * world-space seat behind it; the user can left-click + drag on the canvas to
- * rotate the camera freely around the player (yaw + clamped pitch), and scroll
- * to zoom in/out. Double-click resets to the default behind-the-player view.
+ * seat behind it; the user can left-click + drag on the canvas to rotate the
+ * camera around the player (yaw + clamped pitch), and scroll to zoom. Double-
+ * click resets to the default behind-the-player view.
  *
- * The seat is world-fixed (Bruno-Simon style) — body yaw is intentionally NOT
- * applied, so the camera doesn't auto-swing when the car turns. That trade is
- * deliberate: inspection ergonomics beat auto-follow when the user wants to
- * walk up to a landmark and look around it.
+ * `followBodyYaw` controls whether the body's heading rotates the seat. The
+ * driving cam wants this on (the camera swings around as the car turns); on
+ * foot, we leave it off so the user can drag-orbit freely without the body
+ * fighting them. The user's mouse offset stacks on top of whichever base is
+ * active.
  *
  * `seat` and `lookLift` are props so the same camera serves the taxi (high,
- * far seat) and the on-foot agent (tighter seat). The seat magnitude becomes
- * the base "distance = 1.0" anchor for zoom.
- *
- * Mouse listeners attach to the WebGL canvas only, so left-click on overlay
- * UI (HUD buttons, dialogs) still works normally. Drag + wheel are gated on
- * `activePanel === null` so an open landmark dialog doesn't fight the camera.
+ * far seat) and the on-foot agent (tighter seat). Mouse listeners attach to
+ * the WebGL canvas only, so left-click on HUD overlays still works. Drag +
+ * wheel are gated on `activePanel === null` so dialogs don't fight the cam.
  */
 export function ChaseCamera({
   targetRef,
   seat = [0, 3.5, 8],
   lookLift = 1.2,
+  followBodyYaw = false,
 }: {
   targetRef: RefObject<RapierRigidBody | null>;
   seat?: [number, number, number];
   lookLift?: number;
+  followBodyYaw?: boolean;
 }) {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
@@ -126,6 +127,11 @@ export function ChaseCamera({
     const t = body.translation();
 
     SEAT.set(seat[0] * distance.current, seat[1] * distance.current, seat[2] * distance.current);
+    if (followBodyYaw) {
+      const r = body.rotation();
+      BODY_QUAT.set(r.x, r.y, r.z, r.w);
+      SEAT.applyQuaternion(BODY_QUAT);
+    }
     ORBIT_EULER.set(pitchOffset.current, yawOffset.current, 0);
     ORBIT_QUAT.setFromEuler(ORBIT_EULER);
     SEAT.applyQuaternion(ORBIT_QUAT);
