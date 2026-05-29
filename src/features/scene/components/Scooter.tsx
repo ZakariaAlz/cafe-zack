@@ -1,8 +1,9 @@
 "use client";
 
+import { useAnimations } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { type RefObject, useMemo, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
@@ -14,36 +15,62 @@ const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
 const FORWARD = new THREE.Vector3();
 
-// Lighter, twitchier than the R4: faster off the line, lower top end, and
-// the body banks more easily because there's no roof rack drag.
-const ACCEL = 10;
-const STEER = 6;
-const MAX_LINEAR = 9;
-const MAX_LINEAR_SPRINT = 14;
-const ACCEL_SPRINT_MULT = 1.6;
-const ANGVEL_DAMPING = 0.88;
+// Lighter, twitchier than the R4 — but well-damped so it doesn't squirrel.
+const ACCEL = 9;
+const STEER = 5;
+const MAX_LINEAR = 8;
+const MAX_LINEAR_SPRINT = 12;
+const ACCEL_SPRINT_MULT = 1.5;
+const ANGVEL_DAMPING = 0.85;
 const TARGET_HEIGHT = 1.1;
 // Just west of the agent's spawn — a couple of steps from the R4 so the
-// player discovers it the moment they step out. Same Y as the R4's
-// resting height so it sits flat on the road.
+// player discovers it the moment they step out.
 const SPAWN: [number, number, number] = [-3, 0.6, -1];
 
 /**
- * Rideable Vespa-style scooter — the agent's second transport option. Same
- * arcade-physics tuning as the R4 (Vehicle.tsx) but lighter: half the mass,
- * a touch more accel, a lower top speed, and a slightly higher angular damping
- * so steering settles fast. Spawned at a fixed spot the agent can walk to;
- * F-mount happens in DriveController when nearScooter is true.
+ * Rideable kick-scooter — the agent's second transport. Same arcade-physics
+ * tuning shape as the R4 (Vehicle.tsx) but lighter and better-damped: lower
+ * top speed, sharper lateral grip, higher angular damping so a flick of A/D
+ * doesn't send it spinning. F mounts/dismounts via DriveController.
  *
- * Controls only respond when `mode === "driving" && vehicle === "scooter"` so
- * the R4 and scooter can coexist without fighting over WASD.
+ * The spy rider is rendered as a child of the scooter's RigidBody and only
+ * becomes visible when `vehicle === "scooter" && mode === "driving"` —
+ * Character.tsx hides its on-foot visual in driving mode, so without this
+ * sub-component the player saw an invisible scooter wobbling on its own.
  */
+function ScooterRider() {
+  const { scene, animations } = useModel("agent-spy.glb");
+  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const modelRef = useRef<THREE.Group>(null);
+  const { actions } = useAnimations(animations, modelRef);
+  const mode = useWorld((s) => s.mode);
+  const vehicle = useWorld((s) => s.vehicle);
+  const riding = mode === "driving" && vehicle === "scooter";
+
+  useEffect(() => {
+    const idle = actions.Idle;
+    if (idle && riding) idle.reset().fadeIn(0.2).play();
+    return () => {
+      idle?.fadeOut(0.2);
+    };
+  }, [actions, riding]);
+
+  // Stand the rider on the scooter deck, body facing forward (-Z).
+  return (
+    <group visible={riding}>
+      <group ref={modelRef} position={[0, 0.05, 0.05]} scale={0.01}>
+        <primitive object={cloned} />
+      </group>
+    </group>
+  );
+}
+
 export function Scooter({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
   const { scene } = useModel("scooter.glb");
   const cloned = useMemo(() => {
     const c = SkeletonUtils.clone(scene);
-    fitModelToHeight(c, TARGET_HEIGHT, -0.35);
+    fitModelToHeight(c, TARGET_HEIGHT, -0.4);
     return c;
   }, [scene]);
 
@@ -82,15 +109,18 @@ export function Scooter({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null
       body.applyTorqueImpulse({ x: 0, y: torque, z: 0 }, true);
     }
 
+    // Tight lateral grip + capped forward + lerp toward zero when idle so the
+    // scooter doesn't drift after a turn or wander off if you let go.
     const vForward = linvel.x * FORWARD.x + linvel.z * FORWARD.z;
-    const latKeep = Math.exp(-delta * 10);
+    const latKeep = Math.exp(-delta * 14);
     const latX = (linvel.x - FORWARD.x * vForward) * latKeep;
     const latZ = (linvel.z - FORWARD.z * vForward) * latKeep;
-    const fwd = Math.max(-MAX_LINEAR, Math.min(speedCap, vForward));
+    const fwdDamped = throttle === 0 ? vForward * Math.exp(-delta * 2) : vForward;
+    const fwd = Math.max(-MAX_LINEAR, Math.min(speedCap, fwdDamped));
     body.setLinvel({ x: FORWARD.x * fwd + latX, y: linvel.y, z: FORWARD.z * fwd + latZ }, true);
 
     const angvel = body.angvel();
-    const yawDamp = steer !== 0 ? ANGVEL_DAMPING : 0.7;
+    const yawDamp = steer !== 0 ? ANGVEL_DAMPING : 0.6;
     body.setAngvel({ x: 0, y: angvel.y * yawDamp, z: 0 }, true);
   });
 
@@ -99,13 +129,14 @@ export function Scooter({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null
       ref={bodyRef}
       position={SPAWN}
       colliders={false}
-      mass={120}
-      linearDamping={0.55}
-      angularDamping={0.5}
+      mass={110}
+      linearDamping={1.4}
+      angularDamping={1.6}
       enabledRotations={[false, true, false]}
     >
-      <CuboidCollider args={[0.35, 0.5, 0.85]} />
+      <CuboidCollider args={[0.45, 0.5, 0.9]} />
       <primitive object={cloned} />
+      <ScooterRider />
     </RigidBody>
   );
 }
