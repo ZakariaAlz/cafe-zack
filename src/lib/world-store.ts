@@ -3,8 +3,10 @@ import { create } from "zustand";
 /** Section anchors in the open world. All 5 wired. */
 export type LandmarkId = "grande-poste" | "casbah" | "notre-dame" | "maqam" | "cafe-zack";
 
-/** Whether the player is driving the taxi or walking as the suited agent. */
+/** Whether the player is driving a vehicle or walking as the suited agent. */
 export type DriveMode = "driving" | "onFoot";
+/** Which vehicle the agent is currently driving when `mode === "driving"`. */
+export type Vehicle = "r4" | "scooter";
 
 type State = {
   /** Landmark the player is currently within trigger radius of (or null). */
@@ -14,12 +16,18 @@ type State = {
   setNearby: (id: LandmarkId | null) => void;
   open: (id: LandmarkId) => void;
   close: () => void;
-  /** Driving the taxi vs. on foot. The scene writes it; the HUD reads it. */
+  /** Driving a vehicle vs. on foot. The scene writes it; the HUD reads it. */
   mode: DriveMode;
   setMode: (mode: DriveMode) => void;
-  /** True when the on-foot agent is close enough to climb into the taxi. */
+  /** Which vehicle the agent is in (or was last in) when driving. */
+  vehicle: Vehicle;
+  setVehicle: (v: Vehicle) => void;
+  /** True when the on-foot agent is close enough to climb into a vehicle. */
   nearTaxi: boolean;
   setNearTaxi: (near: boolean) => void;
+  /** True when the on-foot agent is close enough to mount the scooter. */
+  nearScooter: boolean;
+  setNearScooter: (near: boolean) => void;
   /** True while the called taxi is gliding to the on-foot agent. */
   taxiCalling: boolean;
   setTaxiCalling: (calling: boolean) => void;
@@ -44,8 +52,12 @@ export const useWorld = create<State>((set) => ({
   close: () => set({ activePanel: null }),
   mode: "driving",
   setMode: (mode) => set({ mode }),
+  vehicle: "r4",
+  setVehicle: (v) => set({ vehicle: v }),
   nearTaxi: false,
   setNearTaxi: (near) => set({ nearTaxi: near }),
+  nearScooter: false,
+  setNearScooter: (near) => set({ nearScooter: near }),
   taxiCalling: false,
   setTaxiCalling: (calling) => set({ taxiCalling: calling }),
   faceRevealed: false,

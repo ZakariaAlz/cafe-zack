@@ -23,7 +23,9 @@ export function PanelsRoot() {
   const open = useWorld((s) => s.open);
   const close = useWorld((s) => s.close);
   const mode = useWorld((s) => s.mode);
+  const vehicle = useWorld((s) => s.vehicle);
   const nearTaxi = useWorld((s) => s.nearTaxi);
+  const nearScooter = useWorld((s) => s.nearScooter);
   const taxiCalling = useWorld((s) => s.taxiCalling);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export function PanelsRoot() {
 
   // Contextual taxi prompt (pure decision in drivePromptState); hidden while a
   // panel is open. The centred landmark E-prompt is separate (bottom centre).
-  const { keyHint, labelKey } = drivePromptState(mode, nearTaxi, taxiCalling);
+  const { keyHint, labelKey } = drivePromptState(mode, vehicle, nearTaxi, nearScooter, taxiCalling);
 
   return (
     <>

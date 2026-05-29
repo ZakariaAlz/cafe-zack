@@ -1,5 +1,6 @@
 "use client";
 
+import { useAnimations } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
@@ -7,7 +8,6 @@ import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { fitModelToHeight } from "../lib/fitModel";
 import { useModel } from "../lib/useModel";
 
 const SPEED = 4.8;
@@ -18,86 +18,76 @@ const CAM_FWD = new THREE.Vector3();
 const CAM_RIGHT = new THREE.Vector3();
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
-// Capsule's local origin sits 0.85 above the ground, so drop the visual by
-// that amount to line the model's feet up with the bottom of the collider.
+// Mixamo characters export with their feet at the model origin (Y=0). The
+// capsule body's local origin sits 0.85 above the ground, so drop the visual
+// by that amount to line up.
 const FEET_OFFSET = -0.85;
-const CHARACTER_HEIGHT = 1.78;
 
-// Programmatic walk feel. The new businessman GLB ships static (no baked
-// animations), so a gentle bob + lateral lean while moving sells "walking"
-// without needing a Mixamo retarget pass.
-const BOB_SPEED = 9;
-const BOB_HEIGHT = 0.05;
-const LEAN_AMOUNT = 0.07;
+// The Mixamo source for this pack authors in centimetres; Blender's FBX
+// importer keeps those units, so the GLB exports at 100× scene scale. 0.01
+// brings the silhouette to a realistic ~1.7 m, matching the capsule.
+const MODEL_SCALE = 0.01;
+
+// Cross-fade time between Walking and Idle. Long enough not to look snappy.
+const ANIM_FADE = 0.2;
+// How much faster the Walking clip plays when sprinting — visible "run" feel
+// without needing a separate Running animation in the source pack.
+const SPRINT_TIMESCALE = 1.7;
 
 /**
- * Suited agent — refined businessman GLB (`eric2.fbx` upstream, 969 KB
- * compressed). Replaces the 1940s Spy whose oversized hands and cartoon
- * proportions read as a Sherlock-Holmes caricature; this rig is a normal
- * man in a tailored suit. Static mesh (no skins), so `fitModelToHeight`
- * is safe here — the issue we hit with the earlier Adobe-Fuse rig came
- * from mutating a multi-skin scene's bind matrices, which doesn't apply.
+ * Suited agent — Mixamo-rigged 1940s Spy GLB (~3.8 MB compressed) with
+ * Walking/Idle animations driven by the keyboard. Movement is camera-relative
+ * on foot — the chase cam is world-fixed (user orbits with mouse drag), so we
+ * project camera-forward onto the XZ plane and build the desired world
+ * velocity from input. Without this, W would always move toward world -Z
+ * regardless of where the camera was pointed.
  *
- * Movement is camera-relative — the chase cam is world-fixed on foot (the
- * user orbits it with mouse drag), so we project camera-forward onto the
- * XZ plane and build the desired world velocity from input. Without this,
- * pressing W would always move toward world -Z regardless of where the
- * camera was pointed.
+ * Sprint (Shift) bumps speed by 1.8× AND plays the Walking clip at 1.7×
+ * timescale so it reads as a run, not a Mariocart "walk faster."
  *
- * Sprint (Shift) bumps speed by 1.8× while moving. The face-reveal hook
- * (revealFace store flag) is retired — the new rig has no `Eyewearmesh`,
- * and the cinematic moment can land in a follow-up via procedural
- * sunglasses or a camera push-in.
+ * The Eyewearmesh (sunglasses) animates to scale 0 on the Café Zack face-
+ * reveal beat — the rig's hook into the cinematic moment.
+ *
+ * The previous attempt to swap in `eric2.fbx` (a static suit FBX) shipped
+ * untextured material slots, a T-pose, and no walk cycle — the spy's
+ * Mixamo rig is the load-bearing visual identity for this scene until we
+ * graft Mixamo Walking/Idle onto a refined suit rig in a follow-up.
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
   const camera = useThree((s) => s.camera);
-  const { scene } = useModel("agent-businessman.glb");
-  const cloned = useMemo(() => {
-    const c = SkeletonUtils.clone(scene);
-    fitModelToHeight(c, CHARACTER_HEIGHT, 0);
-    return c;
-  }, [scene]);
+  const { scene, animations } = useModel("agent-spy.glb");
+  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
-  const bobRef = useRef<THREE.Group>(null);
-  const bobPhase = useRef(0);
+  const eyewearRef = useRef<THREE.Object3D | null>(null);
+  const { actions } = useAnimations(animations, modelRef);
+
+  const reveal = useRef(0);
+  const movingRef = useRef(false);
   const mode = useWorld((s) => s.mode);
 
-  // The eric2 FBX ships its diffuse textures in a sibling `textures/` dir
-  // that Blender's exporter doesn't locate during the gltf-transform run, so
-  // the optimized GLB lands with bare-white materials. Re-paint by material
-  // name to give the agent a believable charcoal suit and natural skin tone
-  // — matches the "standard man in a suit" the user asked for without an
-  // extra texture round-trip.
   useEffect(() => {
-    const palette: Record<string, string> = {
-      male_elegantsuit01: "#1A1C24", // charcoal suit
-      "Material.001": "#1A1C24", // matched suit panel
-      Ch31_hair: "#1B1410", // near-black hair
-      eric: "#C99577", // warm skin tone
-      "low-poly": "#C99577", // skin variant
-      shoes03: "#0E0E10", // black shoes
-      "Material.002": "#0E0E10",
-    };
-    cloned.traverse((obj) => {
-      if (!(obj instanceof THREE.Mesh)) return;
-      obj.castShadow = true;
-      obj.receiveShadow = false;
-      const mat = obj.material as THREE.MeshStandardMaterial | undefined;
-      if (!mat) return;
-      const hex = palette[mat.name ?? ""];
-      if (hex) {
-        mat.color = new THREE.Color(hex);
-        // Suit / shoes read better with a touch of roughness; skin keeps the
-        // default softness so it doesn't look chalky.
-        mat.roughness = mat.name === "eric" || mat.name === "low-poly" ? 0.7 : 0.55;
-        mat.metalness = 0;
-        mat.needsUpdate = true;
-      }
-    });
+    eyewearRef.current = cloned.getObjectByName("Eyewearmesh") ?? null;
   }, [cloned]);
 
+  // Start in Idle once the actions are ready. Walking activates as soon as
+  // the player moves.
+  useEffect(() => {
+    const idle = actions.Idle;
+    if (idle) idle.reset().fadeIn(ANIM_FADE).play();
+    return () => {
+      idle?.fadeOut(ANIM_FADE);
+    };
+  }, [actions]);
+
   useFrame((_, delta) => {
+    // Face-reveal — ease toward the store flag.
+    const target = useWorld.getState().faceRevealed ? 1 : 0;
+    reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
+    const eyewear = eyewearRef.current;
+    if (eyewear) eyewear.scale.setScalar(Math.max(0.0001, 1 - reveal.current));
+
     const body = bodyRef.current;
     if (!body) return;
 
@@ -131,20 +121,24 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
       }
     }
 
-    // Programmatic walk feel — sprint runs the cycle faster.
-    const bob = bobRef.current;
-    if (bob) {
-      if (moving) {
-        const bobSpeed = keys.current.sprint ? BOB_SPEED * 1.6 : BOB_SPEED;
-        bobPhase.current += delta * bobSpeed;
-        const y = Math.abs(Math.sin(bobPhase.current)) * BOB_HEIGHT;
-        const lean = Math.sin(bobPhase.current) * LEAN_AMOUNT;
-        bob.position.y = FEET_OFFSET + y;
-        bob.rotation.z = lean;
-      } else {
-        bob.position.y += (FEET_OFFSET - bob.position.y) * (1 - Math.exp(-delta * 8));
-        bob.rotation.z += (0 - bob.rotation.z) * (1 - Math.exp(-delta * 8));
+    // Crossfade Walking ↔ Idle whenever the moving state flips. Walking
+    // plays faster when sprint is held so the agent reads as running.
+    const walk = actions.Walking;
+    const idle = actions.Idle;
+    if (moving !== movingRef.current) {
+      movingRef.current = moving;
+      if (walk && idle) {
+        if (moving) {
+          idle.fadeOut(ANIM_FADE);
+          walk.reset().fadeIn(ANIM_FADE).play();
+        } else {
+          walk.fadeOut(ANIM_FADE);
+          idle.reset().fadeIn(ANIM_FADE).play();
+        }
       }
+    }
+    if (walk && moving) {
+      walk.timeScale = keys.current.sprint ? SPRINT_TIMESCALE : 1;
     }
   });
 
@@ -159,7 +153,7 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     >
       <CapsuleCollider args={[0.55, 0.3]} />
       <group ref={visualRef} visible={mode === "onFoot"}>
-        <group ref={bobRef} position={[0, FEET_OFFSET, 0]}>
+        <group ref={modelRef} position={[0, FEET_OFFSET, 0]} scale={MODEL_SCALE}>
           <primitive object={cloned} />
         </group>
       </group>

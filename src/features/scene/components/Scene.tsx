@@ -20,6 +20,7 @@ import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
+import { Scooter } from "./Scooter";
 import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
@@ -100,13 +101,17 @@ function SceneContent() {
   const p = PRESETS[timeOfDay];
   const isNight = timeOfDay === "night";
 
-  // The two controllable bodies; `activeRef` is whichever the player drives,
-  // which the chase camera follows and the landmark proximity reads.
+  // Three controllable bodies; `activeRef` is whichever the player is
+  // currently piloting — chase camera follows it and landmark proximity reads
+  // its position.
   const taxiRef = useRef<RapierRigidBody>(null);
+  const scooterRef = useRef<RapierRigidBody>(null);
   const characterRef = useRef<RapierRigidBody>(null);
   const mode = useWorld((s) => s.mode);
+  const vehicle = useWorld((s) => s.vehicle);
   const faceRevealed = useWorld((s) => s.faceRevealed);
-  const activeRef = mode === "driving" ? taxiRef : characterRef;
+  const activeRef =
+    mode === "driving" ? (vehicle === "scooter" ? scooterRef : taxiRef) : characterRef;
   useAmbientZone(activeRef);
 
   return (
@@ -140,6 +145,7 @@ function SceneContent() {
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
+          <Scooter bodyRef={scooterRef} />
           <Character bodyRef={characterRef} />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
@@ -160,7 +166,7 @@ function SceneContent() {
         lookLift={mode === "driving" ? 1.2 : faceRevealed ? 0.8 : 1}
         followBodyYaw={mode === "driving"}
       />
-      <DriveController taxiRef={taxiRef} characterRef={characterRef} />
+      <DriveController taxiRef={taxiRef} scooterRef={scooterRef} characterRef={characterRef} />
 
       <EffectComposer>
         <Bloom

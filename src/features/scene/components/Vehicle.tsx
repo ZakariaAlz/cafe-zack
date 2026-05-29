@@ -45,11 +45,10 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     const body = bodyRef.current;
     if (!body) return;
 
-    // Controls are locked while a landmark panel is open, or while the player
-    // is out on foot — the car coasts to a stop (cap + damping below still run)
-    // instead of driving off-screen or responding to walk input.
-    const { mode, activePanel } = useWorld.getState();
-    const locked = mode !== "driving" || activePanel !== null;
+    // Controls are locked while a landmark panel is open, while the player
+    // is on foot, or while they're riding the scooter instead of the R4.
+    const { mode, activePanel, vehicle } = useWorld.getState();
+    const locked = mode !== "driving" || vehicle !== "r4" || activePanel !== null;
 
     const rot = body.rotation();
     QUAT.set(rot.x, rot.y, rot.z, rot.w);

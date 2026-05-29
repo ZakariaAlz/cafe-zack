@@ -2,7 +2,8 @@
 
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { type RefObject, useMemo, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { fitModelToHeight } from "../lib/fitModel";
@@ -55,6 +56,34 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
   const isDusk = timeOfDay === "sunset" || timeOfDay === "sunrise";
   const spotIntensity = isNight ? 10 : isDusk ? 3 : 0;
   const towerIntensity = isNight ? 4 : isDusk ? 2 : 1;
+
+  // Cache the original mesh materials so we can swap to a night-green
+  // emissive override and restore the original concrete look in the day.
+  // The reference photo shows the fronds GLOW from within (not just lit by
+  // external spots), so we drive that look by emissive material here.
+  useEffect(() => {
+    const originals = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+    cloned.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && obj.material) {
+        originals.set(obj, obj.material);
+      }
+    });
+    if (isNight) {
+      const greenMat = new THREE.MeshStandardMaterial({
+        color: "#0A140C",
+        emissive: new THREE.Color("#3DFF8C"),
+        emissiveIntensity: 1.6,
+        roughness: 0.45,
+        metalness: 0,
+      });
+      for (const mesh of originals.keys()) mesh.material = greenMat;
+    } else {
+      for (const [mesh, mat] of originals) mesh.material = mat;
+    }
+    return () => {
+      for (const [mesh, mat] of originals) mesh.material = mat;
+    };
+  }, [cloned, isNight]);
 
   useFrame(() => {
     const body = playerRef.current;

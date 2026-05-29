@@ -24,7 +24,12 @@
     {
       "input": "businessman-game-ready/source/eric2.fbx",
       "output": "agent-businessman.glb",
-      "role": "Refined suit character — a normal-proportioned man in a tailored suit (3.1 MB source). Replaces the 1940s Spy whose oversized hands and cartoon proportions read as a Sherlock Holmes caricature. Static FBX (no baked animations) — Character.tsx animates a programmatic walk bob until we wire a Mixamo retarget pass."
+      "role": "Refined suit character (eric2.fbx, 3.1 MB) — staged for a future Mixamo retarget pass. Not currently rendered; T-pose without animations reads worse than the spy's animated walk. Spy ships as the visible character."
+    },
+    {
+      "input": "scooter/source/Scooter Fbx.fbx",
+      "output": "scooter.glb",
+      "role": "Rideable scooter — Vespa-style moped (4.2 MB source). Mounted via F when the agent walks up to it. Lighter physics than the R4 — half the mass, faster top-speed feel, no roof rack drag."
     }
   ],
   "built": {
@@ -32,31 +37,37 @@
       "bytes": 3988016,
       "sha256": "8832f10a2ea24b9509f096b97ccc60d87f2b72318d9b9830a8ce7bfe99dc5fa2",
       "sourceBytes": 12754550,
-      "builtAt": "2026-05-29T19:56:29.166Z"
+      "builtAt": "2026-05-29T20:19:45.654Z"
     },
     "maqam-echahid.glb": {
       "bytes": 91208,
       "sha256": "1a72de7048ed4ba0d56cfbd1e16cb2b73e6151b85167da106adb4823e3df95b8",
       "sourceBytes": 1189984,
-      "builtAt": "2026-05-29T19:56:29.166Z"
+      "builtAt": "2026-05-29T20:19:45.654Z"
     },
     "casbah-house.glb": {
       "bytes": 386296,
       "sha256": "0aa7a25396733268eddd8558030a1ec72112dd76c13e01e8348f286fe385a534",
       "sourceBytes": 556300,
-      "builtAt": "2026-05-29T19:56:29.166Z"
+      "builtAt": "2026-05-29T20:19:45.654Z"
     },
     "djamaa-djedid.glb": {
       "bytes": 41040,
       "sha256": "b3053de3acb7f460af661942a5a0081e58d07cf9d663a256921d68434877e4d5",
       "sourceBytes": 93484,
-      "builtAt": "2026-05-29T19:56:29.166Z"
+      "builtAt": "2026-05-29T20:19:45.654Z"
     },
     "agent-businessman.glb": {
       "bytes": 992508,
       "sha256": "2299107e703acbf6eece679977f4064efbaf0594c99112a4ba61c9893af5f7ef",
       "sourceBytes": 3165404,
-      "builtAt": "2026-05-29T19:56:29.166Z"
+      "builtAt": "2026-05-29T20:19:45.654Z"
+    },
+    "scooter.glb": {
+      "bytes": 1307252,
+      "sha256": "1c1cbb0bc1dc9f0992a39da3ce606bc83b57e0ef557ff4f301e09c4533d97676",
+      "sourceBytes": 4335884,
+      "builtAt": "2026-05-29T20:19:45.654Z"
     }
   }
 }
