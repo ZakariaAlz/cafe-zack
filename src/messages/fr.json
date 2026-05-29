@@ -114,6 +114,10 @@
     "ctaPrimary": "Réserver un appel",
     "ctaSecondary": "Fermer"
   },
+  "audio": {
+    "mute": "Couper la musique",
+    "unmute": "Activer la musique"
+  },
   "locale": {
     "switchTo": "Passer en {name}",
     "names": {

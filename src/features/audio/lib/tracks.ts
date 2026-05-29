@@ -1,0 +1,84 @@
+"use client";
+
+import { Howl } from "howler";
+import type { Zone } from "./audio-store";
+
+/**
+ * Ambient tracks — xDeviruchi "16-bit Fantasy & Adventure" pack (CC0-ish
+ * loopable variants). One Howl per zone, all looping, all mono-source so
+ * we can crossfade by adjusting volume without re-loading.
+ */
+const TRACK_FILES: Record<Zone, string> = {
+  street: "/audio/street.ogg",
+  cafe: "/audio/cafe.ogg",
+  night: "/audio/night.ogg",
+};
+
+const FADE_MS = 1200;
+
+type Pool = Record<Zone, Howl | null>;
+let pool: Pool | null = null;
+
+function ensurePool(): Pool {
+  if (pool) return pool;
+  const next: Pool = { street: null, cafe: null, night: null };
+  for (const zone of Object.keys(TRACK_FILES) as Zone[]) {
+    try {
+      next[zone] = new Howl({
+        src: [TRACK_FILES[zone]],
+        loop: true,
+        html5: false,
+        volume: 0, // starts silent; crossfade brings it up
+        preload: true,
+        // Quietly drop decode/network errors — missing audio shouldn't
+        // crash the scene or spam the console under headless CI.
+        onloaderror: () => {},
+        onplayerror: () => {},
+      });
+    } catch {
+      next[zone] = null;
+    }
+  }
+  pool = next;
+  return next;
+}
+
+/** Sets the master volume on every track. Mute multiplies it. */
+export function setMasterVolume(volume: number, muted: boolean): void {
+  if (!pool) return;
+  const v = muted ? 0 : volume;
+  for (const howl of Object.values(pool)) {
+    if (howl) howl.volume(howl.volume() > 0 ? v : 0);
+  }
+}
+
+/**
+ * Switches the dominant zone. The active zone fades up to master volume,
+ * everything else fades down to silence. Idempotent — safe to call every
+ * frame.
+ */
+export function activateZone(zone: Zone, masterVolume: number, muted: boolean): void {
+  const tracks = ensurePool();
+  const target = muted ? 0 : masterVolume;
+  for (const [name, howl] of Object.entries(tracks) as [Zone, Howl | null][]) {
+    if (!howl) continue;
+    if (!howl.playing()) howl.play();
+    const wantVolume = name === zone ? target : 0;
+    const currentVolume = howl.volume();
+    if (Math.abs(currentVolume - wantVolume) > 0.01) {
+      howl.fade(currentVolume, wantVolume, FADE_MS);
+    }
+  }
+}
+
+/** Stops every track immediately — used on unmount + tests. */
+export function stopAll(): void {
+  if (!pool) return;
+  for (const howl of Object.values(pool)) {
+    if (howl) {
+      howl.stop();
+      howl.unload();
+    }
+  }
+  pool = null;
+}
