@@ -14,7 +14,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "assets:decoders": "bun run scripts/copy-decoders.ts",
+    "assets:optimize": "bun run scripts/optimize-assets.ts",
+    "assets": "bun run assets:decoders && bun run assets:optimize"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -45,6 +48,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
+    "@gltf-transform/core": "^4.3.0",
+    "@gltf-transform/extensions": "^4.3.0",
+    "@gltf-transform/functions": "^4.3.0",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
@@ -55,8 +61,10 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^6.0.2",
+    "draco3dgltf": "^1.5.7",
     "happy-dom": "^20.9.0",
     "jsdom": "^29.1.1",
+    "meshoptimizer": "^1.1.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.7"
