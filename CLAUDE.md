@@ -20,11 +20,23 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 - **Bun** package manager + runner · **Biome** for lint+format · **Vitest** + **Playwright** for tests
 - Backend: Next.js Route Handlers using **only Web Fetch API** (edge-runtime-safe — runs on Cloudflare Pages, Vercel, or self-hosted without rewrites)
 
+## Asset pipeline
+
+- **Source-of-truth:** `public/models/manifest.json`. Each entry: `{ input, output, role }`. Inputs under `public/models/<dir>/` are gitignored (local raw dump). Only `public/models/optimized/` ships.
+- **Pipeline:** `scripts/optimize-assets.ts` → load → dedup → prune → weld → WebP textures (Sharp, normals stay lossless) → quantize → meshopt → draco → `.glb`.
+- **Non-GLTF inputs:** `.fbx` / `.blend` / `.obj` route through headless Blender first (staged GLTF in `_staging/`, cleaned after).
+- **Loader:** `useModel("name.glb")` from `src/features/scene/lib/useModel.ts` — wraps `useGLTF` with draco + meshopt + KTX2 pointing at same-origin `/decoders/`.
+- **Build-host setup (one time):** `sudo apt install -y blender && pip install --user --break-system-packages numpy` — Blender's gltf2 add-on uses system Python (`/usr/bin/python3.12`) and won't find numpy from anywhere else.
+- **Mixamo gotcha:** rigs author in centimetres; Blender preserves them. The GLB exports at 100× scene scale → set `scale={0.01}` in the R3F primitive.
+
 ## Local dev
 
 - `bun dev` → **http://localhost:3001** (port 3001, *not* 3000 — Metabase owns 3000 on this machine)
 - Green before every commit: `bun run typecheck` · `bun run check` (Biome lint+format, autofix) · `bun run build`
 - Tests: `bun test` (Vitest) · `bun run test:e2e` (Playwright)
+- **Strict lint before push:** `bunx biome ci .` — CI uses this strict form, not the autofix variant in `bun run check`. Multi-line arrays/objects the autofix would inline must be inlined manually first.
+- **Asset pipeline:** `bun run assets` vendors decoders + optimizes everything in `public/models/manifest.json` → `public/models/optimized/*.glb`. Inspect any output with `bun run scripts/inspect-asset.ts <file>.glb` (meshes, skins, anims, bone names).
+- **Headless visual smoke:** `bun run scripts/verify-agent.mjs` (template). Boots dev server + bundled chromium+swiftshader, screenshots to `/tmp/`, asserts 0 console errors. Catches scale/pivot regressions e2e doesn't.
 
 ## Agent tooling (MCP + skills)
 
@@ -123,6 +135,8 @@ When writing any public-facing copy for services / case studies / README / marke
 - Don't write to `localStorage` for anything sensitive (only achievements, preferences)
 - Don't add tracking that needs a cookie banner (use Cloudflare Web Analytics or Plausible)
 - Don't trademark-trip — "suited agent" not "Agent Smith"; no green-tinted lenses; no Hugo Weaving likeness
+- Don't ship a Mixamo-derived GLB at default scale — they're authored in cm and the GLB exports at 100×. Wrap the `<primitive>` in a group with `scale={0.01}`.
+- Don't trust `bun run check` as a CI proxy — it autofixes; CI runs `bunx biome ci .` which is strict. Always run the strict form before pushing.
 
 ## Current status
 
@@ -147,13 +161,18 @@ Live status lives in the plan file; this is the short version for session pickup
   - **Face-reveal cinematic** ✅ — arriving at Café Zack on foot reveals the agent's face (sunglasses lift off, eyes fade in, head warms) + camera push-in. `faceRevealed`/`revealFace` in `useWorld`; animated in `Character`.
   - **Contact backend** ✅ — `ContactPanel` POSTs to the edge `src/app/api/contact/route.ts` (Web Fetch only) → **Resend** HTTP API. Shared schema `lib/contact.ts`. Graceful no-mail mode for $0/local; **set `RESEND_API_KEY` + `CONTACT_TO` (opt. `RESEND_FROM`) to go live.** Route tests in node env.
   - **Articulated agent** ✅ — `Character` is now a limbed figure (arms/legs/torso/head) with a movement-driven walk cycle. (Interim — the literal RPM+Mixamo rig is asset-gated.)
+- ✅ **Phase 2 closer — three stacked PRs (CI green, awaiting merge in this order):**
+  - **#26 `feat/asset-pipeline`** — gltf-transform pipeline, draco/basis/meshopt vendored to `public/decoders/`, `useModel` loader, `manifest.json` source-of-truth, Blender step for .blend/.fbx.
+  - **#27 `feat/audio-positional`** — Howler zone crossfade (`street.ogg` / `cafe.ogg` / `night.ogg`, 8.5 MB), `pickZone(pos, tod)` pure, `AudioGate` first-gesture unlock, `MusicHUD` mute toggle. Independent of #26.
+  - **#28 `feat/agent-glb-swap`** — articulated cubes retired. Player is the **1940s Spy** GLB (3.8 MB, Mixamo-rigged, Walking/Idle anims, Eyewear mesh drives the face-reveal). Stacked on #26.
+
 ## Direction v2 — "alive open world + café second-game" (active)
 
 User reset the bar after the procedural spike read as lifeless. New mandate: a **living, stylized open-world Algiers** (Bruno-Simon energy, NOT photoreal — that needs assets/budget we don't have) + the café as a **separate 2D game** with a full 3D→2D transition. Take real risks.
 
 - **Asset strategy = HYBRID.** The user sources the HERO Algerian icons (real R4 / Algerian car, accurate **Maqam Echahid**, Notre-Dame, Casbah refs) from free Sketchfab/Poly Pizza and drops them in `public/models/` (I can't download auth-gated assets). I build the useGLTF/draco pipeline, fetch CC0 generics (traffic cars, props) where direct-URL, write rich procedural glue, and wire + animate everything.
 - **Café = Hollow-Knight-mood 2D** (user's pick; flagged as the hardest art bar — go atmospheric hand-drawn, iterate with the user). Full transition from the 3D world into a separate 2D layer.
-- **Roadmap (in order, each its own CI-gated PR):** (1) crisp controls (kill drift) + lit running agent ⏳ · (2) ambient traffic · (3) bay/beach + world life · (4) audio (Howler) · (5) useGLTF pipeline + RPM rig scaffold · (6) achievements · (7) the café 2D game. See the task list.
+- **Roadmap (each its own CI-gated PR):** (1) crisp controls + lit agent ✅ · (5) asset pipeline ✅ (#26) · agent GLB swap ✅ (#28) · (4) audio (Howler) ✅ (#27) · **next:** (3a) Algerian icons (Maqam .blend, Casbah/Djamaa Djedid .fbx) · (3b) bay/beach via KayKit Forest pack · (2) ambient traffic + crowd (`people_freepack` 11 chars + 30 anims, German Shepherd) · (5b) café interior (`KayKit_Restaurant_Bits` — 289 ready GLTFs) · (6) achievements · (7) the café 2D game w/ résumé serve loop.
 - **Known prior shortfalls to fix as we go:** R4/Maqam/Casbah look like boxes (→ real assets via hybrid + richer procedural); agent read as a shadow (→ lit charcoal suit + walk cycle); car drifted on turns (→ tyre-grip fix in Vehicle).
 - Still open from v1: contact go-live (set `RESEND_API_KEY` + `CONTACT_TO` on host); real character rig (asset-gated).
 - Notes: licensed `.glb` + `useGLTF` replaces any procedural model later; Radix/Dialog tests need the ResizeObserver/matchMedia polyfills in `tests/unit/setup.ts`; API route tests use `// @vitest-environment node`.
