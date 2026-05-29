@@ -25,11 +25,6 @@
       "input": "businessman-game-ready/source/eric2.fbx",
       "output": "agent-businessman.glb",
       "role": "Refined suit character (eric2.fbx, 3.1 MB) — staged for a future Mixamo retarget pass. Not currently rendered; T-pose without animations reads worse than the spy's animated walk. Spy ships as the visible character."
-    },
-    {
-      "input": "scooter/source/Scooter Fbx.fbx",
-      "output": "scooter.glb",
-      "role": "Rideable scooter — Vespa-style moped (4.2 MB source). Mounted via F when the agent walks up to it. Lighter physics than the R4 — half the mass, faster top-speed feel, no roof rack drag."
     }
   ],
   "built": {
