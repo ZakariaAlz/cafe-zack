@@ -14,6 +14,7 @@ import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
+import { DjamaaDjedid } from "./DjamaaDjedid";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { Ground } from "./Ground";
@@ -169,6 +170,7 @@ function SceneContent() {
           <NotreDameDAfrique playerRef={activeRef} />
           <MaqamEchahid playerRef={activeRef} />
           <CafeZack playerRef={activeRef} />
+          <DjamaaDjedid />
         </Physics>
       </Suspense>
 
