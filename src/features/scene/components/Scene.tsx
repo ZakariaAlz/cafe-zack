@@ -10,8 +10,10 @@ import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { CafeDog } from "./CafeDog";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
+import { CasbahMarket } from "./CasbahMarket";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
 import { DjamaaDjedid } from "./DjamaaDjedid";
@@ -147,6 +149,8 @@ function SceneContent() {
           <MaqamEchahid playerRef={activeRef} />
           <CafeZack playerRef={activeRef} />
           <DjamaaDjedid />
+          <CasbahMarket />
+          <CafeDog />
         </Physics>
       </Suspense>
 
