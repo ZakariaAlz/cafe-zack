@@ -1,73 +1,76 @@
 "use client";
 
+import { useAnimations } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CapsuleCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { type RefObject, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { useModel } from "../lib/useModel";
 
 const SPEED = 4.8;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
 
-// Walk/jog cycle: stride frequency + max limb swing (radians).
-const STRIDE = 11;
-const SWING = 0.62;
+// Mixamo characters export with their feet at the model origin (Y=0). The
+// capsule body's local origin sits 0.85 above the ground, so drop the visual
+// by that amount to line up.
+const FEET_OFFSET = -0.85;
 
-// Face-reveal: the suited head warms from near-black to skin as the sunglasses
-// come off (the Café Zack payoff).
-const HEAD_HIDDEN = new THREE.Color("#1B1B20");
-const HEAD_REVEALED = new THREE.Color("#C8A988");
+// The Mixamo source for this pack authors in centimetres; Blender's FBX
+// importer keeps those units, so the GLB exports at 100× scene scale. 0.01
+// brings the silhouette to a realistic ~1.7 m, matching the capsule.
+const MODEL_SCALE = 0.01;
 
-// Charcoal suit — lifted out of near-black so the agent reads as a figure in
-// dusk light instead of a flat shadow (a touch of sheen via metalness).
-const SUIT = "#2B2B34";
-const SUIT_DARK = "#202028";
+// Cross-fade time between Walking and Idle. Long enough not to look snappy.
+const ANIM_FADE = 0.2;
 
 /**
- * The suited agent — an articulated low-poly figure (torso, two legs, two
- * arms, head) with a movement-driven walk cycle: legs and arms swing in
- * opposition and the body bobs while walking, easing to a rest pose when
- * still. Velocity-driven capsule body (mirrors the Vehicle) so it collides
- * for free; the visual rotates to face the heading.
+ * Suited agent — Mixamo-rigged GLB (1940s Spy, 3.8 MB compressed) with
+ * Walking/Idle animations driven by the keyboard. The Eyewear mesh (the
+ * sunglasses) animates to scale 0 on the Café Zack face-reveal beat.
  *
- * Carries the Café Zack face-reveal (sunglasses off + eyes + warm head). A
- * real RPM + Mixamo rig can replace the visual group later (useGLTF) — the
- * body, controller, and reveal hooks stay.
+ * Velocity-driven capsule rigid body — same controller as before, only the
+ * visual changed. The model is cloned (SkeletonUtils) so re-mounts during
+ * HMR don't end up aliasing the cached scene from useGLTF.
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
+  const { scene, animations } = useModel("agent-spy.glb");
+  // Clone keeps each mounted instance independent — and survives HMR cleanly.
+  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
-  const headRef = useRef<THREE.Mesh>(null);
-  const glassesRef = useRef<THREE.Mesh>(null);
-  const eyesRef = useRef<THREE.Group>(null);
-  const lLegRef = useRef<THREE.Group>(null);
-  const rLegRef = useRef<THREE.Group>(null);
-  const lArmRef = useRef<THREE.Group>(null);
-  const rArmRef = useRef<THREE.Group>(null);
-  const reveal = useRef(0); // 0 = sunglasses on, 1 = face revealed
-  const phase = useRef(0); // walk-cycle phase
-  const swing = useRef(0); // eased 0→1 walk intensity
+  const eyewearRef = useRef<THREE.Object3D | null>(null);
+  const { actions } = useAnimations(animations, modelRef);
+
+  const reveal = useRef(0);
+  const movingRef = useRef(false);
   const mode = useWorld((s) => s.mode);
 
+  // Locate the Eyewear mesh once per cloned scene — it's our reveal hook.
+  useEffect(() => {
+    eyewearRef.current = cloned.getObjectByName("Eyewearmesh") ?? null;
+  }, [cloned]);
+
+  // Start in Idle once the actions are ready. Walking activates as soon as
+  // the player moves.
+  useEffect(() => {
+    const idle = actions.Idle;
+    if (idle) idle.reset().fadeIn(ANIM_FADE).play();
+    return () => {
+      idle?.fadeOut(ANIM_FADE);
+    };
+  }, [actions]);
+
   useFrame((_, delta) => {
-    // Face-reveal animation — ease toward the store flag (one-way in practice).
+    // Face-reveal — ease toward the store flag.
     const target = useWorld.getState().faceRevealed ? 1 : 0;
     reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
-    const r = reveal.current;
-    if (glassesRef.current) {
-      glassesRef.current.position.y = 0.71 + r * 0.34;
-      glassesRef.current.scale.setScalar(Math.max(0.0001, 1 - r));
-    }
-    if (eyesRef.current) eyesRef.current.scale.setScalar(r);
-    if (headRef.current) {
-      (headRef.current.material as THREE.MeshStandardMaterial).color.lerpColors(
-        HEAD_HIDDEN,
-        HEAD_REVEALED,
-        r,
-      );
-    }
+    const eyewear = eyewearRef.current;
+    if (eyewear) eyewear.scale.setScalar(Math.max(0.0001, 1 - reveal.current));
 
     const body = bodyRef.current;
     if (!body) return;
@@ -98,16 +101,20 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
       }
     }
 
-    // Walk cycle: advance phase while moving, ease the swing in/out, drive limbs.
-    swing.current += ((moving ? 1 : 0) - swing.current) * (1 - Math.exp(-delta * 10));
-    if (moving) phase.current += delta * STRIDE;
-    const s = Math.sin(phase.current) * SWING * swing.current;
-    if (lLegRef.current) lLegRef.current.rotation.x = s;
-    if (rLegRef.current) rLegRef.current.rotation.x = -s;
-    if (lArmRef.current) lArmRef.current.rotation.x = -s;
-    if (rArmRef.current) rArmRef.current.rotation.x = s;
-    if (visualRef.current) {
-      visualRef.current.position.y = Math.abs(Math.sin(phase.current)) * 0.05 * swing.current;
+    // Crossfade Walking ↔ Idle whenever the moving state flips.
+    if (moving !== movingRef.current) {
+      movingRef.current = moving;
+      const walk = actions.Walking;
+      const idle = actions.Idle;
+      if (walk && idle) {
+        if (moving) {
+          idle.fadeOut(ANIM_FADE);
+          walk.reset().fadeIn(ANIM_FADE).play();
+        } else {
+          walk.fadeOut(ANIM_FADE);
+          idle.reset().fadeIn(ANIM_FADE).play();
+        }
+      }
     }
   });
 
@@ -120,85 +127,11 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
       linearDamping={0.9}
       enabledRotations={[false, false, false]}
     >
-      {/* Capsule ~1.7 tall: total = 2*halfHeight + 2*radius = 1.1 + 0.6. Bottom
-          sits at local y=-0.85, so the figure's feet are modelled to meet it. */}
       <CapsuleCollider args={[0.55, 0.3]} />
       <group ref={visualRef} visible={mode === "onFoot"}>
-        {/* legs — pivot at the hips, swing fore/aft */}
-        {(
-          [
-            ["l", -0.12, lLegRef],
-            ["r", 0.12, rLegRef],
-          ] as const
-        ).map(([id, x, ref]) => (
-          <group key={id} ref={ref} position={[x, -0.15, 0]}>
-            <mesh position={[0, -0.35, 0]} castShadow>
-              <boxGeometry args={[0.17, 0.7, 0.22]} />
-              <meshStandardMaterial color={SUIT_DARK} roughness={0.5} metalness={0.05} />
-            </mesh>
-            {/* shoe */}
-            <mesh position={[0, -0.68, 0.04]} castShadow>
-              <boxGeometry args={[0.18, 0.1, 0.3]} />
-              <meshStandardMaterial color="#070708" roughness={0.4} metalness={0.1} />
-            </mesh>
-          </group>
-        ))}
-
-        {/* pelvis + jacket */}
-        <mesh position={[0, 0.04, 0]} castShadow>
-          <boxGeometry args={[0.44, 0.34, 0.28]} />
-          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
-        </mesh>
-        <mesh position={[0, 0.32, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.5, 0.3]} />
-          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
-        </mesh>
-        {/* shoulders */}
-        <mesh position={[0, 0.56, 0]} castShadow>
-          <boxGeometry args={[0.66, 0.16, 0.32]} />
-          <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
-        </mesh>
-
-        {/* arms — pivot at the shoulders, swing opposite the legs */}
-        {(
-          [
-            ["l", -0.35, lArmRef],
-            ["r", 0.35, rArmRef],
-          ] as const
-        ).map(([id, x, ref]) => (
-          <group key={id} ref={ref} position={[x, 0.54, 0]}>
-            <mesh position={[0, -0.26, 0]} castShadow>
-              <boxGeometry args={[0.13, 0.54, 0.15]} />
-              <meshStandardMaterial color={SUIT} roughness={0.45} metalness={0.08} />
-            </mesh>
-          </group>
-        ))}
-
-        {/* head — warms from near-black to skin on the reveal */}
-        <mesh ref={headRef} position={[0, 0.74, 0]} castShadow>
-          <sphereGeometry args={[0.16, 20, 16]} />
-          <meshStandardMaterial color="#1B1B20" roughness={0.5} />
-        </mesh>
-        {/* eyes — hidden (scale 0) until the reveal animates them in */}
-        <group ref={eyesRef} scale={0}>
-          {[-0.06, 0.06].map((ex) => (
-            <group key={ex} position={[ex, 0.76, 0.145]}>
-              <mesh>
-                <sphereGeometry args={[0.032, 12, 12]} />
-                <meshStandardMaterial color="#F4ECE0" roughness={0.4} />
-              </mesh>
-              <mesh position={[0, 0, 0.022]}>
-                <sphereGeometry args={[0.016, 10, 10]} />
-                <meshStandardMaterial color="#1A140E" roughness={0.5} />
-              </mesh>
-            </group>
-          ))}
+        <group ref={modelRef} position={[0, FEET_OFFSET, 0]} scale={MODEL_SCALE}>
+          <primitive object={cloned} />
         </group>
-        {/* sunglasses bar — lifts off + shrinks on the reveal (no green tint) */}
-        <mesh ref={glassesRef} position={[0, 0.71, 0.14]}>
-          <boxGeometry args={[0.26, 0.07, 0.05]} />
-          <meshStandardMaterial color="#000000" roughness={0.2} metalness={0.5} />
-        </mesh>
       </group>
     </RigidBody>
   );

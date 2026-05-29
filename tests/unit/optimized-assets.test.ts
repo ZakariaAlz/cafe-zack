@@ -18,11 +18,11 @@ async function makeIO() {
 }
 
 describe("optimized assets", () => {
-  it("agent-suit.glb exists, is under 12 MB, and parses with the same loader the browser uses", async () => {
-    const file = path.join(OPTIMIZED_DIR, "agent-suit.glb");
+  it("agent-spy.glb exists, is under 8 MB, and parses with the same loader the browser uses", async () => {
+    const file = path.join(OPTIMIZED_DIR, "agent-spy.glb");
     const { size } = await stat(file);
-    expect(size).toBeGreaterThan(1_000_000); // sanity: not an empty placeholder
-    expect(size).toBeLessThan(12 * 1024 * 1024); // shipping budget
+    expect(size).toBeGreaterThan(500_000); // sanity: not an empty placeholder
+    expect(size).toBeLessThan(8 * 1024 * 1024); // shipping budget
 
     const io = await makeIO();
     const doc = await io.read(file);
@@ -35,5 +35,15 @@ describe("optimized assets", () => {
       .listExtensionsUsed()
       .map((e) => e.extensionName);
     expect(usedExts).toContain("KHR_draco_mesh_compression");
+
+    // Walking + Idle are the two animations the Character component needs.
+    const animNames = root.listAnimations().map((a) => a.getName());
+    expect(animNames).toContain("Walking");
+    expect(animNames).toContain("Idle");
+
+    // The Eyewear mesh drives the face-reveal cinematic — its presence is a
+    // load-bearing contract for the Character component.
+    const meshNames = root.listMeshes().map((m) => m.getName());
+    expect(meshNames).toContain("Eyewearmesh");
   });
 });
