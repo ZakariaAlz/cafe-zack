@@ -5,6 +5,21 @@
       "input": "1940s-spy-animated/source/1940s Spy.blend",
       "output": "agent-spy.glb",
       "role": "Player character — Mixamo-rigged suited agent with Walking/Idle/Look Around animations. The 'Eyewear' mesh is the sunglasses; animated to scale=0 for the Café Zack face-reveal beat."
+    },
+    {
+      "input": "maqam-echahid/source/Maqam Echahid.blend",
+      "output": "maqam-echahid.glb",
+      "role": "Maqam Echahid landmark — south anchor of the open world, opens the Skills panel. Iconic concrete tri-fronds of the Martyrs' Memorial. Procedural plinth/colliders stay; the GLB is the visual."
+    },
+    {
+      "input": "casbah-of-algiers-house-lowpoly-3d-model/source/casbah-house-2.fbx",
+      "output": "casbah-house.glb",
+      "role": "Casbah landmark — west anchor, opens the Projects panel. Low-poly traditional Algiers house standing in for the Casbah quarter; high-poly variant kept in source for a later LOD pass."
+    },
+    {
+      "input": "djamaa-djedid-3d-model-of-an-iconic-mosque/source/djamaa_djedid.fbx",
+      "output": "djamaa-djedid.glb",
+      "role": "Djamaa el-Djedid mosque — decorative POI along the route between landmarks; not yet a panel anchor."
     }
   ],
   "built": {
@@ -12,7 +27,25 @@
       "bytes": 3988016,
       "sha256": "8832f10a2ea24b9509f096b97ccc60d87f2b72318d9b9830a8ce7bfe99dc5fa2",
       "sourceBytes": 12754550,
-      "builtAt": "2026-05-28T22:04:15.891Z"
+      "builtAt": "2026-05-29T12:41:07.077Z"
+    },
+    "maqam-echahid.glb": {
+      "bytes": 91208,
+      "sha256": "1a72de7048ed4ba0d56cfbd1e16cb2b73e6151b85167da106adb4823e3df95b8",
+      "sourceBytes": 1189984,
+      "builtAt": "2026-05-29T12:41:07.077Z"
+    },
+    "casbah-house.glb": {
+      "bytes": 386296,
+      "sha256": "0aa7a25396733268eddd8558030a1ec72112dd76c13e01e8348f286fe385a534",
+      "sourceBytes": 556300,
+      "builtAt": "2026-05-29T12:41:07.077Z"
+    },
+    "djamaa-djedid.glb": {
+      "bytes": 41040,
+      "sha256": "b3053de3acb7f460af661942a5a0081e58d07cf9d663a256921d68434877e4d5",
+      "sourceBytes": 93484,
+      "builtAt": "2026-05-29T12:41:07.077Z"
     }
   }
 }

@@ -2,33 +2,39 @@
 
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { type RefObject, useRef } from "react";
+import { type RefObject, useMemo, useRef } from "react";
+import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
+import { fitModelToHeight } from "../lib/fitModel";
+import { useModel } from "../lib/useModel";
 
 /**
- * Maqam Echahid (Martyrs' Memorial) — the Skills anchor. The real monument is
- * three towering concrete palm fronds curving up to meet at an apex, over an
- * eternal flame. Built procedurally as three tapered slabs leaning inward (at
- * 120°) to a shared cap, with an emissive flame + point light at the base.
+ * Maqam Echahid (Martyrs' Memorial) — the Skills anchor at the south terminus.
+ * Real monument: three towering concrete palm fronds meeting at an apex over
+ * an eternal flame. GLB sourced from a community Blender model; the procedural
+ * plinth, eternal flame, and point light stay (the GLB is bare geometry).
  *
- * Southern terminus of the main road, mirroring the Grande Poste to the north.
- * Proximity trigger opens the Skills panel on E (same pattern as the others).
+ * Proximity trigger flips world.nearby → "maqam" so the HUD prompts and E
+ * opens the Skills panel.
  */
 
 const POSITION: [number, number, number] = [0, 0, 22];
 const TRIGGER_RADIUS = 13;
+// Matches the procedural fronds' apex (~15 m) so silhouettes carry the same
+// presence on the skyline. Sits on top of the 1 m plinth (groundY = 1).
+const TARGET_HEIGHT = 15;
+const PLINTH_TOP = 1;
 
-const CONCRETE = "#B0ABA2";
 const CONCRETE_DARK = "#9A958C";
 const FLAME = "#FF7A1A";
 
-// Three fronds at 120°; each leans from a base point on the platform up to a
-// shared apex. atan2(baseR, rise) is the tilt from vertical about Z.
-const BASE_R = 3.5;
-const APEX_Y = 15;
-const TILT = Math.atan2(BASE_R, APEX_Y - 1);
-
 export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBody | null> }) {
+  const { scene } = useModel("maqam-echahid.glb");
+  const cloned = useMemo(() => {
+    const c = SkeletonUtils.clone(scene);
+    fitModelToHeight(c, TARGET_HEIGHT, PLINTH_TOP);
+    return c;
+  }, [scene]);
   const inside = useRef(false);
 
   useFrame(() => {
@@ -52,29 +58,13 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
         <CuboidCollider args={[6.5, 0.6, 6.5]} position={[0, 0.6, 0]} />
       </RigidBody>
 
-      {/* circular crypt base */}
       <mesh position={[0, 0.5, 0]} receiveShadow>
         <cylinderGeometry args={[6, 6.6, 1, 36]} />
         <meshStandardMaterial color={CONCRETE_DARK} roughness={0.9} />
       </mesh>
 
-      {/* three leaning fronds */}
-      {[0, 120, 240].map((deg) => (
-        <group key={deg} rotation={[0, (deg * Math.PI) / 180, 0]}>
-          <mesh position={[BASE_R / 2, (APEX_Y + 1) / 2, 0]} rotation={[0, 0, TILT]} castShadow>
-            <boxGeometry args={[2.2, APEX_Y + 0.6, 0.85]} />
-            <meshStandardMaterial color={CONCRETE} roughness={0.85} />
-          </mesh>
-        </group>
-      ))}
+      <primitive object={cloned} />
 
-      {/* apex cap where the fronds meet */}
-      <mesh position={[0, APEX_Y, 0]} castShadow>
-        <boxGeometry args={[1.8, 1.8, 1.8]} />
-        <meshStandardMaterial color={CONCRETE} roughness={0.85} />
-      </mesh>
-
-      {/* eternal flame */}
       <mesh position={[0, 1.8, 0]}>
         <coneGeometry args={[0.5, 1.5, 14]} />
         <meshStandardMaterial
