@@ -10,6 +10,7 @@ import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { Beach } from "./Beach";
 import { CafeDog } from "./CafeDog";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
@@ -155,6 +156,7 @@ function SceneContent() {
           <CasbahMarket />
           <CasbahKidsPlaying />
           <CafeDog />
+          <Beach />
         </Physics>
       </Suspense>
 
