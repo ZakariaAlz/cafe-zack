@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";
-import { type RefObject, useCallback, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useInteractKey } from "../hooks/useInteractKey";
@@ -42,6 +42,18 @@ export function DriveController({
   characterRef: RefObject<RapierRigidBody | null>;
 }) {
   const elapsed = useRef(0);
+
+  // Signal to e2e that the F/C window listeners are live. This component mounts
+  // inside the Canvas (potentially behind the agent-GLB Suspense boundary), so
+  // on a slow CI runner it can attach well after the canvas first paints — a
+  // DOM wait can't see that gap, but tests can poll this flag before pressing.
+  useEffect(() => {
+    const w = window as unknown as { __driveReady?: boolean };
+    w.__driveReady = true;
+    return () => {
+      w.__driveReady = false;
+    };
+  }, []);
 
   useFrame((_, delta) => {
     const { mode, nearTaxi, setNearTaxi, taxiCalling, setTaxiCalling } = useWorld.getState();

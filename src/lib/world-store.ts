@@ -51,3 +51,11 @@ export const useWorld = create<State>((set) => ({
   faceRevealed: false,
   revealFace: () => set({ faceRevealed: true }),
 }));
+
+// Expose the store to e2e tests (Playwright) so they can assert on synchronous
+// store truth instead of racing lagged DOM-prompt renders under software-GL.
+// Only UI state (mode/nearTaxi/nearLandmark) — nothing sensitive; the HUD
+// already mirrors all of it publicly.
+if (typeof window !== "undefined") {
+  (window as unknown as { __world?: typeof useWorld }).__world = useWorld;
+}
