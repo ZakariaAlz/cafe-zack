@@ -51,7 +51,11 @@ test("drive · step out · call · re-enter · open landmark panel", async ({ pa
   // the distance covered is frame-rate independent.
   await tapUntil(page, "f", stepOut);
   await page.keyboard.down("w");
-  await expect(enterPoste(page)).toBeVisible({ timeout: 25_000 });
+  // Real-time traversal: the car drives to the Poste at a fixed speed, so the
+  // wall-clock time to arrive scales with how slowly the software-GL CI runner
+  // steps physics. Generous budget (well under the 120s per-test cap) so a slow
+  // runner still arrives, while a genuine regression (car never moves) fails.
+  await expect(enterPoste(page)).toBeVisible({ timeout: 60_000 });
   await page.keyboard.up("w");
 
   // E → open the About panel.
