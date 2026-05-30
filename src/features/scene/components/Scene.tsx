@@ -13,7 +13,9 @@ import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { CafeDog } from "./CafeDog";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
+import { CasbahKidsPlaying } from "./CasbahKidsPlaying";
 import { CasbahMarket } from "./CasbahMarket";
+import { CasbahQuarter } from "./CasbahQuarter";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
 import { DjamaaDjedid } from "./DjamaaDjedid";
@@ -149,7 +151,9 @@ function SceneContent() {
           <MaqamEchahid playerRef={activeRef} />
           <CafeZack playerRef={activeRef} />
           <DjamaaDjedid />
+          <CasbahQuarter />
           <CasbahMarket />
+          <CasbahKidsPlaying />
           <CafeDog />
         </Physics>
       </Suspense>
