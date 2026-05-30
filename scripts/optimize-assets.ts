@@ -32,6 +32,12 @@ type Asset = {
   input: string;
   output: string;
   role: string;
+  /** Optional sidecar FBX containing animations to graft onto `input`'s
+   *  armature. Used when a character mesh ships rigged but unanimated and
+   *  the pack puts its Walk/Run/Idle clips in a separate file (e.g. the
+   *  people_freepack character bundle).
+   */
+  animations?: string;
 };
 
 type Manifest = {
@@ -93,11 +99,11 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-async function blenderExport(input: string, output: string): Promise<void> {
+async function blenderExport(input: string, output: string, anims?: string): Promise<void> {
   const pyScript = path.join(ROOT, "scripts", "blender_export.py");
-  const result = spawnSync("blender", ["-b", "--python", pyScript, "--", input, output], {
-    stdio: ["ignore", "pipe", "inherit"],
-  });
+  const args = ["-b", "--python", pyScript, "--", input, output];
+  if (anims) args.push(anims);
+  const result = spawnSync("blender", args, { stdio: ["ignore", "pipe", "inherit"] });
   if (result.error || result.status !== 0) {
     throw new Error(
       `Blender export failed (${input}). Make sure Blender is installed:  sudo apt install -y blender`,
@@ -105,7 +111,11 @@ async function blenderExport(input: string, output: string): Promise<void> {
   }
 }
 
-async function ensureGltfInput(rawInputPath: string, assetOutput: string): Promise<string> {
+async function ensureGltfInput(
+  rawInputPath: string,
+  assetOutput: string,
+  animsPath?: string,
+): Promise<string> {
   const ext = path.extname(rawInputPath).toLowerCase();
   if (ext === ".gltf" || ext === ".glb") return rawInputPath;
   if (!BLENDER_INPUTS.has(ext)) {
@@ -114,7 +124,7 @@ async function ensureGltfInput(rawInputPath: string, assetOutput: string): Promi
   await mkdir(STAGING_DIR, { recursive: true });
   const stem = path.basename(assetOutput, path.extname(assetOutput));
   const stagedGltf = path.join(STAGING_DIR, `${stem}.gltf`);
-  await blenderExport(rawInputPath, stagedGltf);
+  await blenderExport(rawInputPath, stagedGltf, animsPath);
   return stagedGltf;
 }
 
@@ -122,9 +132,10 @@ async function optimizeOne(
   asset: Asset,
 ): Promise<{ bytes: number; sha256: string; sourceBytes: number }> {
   const rawInputPath = path.join(MODELS_DIR, asset.input);
+  const animsPath = asset.animations ? path.join(MODELS_DIR, asset.animations) : undefined;
   const outputPath = path.join(OUT_DIR, asset.output);
   const sourceBytes = await sourceBundleSize(rawInputPath);
-  const inputPath = await ensureGltfInput(rawInputPath, asset.output);
+  const inputPath = await ensureGltfInput(rawInputPath, asset.output, animsPath);
 
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
     "draco3d.decoder": await draco3d.createDecoderModule(),

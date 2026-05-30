@@ -1,6 +1,7 @@
 "use client";
 
 import type { ThreeElements } from "@react-three/fiber";
+import { useTimeOfDay } from "../store/useTimeOfDay";
 
 /**
  * Inspecteur Tahar's Renault 4 (Phase 2) — the suited agent's ride, replacing
@@ -54,18 +55,23 @@ function Wheel({ position }: { position: [number, number, number] }) {
 }
 
 export function RenaultFour(props: ThreeElements["group"]) {
+  const timeOfDay = useTimeOfDay((s) => s.timeOfDay);
+  const isDark = timeOfDay === "night";
+  const isDusk = timeOfDay === "sunset" || timeOfDay === "sunrise";
+  const headBeam = isDark ? 2.6 : isDusk ? 1.2 : 0.6;
+  const tailGlow = isDark ? 2.2 : isDusk ? 1.0 : 0.5;
   return (
     <group {...props}>
       {/* lower hull — narrow body */}
       <mesh position={[0, -0.02, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.4, 0.5, 3.1]} />
-        <meshStandardMaterial color={BODY} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={BODY} roughness={0.45} metalness={0.25} />
       </mesh>
 
       {/* flat hood (front, -Z) */}
       <mesh position={[0, 0.27, -1.0]} castShadow>
         <boxGeometry args={[1.32, 0.14, 1.05]} />
-        <meshStandardMaterial color={BODY} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={BODY} roughness={0.45} metalness={0.25} />
       </mesh>
 
       {/* tall, airy greenhouse on slim pillars */}
@@ -83,7 +89,7 @@ export function RenaultFour(props: ThreeElements["group"]) {
       {/* long flat roof */}
       <mesh position={[0, 0.83, 0.12]} castShadow>
         <boxGeometry args={[1.32, 0.07, 2.0]} />
-        <meshStandardMaterial color={BODY} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={BODY} roughness={0.45} metalness={0.25} />
       </mesh>
 
       {/* slim pillars (A/B/C) so the glass reads as framed */}
@@ -97,14 +103,14 @@ export function RenaultFour(props: ThreeElements["group"]) {
       ].map(([x, z]) => (
         <mesh key={`pillar${x}:${z}`} position={[x, 0.52, z]} castShadow>
           <boxGeometry args={[0.06, 0.54, 0.07]} />
-          <meshStandardMaterial color={BODY} roughness={0.6} metalness={0.15} />
+          <meshStandardMaterial color={BODY} roughness={0.45} metalness={0.25} />
         </mesh>
       ))}
 
       {/* near-vertical rear hatch (4L is a hatch/wagon, no boot) */}
       <mesh position={[0, 0.16, 1.5]} castShadow>
         <boxGeometry args={[1.34, 0.36, 0.12]} />
-        <meshStandardMaterial color={BODY} roughness={0.6} metalness={0.15} />
+        <meshStandardMaterial color={BODY} roughness={0.45} metalness={0.25} />
       </mesh>
 
       {/* flat front grille + round headlights */}
@@ -113,15 +119,32 @@ export function RenaultFour(props: ThreeElements["group"]) {
         <meshStandardMaterial color={GRILLE} roughness={0.5} metalness={0.5} />
       </mesh>
       {[AXLE_X - 0.2, -(AXLE_X - 0.2)].map((x) => (
-        <mesh key={`hl${x}`} position={[x, 0.18, -1.57]} rotation={[PI_2, 0, 0]}>
-          <cylinderGeometry args={[0.13, 0.13, 0.06, 16]} />
-          <meshStandardMaterial
-            color="#FFF6D8"
-            emissive="#FFE9A8"
-            emissiveIntensity={0.6}
-            roughness={0.2}
-          />
-        </mesh>
+        <group key={`hl${x}`}>
+          <mesh position={[x, 0.18, -1.57]} rotation={[PI_2, 0, 0]}>
+            <cylinderGeometry args={[0.13, 0.13, 0.06, 16]} />
+            <meshStandardMaterial
+              color="#FFF6D8"
+              emissive="#FFE9A8"
+              emissiveIntensity={headBeam}
+              roughness={0.2}
+            />
+          </mesh>
+          {/* Spot beam — only emits real light at dusk/night so the front of
+              the car casts a working headlight on the road. */}
+          {(isDark || isDusk) && (
+            <spotLight
+              position={[x, 0.18, -1.65]}
+              target-position={[x, 0.1, -6]}
+              color="#FFEDB5"
+              intensity={isDark ? 14 : 6}
+              angle={Math.PI / 7}
+              penumbra={0.5}
+              distance={14}
+              decay={1.6}
+              castShadow={false}
+            />
+          )}
+        </group>
       ))}
 
       {/* thin metal bumpers */}
@@ -141,7 +164,7 @@ export function RenaultFour(props: ThreeElements["group"]) {
           <meshStandardMaterial
             color="#C81E1E"
             emissive="#FF2A2A"
-            emissiveIntensity={0.5}
+            emissiveIntensity={tailGlow}
             roughness={0.3}
           />
         </mesh>

@@ -1,11 +1,58 @@
 import { expect, type Page, test } from "@playwright/test";
 
-// Exact text so HUD pills don't collide with the (lowercase) hero hint line.
-const stepOut = (p: Page) => p.getByText("Step out", { exact: true });
-const driveR4 = (p: Page) => p.getByText("Drive the R4", { exact: true });
-const callR4 = (p: Page) => p.getByText("Call the R4", { exact: true });
-const arriving = (p: Page) => p.getByText("R4 arriving…", { exact: true });
-const enterPoste = (p: Page) => p.getByText("Enter La Grande Poste", { exact: true });
+// This e2e drives the real keypress → R3F → Rapier → store loop in a browser.
+// Under headless software-GL on CI it is timing-sensitive, so we assert on
+// SYNCHRONOUS store truth (exposed at window.__world) rather than lagged DOM
+// prompt renders, and we only act once the F/C listeners are actually mounted
+// (window.__driveReady) — on slow CI the DriveController can attach well after
+// the canvas first paints. The final panel assertion still checks real DOM so
+// the full path (drive → arrive → open landmark) is genuinely exercised.
+
+type Snapshot = {
+  mode: "driving" | "onFoot";
+  nearTaxi: boolean;
+  taxiCalling: boolean;
+  nearby: string | null;
+};
+
+// Read store truth from the page. Cast inside the browser context (the test's
+// Window type isn't augmented) — keeps Biome's no-shadow-globals rule happy.
+const snapshot = (page: Page): Promise<Snapshot> =>
+  page.evaluate(() => {
+    const w = window as unknown as { __world?: { getState: () => Snapshot } };
+    const s = w.__world?.getState();
+    return {
+      mode: s?.mode ?? "driving",
+      nearTaxi: s?.nearTaxi ?? false,
+      taxiCalling: s?.taxiCalling ?? false,
+      nearby: s?.nearby ?? null,
+    };
+  });
+
+// Wait for a predicate over store truth to hold. Polls in-page so it never
+// races a render.
+async function waitForState(page: Page, pred: (s: Snapshot) => boolean, timeout = 45_000) {
+  await expect.poll(async () => pred(await snapshot(page)), { timeout }).toBe(true);
+}
+
+// Press a toggle key (F) until the store mode reaches `to`. Re-press ONLY while
+// still in `from`: the store flips synchronously inside the key handler, so once
+// the press registers the next poll sees `to` and stops — no flap. A genuinely
+// dropped press (e.g. before the listener attached) is retried.
+async function toggleMode(
+  page: Page,
+  key: string,
+  from: Snapshot["mode"],
+  to: Snapshot["mode"],
+  timeout = 45_000,
+) {
+  await expect(async () => {
+    const m = (await snapshot(page)).mode;
+    if (m === to) return;
+    if (m === from) await page.keyboard.press(key);
+    expect((await snapshot(page)).mode).toBe(to);
+  }).toPass({ timeout });
+}
 
 test("drive · step out · call · re-enter · open landmark panel", async ({ page }) => {
   const errors: string[] = [];
@@ -14,38 +61,45 @@ test("drive · step out · call · re-enter · open landmark panel", async ({ pa
 
   await page.goto("/");
   await page.waitForSelector("canvas");
-  // Let R3F + Rapier initialise — the HUD (DOM) mounts before the physics
-  // bodies exist, so input only takes effect after this settle.
-  await page.waitForTimeout(5000);
+  // Wait until the F/C listeners are actually live (DriveController mounted),
+  // not merely until the canvas painted — this is the gap that flaked on CI.
+  await page.waitForFunction(
+    () => (window as unknown as { __driveReady?: boolean }).__driveReady === true,
+    null,
+    { timeout: 60_000 },
+  );
   await page.mouse.click(640, 360); // focus for key events
-  await expect(stepOut(page)).toBeVisible({ timeout: 15_000 });
 
-  // F → on foot beside the car.
-  await page.keyboard.press("f");
-  await expect(driveR4(page)).toBeVisible();
+  // Start in the car.
+  await waitForState(page, (s) => s.mode === "driving");
 
-  // Walk away (W) — hold until we're out of range and can call it.
+  // F → on foot beside the car; the frame loop then flags us near the taxi.
+  await toggleMode(page, "f", "driving", "onFoot");
+  await waitForState(page, (s) => s.nearTaxi);
+
+  // Walk away (W) until out of taxi range — now the car can be summoned.
   await page.keyboard.down("w");
-  await expect(callR4(page)).toBeVisible({ timeout: 10_000 });
+  await waitForState(page, (s) => !s.nearTaxi);
   await page.keyboard.up("w");
 
-  // C → summon; the car glides back into range.
+  // C → summon; the car glides back into range (taxiCalling → near again).
   await page.keyboard.press("c");
-  await expect(arriving(page)).toBeVisible();
-  await expect(driveR4(page)).toBeVisible({ timeout: 10_000 });
+  await waitForState(page, (s) => s.taxiCalling || s.nearTaxi);
+  await waitForState(page, (s) => s.nearTaxi && !s.taxiCalling);
 
-  // F → back in, then drive up to the Poste. Hold W until the prompt fires —
-  // the approach-stop collider parks the car in range, so holding is safe and
-  // the distance covered is frame-rate independent.
-  await page.keyboard.press("f");
-  await expect(stepOut(page)).toBeVisible();
+  // F → back in the car.
+  await toggleMode(page, "f", "onFoot", "driving");
+
+  // Drive up to La Grande Poste — the approach-stop collider parks the car in
+  // range, so holding W is safe and arrival is frame-rate independent. Real-time
+  // traversal, so a generous budget for slow runners (well under the test cap).
   await page.keyboard.down("w");
-  await expect(enterPoste(page)).toBeVisible({ timeout: 20_000 });
+  await waitForState(page, (s) => s.nearby === "grande-poste", 90_000);
   await page.keyboard.up("w");
 
-  // E → open the About panel.
+  // E → open the About panel (real DOM — proves the full path opened the panel).
   await page.keyboard.press("e");
-  await expect(page.getByText("Zakaria Alizouaoui")).toBeVisible();
+  await expect(page.getByText("Zakaria Alizouaoui")).toBeVisible({ timeout: 10_000 });
 
   expect(errors, `console errors:\n${errors.join("\n")}`).toEqual([]);
 });

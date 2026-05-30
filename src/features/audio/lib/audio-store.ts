@@ -24,7 +24,10 @@ type AudioState = {
 export const useAudio = create<AudioState>()(
   persist(
     (set) => ({
-      muted: false,
+      // Start muted — ambient music kicks in only when the visitor opts in via
+      // MusicHUD. Avoids the "broken record" jump-scare on first load while
+      // the chip-tune pack is still placeholder.
+      muted: true,
       volume: 0.6,
       unlocked: false,
       zone: "street",

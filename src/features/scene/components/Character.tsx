@@ -1,7 +1,7 @@
 "use client";
 
 import { useAnimations } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -11,8 +11,12 @@ import { useKeyboard } from "../hooks/useKeyboard";
 import { useModel } from "../lib/useModel";
 
 const SPEED = 4.8;
+const SPRINT_MULT = 1.8;
 const SPAWN: [number, number, number] = [4, 1.2, -2];
 const DIR = new THREE.Vector3();
+const CAM_FWD = new THREE.Vector3();
+const CAM_RIGHT = new THREE.Vector3();
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
 // Mixamo characters export with their feet at the model origin (Y=0). The
 // capsule body's local origin sits 0.85 above the ground, so drop the visual
@@ -26,20 +30,33 @@ const MODEL_SCALE = 0.01;
 
 // Cross-fade time between Walking and Idle. Long enough not to look snappy.
 const ANIM_FADE = 0.2;
+// How much faster the Walking clip plays when sprinting — visible "run" feel
+// without needing a separate Running animation in the source pack.
+const SPRINT_TIMESCALE = 1.7;
 
 /**
- * Suited agent — Mixamo-rigged GLB (1940s Spy, 3.8 MB compressed) with
- * Walking/Idle animations driven by the keyboard. The Eyewear mesh (the
- * sunglasses) animates to scale 0 on the Café Zack face-reveal beat.
+ * Suited agent — Mixamo-rigged 1940s Spy GLB (~3.8 MB compressed) with
+ * Walking/Idle animations driven by the keyboard. Movement is camera-relative
+ * on foot — the chase cam is world-fixed (user orbits with mouse drag), so we
+ * project camera-forward onto the XZ plane and build the desired world
+ * velocity from input. Without this, W would always move toward world -Z
+ * regardless of where the camera was pointed.
  *
- * Velocity-driven capsule rigid body — same controller as before, only the
- * visual changed. The model is cloned (SkeletonUtils) so re-mounts during
- * HMR don't end up aliasing the cached scene from useGLTF.
+ * Sprint (Shift) bumps speed by 1.8× AND plays the Walking clip at 1.7×
+ * timescale so it reads as a run, not a Mariocart "walk faster."
+ *
+ * The Eyewearmesh (sunglasses) animates to scale 0 on the Café Zack face-
+ * reveal beat — the rig's hook into the cinematic moment.
+ *
+ * The previous attempt to swap in `eric2.fbx` (a static suit FBX) shipped
+ * untextured material slots, a T-pose, and no walk cycle — the spy's
+ * Mixamo rig is the load-bearing visual identity for this scene until we
+ * graft Mixamo Walking/Idle onto a refined suit rig in a follow-up.
  */
 export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const keys = useKeyboard();
+  const camera = useThree((s) => s.camera);
   const { scene, animations } = useModel("agent-spy.glb");
-  // Clone keeps each mounted instance independent — and survives HMR cleanly.
   const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
@@ -50,7 +67,6 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
   const movingRef = useRef(false);
   const mode = useWorld((s) => s.mode);
 
-  // Locate the Eyewear mesh once per cloned scene — it's our reveal hook.
   useEffect(() => {
     eyewearRef.current = cloned.getObjectByName("Eyewearmesh") ?? null;
   }, [cloned]);
@@ -84,28 +100,33 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     if (!onFoot || panelOpen) {
       body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
     } else {
-      let x = 0;
-      let z = 0;
-      if (keys.current.forward) z -= 1;
-      if (keys.current.backward) z += 1;
-      if (keys.current.left) x -= 1;
-      if (keys.current.right) x += 1;
-      DIR.set(x, 0, z);
+      CAM_FWD.set(0, 0, -1).applyQuaternion(camera.quaternion);
+      CAM_FWD.y = 0;
+      if (CAM_FWD.lengthSq() < 1e-6) CAM_FWD.set(0, 0, -1);
+      CAM_FWD.normalize();
+      CAM_RIGHT.crossVectors(CAM_FWD, WORLD_UP).normalize();
+
+      const fwdInput = (keys.current.forward ? 1 : 0) - (keys.current.backward ? 1 : 0);
+      const rightInput = (keys.current.right ? 1 : 0) - (keys.current.left ? 1 : 0);
+
+      DIR.copy(CAM_FWD).multiplyScalar(fwdInput).addScaledVector(CAM_RIGHT, rightInput);
       if (DIR.lengthSq() > 0) {
         moving = true;
         DIR.normalize();
-        body.setLinvel({ x: DIR.x * SPEED, y: linvel.y, z: DIR.z * SPEED }, true);
+        const speed = keys.current.sprint ? SPEED * SPRINT_MULT : SPEED;
+        body.setLinvel({ x: DIR.x * speed, y: linvel.y, z: DIR.z * speed }, true);
         if (visualRef.current) visualRef.current.rotation.y = Math.atan2(DIR.x, DIR.z);
       } else {
         body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
       }
     }
 
-    // Crossfade Walking ↔ Idle whenever the moving state flips.
+    // Crossfade Walking ↔ Idle whenever the moving state flips. Walking
+    // plays faster when sprint is held so the agent reads as running.
+    const walk = actions.Walking;
+    const idle = actions.Idle;
     if (moving !== movingRef.current) {
       movingRef.current = moving;
-      const walk = actions.Walking;
-      const idle = actions.Idle;
       if (walk && idle) {
         if (moving) {
           idle.fadeOut(ANIM_FADE);
@@ -115,6 +136,9 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
           idle.reset().fadeIn(ANIM_FADE).play();
         }
       }
+    }
+    if (walk && moving) {
+      walk.timeScale = keys.current.sprint ? SPRINT_TIMESCALE : 1;
     }
   });
 

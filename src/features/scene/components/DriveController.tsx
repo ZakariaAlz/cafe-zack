@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";
-import { type RefObject, useCallback, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useInteractKey } from "../hooks/useInteractKey";
@@ -41,15 +41,25 @@ export function DriveController({
   taxiRef: RefObject<RapierRigidBody | null>;
   characterRef: RefObject<RapierRigidBody | null>;
 }) {
-  // Summon animation state (frame-local, not in the store).
   const elapsed = useRef(0);
+
+  // Signal to e2e that the F/C window listeners are live. This component mounts
+  // inside the Canvas (potentially behind the agent-GLB Suspense boundary), so
+  // on a slow CI runner it can attach well after the canvas first paints — a
+  // DOM wait can't see that gap, but tests can poll this flag before pressing.
+  useEffect(() => {
+    const w = window as unknown as { __driveReady?: boolean };
+    w.__driveReady = true;
+    return () => {
+      w.__driveReady = false;
+    };
+  }, []);
 
   useFrame((_, delta) => {
     const { mode, nearTaxi, setNearTaxi, taxiCalling, setTaxiCalling } = useWorld.getState();
     const taxi = taxiRef.current;
     const agent = characterRef.current;
 
-    // Glide a called taxi toward the agent's captured target.
     if (taxiCalling && taxi) {
       elapsed.current += delta;
       const p = elapsed.current / SUMMON_TIME;
@@ -72,14 +82,13 @@ export function DriveController({
     if (near !== nearTaxi) setNearTaxi(near);
   });
 
-  // F — enter / exit the taxi.
   const onToggle = useCallback(() => {
     const taxi = taxiRef.current;
     const agent = characterRef.current;
     if (!taxi || !agent) return;
 
     const { mode, setMode, taxiCalling } = useWorld.getState();
-    if (taxiCalling) return; // ignore mid-summon
+    if (taxiCalling) return;
     const t = taxi.translation();
 
     if (mode === "driving") {
@@ -93,7 +102,6 @@ export function DriveController({
     if (withinRadius(t, agent.translation(), ENTER_RADIUS)) setMode("driving");
   }, [taxiRef, characterRef]);
 
-  // C — call the taxi to you (only on foot, away from it).
   const onCall = useCallback(() => {
     const taxi = taxiRef.current;
     const agent = characterRef.current;
@@ -105,9 +113,8 @@ export function DriveController({
     const t = taxi.translation();
     const target = summonTarget(agent.translation(), SUMMON_OFFSET);
     START.set(t.x, t.y, t.z);
-    TARGET.set(target.x, t.y, target.z); // keep the taxi's resting height
+    TARGET.set(target.x, t.y, target.z);
 
-    // Face travel direction so the cab glides in nose-first.
     const yaw = faceYaw(START, TARGET);
     taxi.setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) }, true);
 
