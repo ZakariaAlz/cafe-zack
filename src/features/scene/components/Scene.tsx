@@ -22,9 +22,11 @@ import { ChaseCamera } from "./ChaseCamera";
 import { DjamaaDjedid } from "./DjamaaDjedid";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
+import { GrandePostePlaza } from "./GrandePostePlaza";
 import { Ground } from "./Ground";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
+import { PromenadeCrowd } from "./PromenadeCrowd";
 import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
@@ -157,6 +159,8 @@ function SceneContent() {
           <CasbahKidsPlaying />
           <CafeDog />
           <Beach />
+          <PromenadeCrowd />
+          <GrandePostePlaza />
         </Physics>
       </Suspense>
 
