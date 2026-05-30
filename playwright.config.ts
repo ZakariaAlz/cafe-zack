@@ -6,9 +6,6 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  // Software-GL (swiftshader) CI runners drive the R4 to a landmark in real
-  // time; under load the ~25s approach can blow Playwright's 30s default.
-  timeout: 90_000,
   reporter: process.env.CI ? "github" : "html",
   // Generous per-test timeout: the dev server compiles the scene on first hit
   // and the drive-through includes deliberate waits.
