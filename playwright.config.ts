@@ -30,9 +30,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "bun run dev",
+    // In CI, serve a production build instead of `next dev`: Turbopack's
+    // on-demand compile of the heavy 3D scene under swiftshader was slow and
+    // variable enough to flake the drive-through (canvas mount / prompts).
+    // A prebuilt `next start` mounts the canvas fast and consistently.
+    command: process.env.CI ? "bun run build && bun run start" : "bun run dev",
     url: "http://localhost:3001",
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    // Headroom for `next build` to finish before `next start` answers.
+    timeout: 180 * 1000,
   },
 });
