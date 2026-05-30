@@ -24,9 +24,11 @@ import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { GrandePostePlaza } from "./GrandePostePlaza";
 import { Ground } from "./Ground";
+import { LandmarkCrowds } from "./LandmarkCrowds";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { PromenadeCrowd } from "./PromenadeCrowd";
+import { ShoreRocks } from "./ShoreRocks";
 import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
 
@@ -161,6 +163,8 @@ function SceneContent() {
           <Beach />
           <PromenadeCrowd />
           <GrandePostePlaza />
+          <LandmarkCrowds />
+          <ShoreRocks />
         </Physics>
       </Suspense>
 

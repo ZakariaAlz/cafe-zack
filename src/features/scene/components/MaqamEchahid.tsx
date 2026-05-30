@@ -35,6 +35,7 @@ const TARGET_HEIGHT = 30;
 const PLAZA_RADIUS = 12;
 
 const GREEN = "#3DFF8C";
+const RED_STRIP = "#FF3344";
 const TOWER_GLOW = "#FF6A22";
 const STONE = "#C8C2B5";
 
@@ -57,10 +58,11 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
   const spotIntensity = isNight ? 10 : isDusk ? 3 : 0;
   const towerIntensity = isNight ? 4 : isDusk ? 2 : 1;
 
-  // Cache the original mesh materials so we can swap to a night-green
-  // emissive override and restore the original concrete look in the day.
-  // The reference photo shows the fronds GLOW from within (not just lit by
-  // external spots), so we drive that look by emissive material here.
+  // Green emissive override on the fronds at night — held in a ref so the
+  // useFrame loop can pulse the intensity without re-running the effect.
+  const greenMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const pulseClock = useRef(0);
+
   useEffect(() => {
     const originals = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
     cloned.traverse((obj) => {
@@ -71,13 +73,15 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
     if (isNight) {
       const greenMat = new THREE.MeshStandardMaterial({
         color: "#0A140C",
-        emissive: new THREE.Color("#3DFF8C"),
+        emissive: new THREE.Color(GREEN),
         emissiveIntensity: 1.6,
         roughness: 0.45,
         metalness: 0,
       });
+      greenMatRef.current = greenMat;
       for (const mesh of originals.keys()) mesh.material = greenMat;
     } else {
+      greenMatRef.current = null;
       for (const [mesh, mat] of originals) mesh.material = mat;
     }
     return () => {
@@ -85,7 +89,15 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
     };
   }, [cloned, isNight]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    pulseClock.current += delta;
+
+    // Slow breathing pulse on the green emissive at night (range 1.2 to 2.0).
+    const mat = greenMatRef.current;
+    if (mat) {
+      mat.emissiveIntensity = 1.6 + Math.sin(pulseClock.current * 1.2) * 0.4;
+    }
+
     const body = playerRef.current;
     if (!body) return;
     const dx = body.translation().x - POSITION[0];
@@ -148,6 +160,26 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
           </group>
         );
       })}
+
+      {/* Red emissive strips climbing the left + right fronds — at night these
+          read like the LED accent lines on the real monument's evening rig.
+          Two thin vertical bars at ±5 m on the X axis, leaning inward to
+          follow the fronds' curve toward the apex. */}
+      {[-5.2, 5.2].map((x) => (
+        <mesh
+          key={`strip${x}`}
+          position={[x, TARGET_HEIGHT * 0.42, 0]}
+          rotation={[0, 0, -Math.sign(x) * 0.18]}
+        >
+          <boxGeometry args={[0.12, TARGET_HEIGHT * 0.7, 0.12]} />
+          <meshStandardMaterial
+            color={RED_STRIP}
+            emissive={RED_STRIP}
+            emissiveIntensity={isNight ? 3.4 : isDusk ? 1.4 : 0.4}
+            roughness={0.3}
+          />
+        </mesh>
+      ))}
 
       {/* Central tower accent — the real monument has a red/amber halo at the
           top of the inner tower. Sits roughly where the three fronds meet. */}

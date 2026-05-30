@@ -29,7 +29,13 @@
     {
       "input": "rsg_dogspack_germanshepherd_fbx/Mesh/SK_GermanShepherd_01.fbx",
       "output": "dog-shepherd.glb",
-      "role": "German Shepherd — CC-licensed rigged mesh (no animations in this static export). Decorative companion placed near Café Zack; a future PR can graft the pack's Walk/Idle clips for a roaming dog."
+      "role": "German Shepherd with grafted Walk Loop animation. Walks a perimeter loop near Café Zack.",
+      "animations": "rsg_dogspack_germanshepherd_fbx/Animations/1 type_Walk Loop_v01.fbx"
+    },
+    {
+      "input": "KayKit_Forest_Nature_Pack_1.0_FREE/Assets/fbx/Rock_1_A_Color1.fbx",
+      "output": "shore-rock.glb",
+      "role": "Stylised rock (KayKit Forest) — scattered along the corniche shoreline."
     },
     {
       "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/fbx/crate.fbx",
@@ -81,85 +87,91 @@
       "bytes": 3988016,
       "sha256": "8832f10a2ea24b9509f096b97ccc60d87f2b72318d9b9830a8ce7bfe99dc5fa2",
       "sourceBytes": 12754550,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "maqam-echahid.glb": {
       "bytes": 91208,
       "sha256": "1a72de7048ed4ba0d56cfbd1e16cb2b73e6151b85167da106adb4823e3df95b8",
       "sourceBytes": 1189984,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "casbah-house.glb": {
       "bytes": 386296,
       "sha256": "0aa7a25396733268eddd8558030a1ec72112dd76c13e01e8348f286fe385a534",
       "sourceBytes": 556300,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "djamaa-djedid.glb": {
       "bytes": 41040,
       "sha256": "b3053de3acb7f460af661942a5a0081e58d07cf9d663a256921d68434877e4d5",
       "sourceBytes": 93484,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "agent-businessman.glb": {
       "bytes": 992508,
       "sha256": "2299107e703acbf6eece679977f4064efbaf0594c99112a4ba61c9893af5f7ef",
       "sourceBytes": 3165404,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "dog-shepherd.glb": {
-      "bytes": 63504,
-      "sha256": "749904fa33e9c43a3b653e3b285dc4edd45396235762e870dff9c08043501c12",
+      "bytes": 111576,
+      "sha256": "e082b9967bf5ed6d2c11d53f79ecbe63fd83bc4b127a95bcf695fabcb528d294",
       "sourceBytes": 225724,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
+    },
+    "shore-rock.glb": {
+      "bytes": 18080,
+      "sha256": "f997be77dd5c504a25c1b5d5754730dc75650f66996c1125e27c626ac415913e",
+      "sourceBytes": 19660,
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "market-crate.glb": {
       "bytes": 15672,
       "sha256": "880597882246be4ebdaccfa9d8a62474f367382d5c2b23ba1e80ba9d71d7f5b0",
       "sourceBytes": 22284,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "market-crate-tomatoes.glb": {
       "bytes": 62880,
       "sha256": "2b544fca506c84977c44f78b230027487cea1443d9395fff0b15a75d0b1a01bb",
       "sourceBytes": 86204,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "market-crate-potatoes.glb": {
       "bytes": 31136,
       "sha256": "6343dd8536af91322b50639e4b89f4e33bfe0e73187109db90df006994296b07",
       "sourceBytes": 48092,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "market-chair.glb": {
       "bytes": 22116,
       "sha256": "9dcec6aefd4ce005790d9bfd5fae3dabedb882d5b8484a87723f0a1821069e79",
       "sourceBytes": 29836,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "casbah-kid.glb": {
       "bytes": 134596,
       "sha256": "c225ddefb5886b016c8977d8aa7830d037de867566cbf298bdca77e859a9e956",
       "sourceBytes": 332992,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "npc-walker-m1.glb": {
       "bytes": 132460,
       "sha256": "b6b963198bb1698bf2bc44a83b2a9cd9db46b2c6d744033a3d16f47ee1cced76",
       "sourceBytes": 328544,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "npc-walker-f1.glb": {
       "bytes": 122464,
       "sha256": "f8be3a7eb58fc49450e44fff6a0597cc7eb8bc8e5ca1cb467f422b1c534136df",
       "sourceBytes": 317968,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "npc-walker-m2.glb": {
       "bytes": 130528,
       "sha256": "a9636acf740cf0d629bd7b1cec6e42f7c55c1010dbb5dc91afc815c3f051142f",
       "sourceBytes": 331920,
-      "builtAt": "2026-05-30T01:21:59.618Z"
+      "builtAt": "2026-05-30T01:35:34.973Z"
     }
   }
 }

@@ -45,16 +45,36 @@ export function Beach() {
   const waterEmissive = isNight ? 0.35 : isDusk ? 0.5 : 0.05;
   const waterColor = isNight ? "#0E2440" : isDusk ? "#A85B2A" : WATER_BLUE;
   const waterRef = useRef<THREE.Mesh>(null);
+  const waterClock = useRef(0);
+
+  // Cache the rest position of every vertex once the mesh mounts so we can
+  // displace them around it each frame for a low-cost wave effect.
+  const restY = useRef<Float32Array | null>(null);
 
   useFrame((_, delta) => {
+    waterClock.current += delta;
     const mesh = waterRef.current;
     if (!mesh) return;
     const mat = mesh.material as THREE.MeshStandardMaterial;
-    // Drift the normal-ish gradient via material color cycle — cheap motion
-    // hint without a custom shader. Replace with proper wave shader when the
-    // performance budget allows.
-    mat.emissiveIntensity = waterEmissive + Math.sin(performance.now() * 0.001) * 0.04;
-    void delta;
+    mat.emissiveIntensity = waterEmissive + Math.sin(waterClock.current * 0.6) * 0.04;
+
+    const geom = mesh.geometry;
+    const pos = geom.attributes.position as THREE.BufferAttribute;
+    if (!restY.current) {
+      restY.current = new Float32Array(pos.count);
+      for (let i = 0; i < pos.count; i++) restY.current[i] = pos.getZ(i);
+    }
+    const t = waterClock.current;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      // Two crossing sine waves — gives a believable shimmer that doesn't
+      // tile obviously. Amplitude < 0.15 m so the surf reads but doesn't tear.
+      const wave = Math.sin(x * 0.18 + t * 1.3) * 0.08 + Math.cos(y * 0.22 + t * 0.9) * 0.06;
+      pos.setZ(i, restY.current[i] + wave);
+    }
+    pos.needsUpdate = true;
+    geom.computeVertexNormals();
   });
 
   return (
@@ -77,9 +97,10 @@ export function Beach() {
         <meshStandardMaterial color={SAND} roughness={0.98} />
       </mesh>
 
-      {/* Mediterranean — wide plane that fog softens at the horizon. */}
+      {/* Mediterranean — segmented plane so the per-frame vertex wave reads
+          smooth, fog softens at the horizon. */}
       <mesh ref={waterRef} position={[0, 0.05, WATER_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[WATER_WIDTH, WATER_DEPTH, 1, 1]} />
+        <planeGeometry args={[WATER_WIDTH, WATER_DEPTH, 48, 24]} />
         <meshStandardMaterial
           color={waterColor}
           emissive={waterColor}

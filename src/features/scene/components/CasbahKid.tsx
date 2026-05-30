@@ -3,7 +3,7 @@
 import { useAnimations } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import * as THREE from "three";
+import type * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useModel } from "../lib/useModel";
 

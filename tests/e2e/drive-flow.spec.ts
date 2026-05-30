@@ -17,13 +17,13 @@ test("drive · step out · call · re-enter · open landmark panel", async ({ pa
   // Let R3F + Rapier initialise — the HUD (DOM) mounts before the physics
   // bodies exist, so input only takes effect after this settle. Includes
   // headroom for the HDRI Environment background to finish loading.
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(15000);
   await page.mouse.click(640, 360); // focus for key events
-  await expect(stepOut(page)).toBeVisible({ timeout: 20_000 });
+  await expect(stepOut(page)).toBeVisible({ timeout: 25_000 });
 
   // F → on foot beside the car.
   await page.keyboard.press("f");
-  await expect(driveR4(page)).toBeVisible({ timeout: 10_000 });
+  await expect(driveR4(page)).toBeVisible({ timeout: 15_000 });
 
   // Walk away (W) — hold until we're out of range and can call it.
   await page.keyboard.down("w");

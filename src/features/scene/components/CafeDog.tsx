@@ -1,35 +1,34 @@
 "use client";
 
+import { useAnimations } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
-import { fitModelToHeight } from "../lib/fitModel";
 import { useModel } from "../lib/useModel";
 
 /**
- * A static German Shepherd sitting beside Café Zack's door — an easter egg
- * pet for the cinematic moment. The mesh ships with no baked animations on
- * this static FBX export, so we approximate "alive" with a slow scale
- * oscillation on Y (breathing) and a tiny head-tilt sway.
+ * German Shepherd walking a small perimeter loop in front of Café Zack.
+ * Uses the rig-with-grafted-walk-anim pipeline (RSG dogs pack "Walk Loop"
+ * grafted on top of the static mesh) so the dog actually walks instead of
+ * standing still.
  *
- * Café Zack anchor lives at `[15, 0, 12]`; the dog sits a couple of metres
- * to its left so the player approaching from the road sees both the storefront
- * and the dog framing the entrance.
+ * Loop is a four-corner rectangle traced via a phase parameter — at speed
+ * 1.3 the cycle takes ~14 s, matching the cadence of a real dog patrolling
+ * a small area. Cloned scene + the longest animation (the walk loop)
+ * follows the same pattern as WalkingNPC.
  */
-const POSITION: [number, number, number] = [12, 0, 14];
+const ANCHOR: [number, number, number] = [12, 0, 14];
+const HALF = 2.5; // half-width of the perimeter square
 
 export function CafeDog() {
-  const { scene } = useModel("dog-shepherd.glb");
-  const cloned = useMemo(() => {
-    const c = SkeletonUtils.clone(scene);
-    fitModelToHeight(c, 0.85, 0);
-    return c;
-  }, [scene]);
+  const { scene, animations } = useModel("dog-shepherd.glb");
+  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const modelRef = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
+  const { actions } = useAnimations(animations, modelRef);
   const phase = useRef(0);
 
-  // Cast shadow + lighten reflectivity so the fur doesn't read as wet plastic.
   useEffect(() => {
     cloned.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
@@ -43,17 +42,55 @@ export function CafeDog() {
     });
   }, [cloned]);
 
+  useEffect(() => {
+    const longest = Object.values(actions)
+      .filter((a): a is THREE.AnimationAction => Boolean(a))
+      .sort((a, b) => b.getClip().duration - a.getClip().duration)[0];
+    if (longest) longest.reset().fadeIn(0.2).play();
+    return () => {
+      longest?.fadeOut(0.2);
+    };
+  }, [actions]);
+
   useFrame((_, delta) => {
-    phase.current += delta;
+    phase.current = (phase.current + delta * 0.18) % 1;
     const g = groupRef.current;
     if (!g) return;
-    g.scale.y = 1 + Math.sin(phase.current * 2) * 0.02;
-    g.rotation.y = -Math.PI / 4 + Math.sin(phase.current * 0.5) * 0.05;
+    // Trace the rectangle: 4 sides x 0.25 of phase each.
+    const p = phase.current * 4;
+    let dx = 0;
+    let dz = 0;
+    let yaw = 0;
+    if (p < 1) {
+      // Side A: SW → SE  (+x at -z)
+      dx = -HALF + p * (HALF * 2);
+      dz = -HALF;
+      yaw = Math.PI / 2;
+    } else if (p < 2) {
+      // Side B: SE → NE  (+z at +x)
+      dx = HALF;
+      dz = -HALF + (p - 1) * (HALF * 2);
+      yaw = 0;
+    } else if (p < 3) {
+      // Side C: NE → NW  (-x at +z)
+      dx = HALF - (p - 2) * (HALF * 2);
+      dz = HALF;
+      yaw = -Math.PI / 2;
+    } else {
+      // Side D: NW → SW  (-z at -x)
+      dx = -HALF;
+      dz = HALF - (p - 3) * (HALF * 2);
+      yaw = Math.PI;
+    }
+    g.position.set(ANCHOR[0] + dx, ANCHOR[1], ANCHOR[2] + dz);
+    g.rotation.y = yaw;
   });
 
   return (
-    <group ref={groupRef} position={POSITION}>
-      <primitive object={cloned} />
+    <group ref={groupRef}>
+      <group ref={modelRef} scale={0.014}>
+        <primitive object={cloned} />
+      </group>
     </group>
   );
 }
