@@ -1,11 +1,12 @@
 {
   "mcpServers": {
     "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_PAT}"
-      }
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "-c",
+        "exec docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN=\"$(/snap/bin/gh auth token)\" ghcr.io/github/github-mcp-server"
+      ]
     },
     "context7": {
       "type": "http",
