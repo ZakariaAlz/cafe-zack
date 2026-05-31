@@ -38,6 +38,31 @@
       "role": "Stylised rock (KayKit Forest) — scattered along the corniche shoreline."
     },
     {
+      "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/kitchencounter_straight_A_decorated.gltf",
+      "output": "cafe-counter.glb",
+      "role": "Café Zack interior — service counter (KayKit Restaurant Bits). The focal back-wall piece the order pad sits on."
+    },
+    {
+      "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/table_round_A.gltf",
+      "output": "cafe-table.glb",
+      "role": "Café Zack interior — round bistro table (KayKit). Instanced for the seating area; paired with the reused market-chair.glb."
+    },
+    {
+      "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/door_A.gltf",
+      "output": "cafe-door.glb",
+      "role": "Café Zack interior — the interior side of the entrance; proximity to it is the 'back to the street' exit trigger."
+    },
+    {
+      "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/menu.gltf",
+      "output": "cafe-menu.glb",
+      "role": "Café Zack interior — wall menu board behind the counter, dressing."
+    },
+    {
+      "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/stove_single_countertop.gltf",
+      "output": "cafe-espresso.glb",
+      "role": "Café Zack interior — espresso-machine stand-in on the counter (KayKit countertop stove), dressing."
+    },
+    {
       "input": "KayKit_Restaurant_Bits_1.0_FREE/Assets/fbx/crate.fbx",
       "output": "market-crate.glb",
       "role": "Empty wooden crate — stall base."

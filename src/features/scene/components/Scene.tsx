@@ -4,7 +4,7 @@ import { Environment, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
@@ -12,6 +12,7 @@ import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { Beach } from "./Beach";
 import { CafeDog } from "./CafeDog";
+import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
 import { CasbahKidsPlaying } from "./CasbahKidsPlaying";
@@ -115,8 +116,41 @@ function SceneContent() {
   const characterRef = useRef<RapierRigidBody>(null);
   const mode = useWorld((s) => s.mode);
   const faceRevealed = useWorld((s) => s.faceRevealed);
+  const venue = useWorld((s) => s.venue);
+  const streetSpawn = useWorld((s) => s.streetSpawn);
+  // Ambient audio follows whichever body is active on the street; inside the
+  // café the interior owns its own (silent) zone for now.
   const activeRef = mode === "driving" ? taxiRef : characterRef;
   useAmbientZone(activeRef);
+
+  // Expose the street player body to e2e so a test can place the agent next to a
+  // landmark and let real proximity fire — walking across the open world via
+  // held keys is camera-relative and nondeterministic under headless GL. Same
+  // spirit as window.__world; a harmless ref handle.
+  useEffect(() => {
+    (window as unknown as { __playerBody?: typeof characterRef }).__playerBody = characterRef;
+  }, []);
+
+  // Inside Café Zack: the whole street world unmounts and the interior subtree
+  // takes over (its own Physics, lights, agent, and camera). The black
+  // FadeOverlay (DOM, in PanelsRoot) hides the swap. EffectComposer stays
+  // mounted across both so bloom is continuous.
+  if (venue === "cafe-interior") {
+    return (
+      <>
+        <CafeInterior />
+        <EffectComposer>
+          <Bloom
+            intensity={0.4}
+            luminanceThreshold={0.55}
+            luminanceSmoothing={0.85}
+            kernelSize={1}
+            levels={3}
+          />
+        </EffectComposer>
+      </>
+    );
+  }
 
   return (
     <>
@@ -149,7 +183,7 @@ function SceneContent() {
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
-          <Character bodyRef={characterRef} />
+          <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
           <NotreDameDAfrique playerRef={activeRef} />

@@ -17,7 +17,9 @@
     "driveTaxi": "Drive the R4",
     "stepOut": "Step out",
     "callTaxi": "Call the R4",
-    "arriving": "R4 arriving…"
+    "arriving": "R4 arriving…",
+    "leaveNote": "Leave a note",
+    "backToStreet": "Back to the street"
   },
   "projects": {
     "eyebrow": "Projects · The Casbah",

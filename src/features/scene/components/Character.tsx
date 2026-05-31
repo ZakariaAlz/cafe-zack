@@ -53,7 +53,15 @@ const SPRINT_TIMESCALE = 1.7;
  * Mixamo rig is the load-bearing visual identity for this scene until we
  * graft Mixamo Walking/Idle onto a refined suit rig in a follow-up.
  */
-export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
+export function Character({
+  bodyRef,
+  spawn = SPAWN,
+}: {
+  bodyRef: RefObject<RapierRigidBody | null>;
+  /** Override the spawn position (the café interior spawns the agent at its
+   * door; the street can respawn outside the café after an exit). */
+  spawn?: [number, number, number];
+}) {
   const keys = useKeyboard();
   const camera = useThree((s) => s.camera);
   const { scene, animations } = useModel("agent-spy.glb");
@@ -91,9 +99,11 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
     const body = bodyRef.current;
     if (!body) return;
 
-    const { mode: m, activePanel } = useWorld.getState();
+    const { mode: m, activePanel, contactOpen } = useWorld.getState();
     const onFoot = m === "onFoot";
-    const panelOpen = activePanel !== null;
+    // Freeze movement while a 2D panel OR the in-world café form is open, so the
+    // agent doesn't wander off while the visitor is typing.
+    const panelOpen = activePanel !== null || contactOpen;
     const linvel = body.linvel();
 
     let moving = false;
@@ -145,7 +155,7 @@ export function Character({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | nu
   return (
     <RigidBody
       ref={bodyRef}
-      position={SPAWN}
+      position={spawn}
       colliders={false}
       mass={70}
       linearDamping={0.9}

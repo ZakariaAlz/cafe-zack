@@ -1,8 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
+import { FadeOverlay } from "@/features/scene/components/FadeOverlay";
 import { useWorld } from "@/lib/world-store";
 import { AboutPanel } from "./AboutPanel";
+import { ContactForm } from "./ContactForm";
 import { ContactPanel } from "./ContactPanel";
 import { DrivePrompt } from "./DrivePrompt";
 import { drivePromptState } from "./drivePrompt";
@@ -12,33 +15,109 @@ import { ServicesPanel } from "./ServicesPanel";
 import { SkillsPanel } from "./SkillsPanel";
 
 /**
+ * The in-world contact form, shown as a styled DOM overlay when the visitor
+ * opens the café order pad. Diegetic framing (a café "note" card) over the real
+ * ContactForm — kept in the DOM (not on the 3D mesh) so typing, focus, mobile
+ * keyboards, and a11y all work and the conversion path stays robust.
+ */
+function CafeNoteOverlay({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+      {/* Scrim is a real button so click-to-close is keyboard-accessible too. */}
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-charcoal/70 backdrop-blur-sm"
+      />
+      <div className="relative w-full max-w-md rounded-2xl border border-cream/15 bg-charcoal/95 p-6 shadow-2xl sm:p-7">
+        <p className="mb-4 font-mono text-ochre text-xs uppercase tracking-[0.2em]">
+          Café Zack · leave a note
+        </p>
+        <ContactForm onSent={() => undefined} />
+      </div>
+    </div>
+  );
+}
+
+/** A simple centred E-prompt pill (interior: leave a note / back to street). */
+function InteriorPrompt({ label }: { label: string }) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-16 z-20 flex justify-center">
+      <div className="flex items-center gap-3 rounded-full border border-cream/15 bg-charcoal/70 px-5 py-2.5 backdrop-blur-md">
+        <kbd className="rounded-md border border-cream/25 bg-cream/10 px-2 py-0.5 font-mono text-cream text-xs">
+          E
+        </kbd>
+        <span className="text-cream/90 text-sm">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+/**
  * 2D overlay root — mounts alongside the Canvas (not inside it). Reads the
- * shared world store: shows the proximity prompts (E = landmark, F = taxi),
- * opens the matching panel on E, and renders the panels themselves. ESC /
- * overlay click close via Radix.
+ * shared world store: shows proximity prompts, routes E/Esc, renders the panels,
+ * and hosts the café FadeOverlay.
+ *
+ * E semantics depend on `venue` (handler reads live state via getState, so it
+ * binds once and never goes stale):
+ *  - street, near Café Zack → enter the café (walk-in interior)
+ *  - street, near another landmark → open its panel
+ *  - interior, at the counter → open the in-world contact form
+ *  - interior, at the door → leave back to the street
+ * Esc closes the in-world contact form.
  */
 export function PanelsRoot() {
-  const nearby = useWorld((s) => s.nearby);
   const activePanel = useWorld((s) => s.activePanel);
   const open = useWorld((s) => s.open);
   const close = useWorld((s) => s.close);
+  const nearby = useWorld((s) => s.nearby);
   const mode = useWorld((s) => s.mode);
   const nearTaxi = useWorld((s) => s.nearTaxi);
   const taxiCalling = useWorld((s) => s.taxiCalling);
+  const venue = useWorld((s) => s.venue);
+  const nearOrderPad = useWorld((s) => s.nearOrderPad);
+  const nearExit = useWorld((s) => s.nearExit);
+  const contactOpen = useWorld((s) => s.contactOpen);
+  const closeContact = useWorld((s) => s.closeContact);
+  const t = useTranslations("prompt");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key === "e" || e.key === "E") && nearby && !activePanel) {
-        open(nearby);
+      const w = useWorld.getState();
+      if (e.key === "Escape") {
+        if (w.contactOpen) w.closeContact();
+        return;
       }
+      if (e.key !== "e" && e.key !== "E") return;
+
+      if (w.venue === "cafe-interior") {
+        if (w.contactOpen) return;
+        if (w.nearOrderPad) w.openContact();
+        else if (w.nearExit) w.exitCafe();
+        return;
+      }
+      // street: Café Zack enters the interior; other landmarks open a panel.
+      if (w.activePanel) return;
+      if (w.nearby === "cafe-zack") w.enterCafe();
+      else if (w.nearby) w.open(w.nearby);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [nearby, activePanel, open]);
+  }, []);
 
-  // Contextual taxi prompt (pure decision in drivePromptState); hidden while a
-  // panel is open. The centred landmark E-prompt is separate (bottom centre).
   const { keyHint, labelKey } = drivePromptState(mode, nearTaxi, taxiCalling);
+
+  if (venue === "cafe-interior") {
+    return (
+      <>
+        {!contactOpen && nearOrderPad && <InteriorPrompt label={t("leaveNote")} />}
+        {!contactOpen && nearExit && !nearOrderPad && <InteriorPrompt label={t("backToStreet")} />}
+        {contactOpen && <CafeNoteOverlay onClose={() => closeContact()} />}
+        <FadeOverlay />
+      </>
+    );
+  }
 
   return (
     <>
@@ -64,6 +143,7 @@ export function PanelsRoot() {
         open={activePanel === "cafe-zack"}
         onOpenChange={(next) => (next ? open("cafe-zack") : close())}
       />
+      <FadeOverlay />
     </>
   );
 }
