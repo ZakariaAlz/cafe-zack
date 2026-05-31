@@ -48,10 +48,11 @@ MCP servers live in `.mcp.json` (project scope, pre-approved in `.claude/setting
 - **chrome-devtools** (`bunx`) — FPS/perf profiling, console, network, DOM for the WebGL scene. Reach for it when diagnosing jank or load.
 - **playwright** (`bunx`) — drive a real browser to screenshot/verify UI (complements the `verify` + `run` skills).
 
-Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` + `github` MCP plugins.
+Official plugins installed (user scope): `frontend-design` (use for all 2D/UI), `superpowers`, `code-review`, `code-simplifier`, `claude-md-management`, `claude-code-setup`, `skill-creator`, `ralph-loop`, plus `figma` MCP plugin.
 
-- **Disabled:** the `context7` and `playwright` *plugins* — kept off to avoid duplicating our `.mcp.json` servers (re-enable with `claude plugin enable <id>` if ever wanted; npx works now).
-- **Needs your auth (browser OAuth via `/mcp`):** `figma` ✅ authenticated (mcp.figma.com — watch paid Dev-seat limits) · `github` ✗ HTTP 400 (api.githubcopilot.com needs Copilot; we use the `gh` CLI instead, so skip).
+- **GitHub MCP** ✅ — our own `github` HTTP server in `.mcp.json` → `https://api.githubcopilot.com/mcp/` with header `Authorization: Bearer ${GITHUB_PAT}`. The endpoint returns 200 with a plain PAT (no Copilot needed — earlier "HTTP 400" was just missing credentials). `GITHUB_PAT` is exported in `~/.bashrc` from `gh auth token`, so the secret stays in the keyring and `.mcp.json` only holds the env reference (safe to commit). The `github` *plugin* is disabled to avoid a duplicate unauthenticated server. The `gh` CLI still works alongside it. If `claude mcp list` shows github failing, check `echo $GITHUB_PAT` and restart Claude Code (`.mcp.json` + env load only at startup).
+- **Disabled:** the `context7`, `playwright`, and `github` *plugins* — kept off to avoid duplicating our `.mcp.json` servers (re-enable with `claude plugin enable <id>` if ever wanted; npx works now).
+- **Needs your auth (browser OAuth via `/mcp`):** `figma` ✅ authenticated (mcp.figma.com — watch paid Dev-seat limits).
 - **Live browser verification:** the `playwright`/`chrome-devtools` MCPs need *system* Chrome, which isn't installed (sudo). Instead, run a headless **`bun <script>.mjs`** using `import { chromium } from "playwright"` (bundled chromium-1223 is present) with args `--enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`. WebGL renders; assert on the **DOM HUD** (prompts/panel text) since that mirrors store state. This is how PR E was verified.
 
 ## Repo layout
