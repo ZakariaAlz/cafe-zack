@@ -4,7 +4,7 @@ import { Environment, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics, type RapierRigidBody } from "@react-three/rapier";
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
@@ -122,6 +122,14 @@ function SceneContent() {
   // café the interior owns its own (silent) zone for now.
   const activeRef = mode === "driving" ? taxiRef : characterRef;
   useAmbientZone(activeRef);
+
+  // Expose the street player body to e2e so a test can place the agent next to a
+  // landmark and let real proximity fire — walking across the open world via
+  // held keys is camera-relative and nondeterministic under headless GL. Same
+  // spirit as window.__world; a harmless ref handle.
+  useEffect(() => {
+    (window as unknown as { __playerBody?: typeof characterRef }).__playerBody = characterRef;
+  }, []);
 
   // Inside Café Zack: the whole street world unmounts and the interior subtree
   // takes over (its own Physics, lights, agent, and camera). The black

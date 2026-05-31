@@ -65,8 +65,7 @@ test("enter café · leave a note · walk back to the street", async ({ page }) 
   );
   await page.mouse.click(640, 360); // focus for key events
 
-  // Step out of the R4, then drive/walk is irrelevant — we just need to be on
-  // foot and reach Café Zack. Toggle F until on foot.
+  // Step out of the R4 onto foot (real F-toggle, store-truth gated).
   await pressUntil(
     page,
     "f",
@@ -74,11 +73,27 @@ test("enter café · leave a note · walk back to the street", async ({ page }) 
     (s) => s.mode === "driving",
   );
 
-  // Café Zack sits southeast; the R4 starts near it. Hold W until we're within
-  // the café trigger (nearby === "cafe-zack"). Generous budget for slow runners.
-  await page.keyboard.down("w");
-  await waitForState(page, (s) => s.nearby === "cafe-zack", 90_000);
-  await page.keyboard.up("w");
+  // Place the agent beside Café Zack ([15,0,12]) via the test body handle, then
+  // let the real proximity loop set nearby === "cafe-zack". Crossing the open
+  // world on foot via held keys is camera-relative and nondeterministic under
+  // headless GL — reaching a landmark on foot is already covered by drive-flow.
+  await page.waitForFunction(
+    () =>
+      Boolean(
+        (window as unknown as { __playerBody?: { current?: unknown } }).__playerBody?.current,
+      ),
+    null,
+    { timeout: 30_000 },
+  );
+  await page.evaluate(() => {
+    const ref = (
+      window as unknown as {
+        __playerBody?: { current?: { setTranslation: (v: object, w: boolean) => void } };
+      }
+    ).__playerBody;
+    ref?.current?.setTranslation({ x: 15, y: 1.2, z: 6 }, true);
+  });
+  await waitForState(page, (s) => s.nearby === "cafe-zack", 30_000);
 
   // E at the door → fade → interior. Re-press only while still on the street.
   await pressUntil(
@@ -109,12 +124,12 @@ test("enter café · leave a note · walk back to the street", async ({ page }) 
     (s) => s.contactOpen,
     (s) => s.nearOrderPad && !s.contactOpen,
   );
-  await expect(page.getByLabelText("Name")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByLabel("Name")).toBeVisible({ timeout: 10_000 });
 
   // Fill + submit the note → real thank-you DOM (conversion path).
-  await page.getByLabelText("Name").fill("Sam Tester");
-  await page.getByLabelText("Email").fill("sam@example.com");
-  await page.getByLabelText("What do you need?").fill("A data pipeline, please.");
+  await page.getByLabel("Name").fill("Sam Tester");
+  await page.getByLabel("Email").fill("sam@example.com");
+  await page.getByLabel("What do you need?").fill("A data pipeline, please.");
   await page.getByRole("button", { name: "Send it over" }).click();
   await expect(page.getByTestId("contact-sent")).toBeVisible({ timeout: 15_000 });
 
