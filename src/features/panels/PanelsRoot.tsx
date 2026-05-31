@@ -22,15 +22,15 @@ import { SkillsPanel } from "./SkillsPanel";
  */
 function CafeNoteOverlay({ onClose }: { onClose: () => void }) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: scrim click-to-close is a convenience; Esc also closes via the global handler.
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-charcoal/70 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-cream/15 bg-charcoal/95 p-6 shadow-2xl sm:p-7"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+      {/* Scrim is a real button so click-to-close is keyboard-accessible too. */}
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-charcoal/70 backdrop-blur-sm"
+      />
+      <div className="relative w-full max-w-md rounded-2xl border border-cream/15 bg-charcoal/95 p-6 shadow-2xl sm:p-7">
         <p className="mb-4 font-mono text-ochre text-xs uppercase tracking-[0.2em]">
           Café Zack · leave a note
         </p>
