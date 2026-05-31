@@ -36,6 +36,7 @@ export function CafeInterior() {
   const nearDoor = useRef(false);
 
   useEffect(() => {
+    // Signal interior readiness so e2e can gate on the interior being live.
     const w = window as unknown as { __cafeReady?: boolean };
     w.__cafeReady = true;
     return () => {

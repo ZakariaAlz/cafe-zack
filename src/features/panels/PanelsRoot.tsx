@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { FadeOverlay } from "@/features/scene/components/FadeOverlay";
 import { useWorld } from "@/lib/world-store";
 import { AboutPanel } from "./AboutPanel";
+import { ContactForm } from "./ContactForm";
 import { ContactPanel } from "./ContactPanel";
 import { DrivePrompt } from "./DrivePrompt";
 import { drivePromptState } from "./drivePrompt";
@@ -12,6 +13,32 @@ import { LandmarkPrompt } from "./LandmarkPrompt";
 import { ProjectsPanel } from "./ProjectsPanel";
 import { ServicesPanel } from "./ServicesPanel";
 import { SkillsPanel } from "./SkillsPanel";
+
+/**
+ * The in-world contact form, shown as a styled DOM overlay when the visitor
+ * opens the café order pad. Diegetic framing (a café "note" card) over the real
+ * ContactForm — kept in the DOM (not on the 3D mesh) so typing, focus, mobile
+ * keyboards, and a11y all work and the conversion path stays robust.
+ */
+function CafeNoteOverlay({ onClose }: { onClose: () => void }) {
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: scrim click-to-close is a convenience; Esc also closes via the global handler.
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-charcoal/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border border-cream/15 bg-charcoal/95 p-6 shadow-2xl sm:p-7"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="mb-4 font-mono text-ochre text-xs uppercase tracking-[0.2em]">
+          Café Zack · leave a note
+        </p>
+        <ContactForm onSent={() => undefined} />
+      </div>
+    </div>
+  );
+}
 
 /** A simple centred E-prompt pill (interior: leave a note / back to street). */
 function InteriorPrompt({ label }: { label: string }) {
@@ -52,6 +79,7 @@ export function PanelsRoot() {
   const nearOrderPad = useWorld((s) => s.nearOrderPad);
   const nearExit = useWorld((s) => s.nearExit);
   const contactOpen = useWorld((s) => s.contactOpen);
+  const closeContact = useWorld((s) => s.closeContact);
   const t = useTranslations("prompt");
 
   useEffect(() => {
@@ -85,6 +113,7 @@ export function PanelsRoot() {
       <>
         {!contactOpen && nearOrderPad && <InteriorPrompt label={t("leaveNote")} />}
         {!contactOpen && nearExit && !nearOrderPad && <InteriorPrompt label={t("backToStreet")} />}
+        {contactOpen && <CafeNoteOverlay onClose={() => closeContact()} />}
         <FadeOverlay />
       </>
     );
