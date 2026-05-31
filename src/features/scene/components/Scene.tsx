@@ -12,6 +12,7 @@ import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
 import { AlgiersSilhouette } from "./AlgiersSilhouette";
 import { Beach } from "./Beach";
 import { CafeDog } from "./CafeDog";
+import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
 import { CasbahKidsPlaying } from "./CasbahKidsPlaying";
@@ -115,8 +116,33 @@ function SceneContent() {
   const characterRef = useRef<RapierRigidBody>(null);
   const mode = useWorld((s) => s.mode);
   const faceRevealed = useWorld((s) => s.faceRevealed);
+  const venue = useWorld((s) => s.venue);
+  const streetSpawn = useWorld((s) => s.streetSpawn);
+  // Ambient audio follows whichever body is active on the street; inside the
+  // café the interior owns its own (silent) zone for now.
   const activeRef = mode === "driving" ? taxiRef : characterRef;
   useAmbientZone(activeRef);
+
+  // Inside Café Zack: the whole street world unmounts and the interior subtree
+  // takes over (its own Physics, lights, agent, and camera). The black
+  // FadeOverlay (DOM, in PanelsRoot) hides the swap. EffectComposer stays
+  // mounted across both so bloom is continuous.
+  if (venue === "cafe-interior") {
+    return (
+      <>
+        <CafeInterior />
+        <EffectComposer>
+          <Bloom
+            intensity={0.4}
+            luminanceThreshold={0.55}
+            luminanceSmoothing={0.85}
+            kernelSize={1}
+            levels={3}
+          />
+        </EffectComposer>
+      </>
+    );
+  }
 
   return (
     <>
@@ -149,7 +175,7 @@ function SceneContent() {
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
-          <Character bodyRef={characterRef} />
+          <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
           <NotreDameDAfrique playerRef={activeRef} />

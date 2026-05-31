@@ -34,6 +34,9 @@ type State = {
   faceRevealed: boolean;
   revealFace: () => void;
 
+  /** Where the street agent should (re)spawn — set when leaving the café so we
+   * drop back outside Café Zack, not at the default world spawn. */
+  streetSpawn: [number, number, number] | null;
   /** Street vs. inside Café Zack. The Scene swaps subtrees on this. */
   venue: Venue;
   /** Fade overlay phase during a venue crossing. */
@@ -82,6 +85,7 @@ export const useWorld = create<State>((set, get) => ({
   faceRevealed: false,
   revealFace: () => set({ faceRevealed: true }),
 
+  streetSpawn: null,
   venue: "street",
   transition: "idle",
   nearOrderPad: false,
@@ -99,15 +103,24 @@ export const useWorld = create<State>((set, get) => ({
     set({ transition: "fading-out" });
   },
   commitVenueSwap: () =>
-    set((s) => ({
-      venue: s.venue === "street" ? "cafe-interior" : "street",
-      // Leaving the interior clears any interior-only UI/proximity flags.
-      contactOpen: false,
-      nearOrderPad: false,
-      nearExit: false,
-      nearby: null,
-      transition: "fading-in",
-    })),
+    set((s) => {
+      const entering = s.venue === "street";
+      return {
+        venue: entering ? "cafe-interior" : "street",
+        // Always inside on foot (you can't drive the R4 indoors); on exit the
+        // agent stays a pedestrian standing outside the café.
+        mode: "onFoot" as DriveMode,
+        // Returning to the street: respawn just outside Café Zack (it sits at
+        // [15,0,12] facing -Z), not at the world's default spawn.
+        streetSpawn: entering ? s.streetSpawn : [15, 1.2, 5],
+        // Clear interior-only UI/proximity flags on either crossing.
+        contactOpen: false,
+        nearOrderPad: false,
+        nearExit: false,
+        nearby: null,
+        transition: "fading-in",
+      };
+    }),
   finishTransition: () => set({ transition: "idle" }),
   setNearOrderPad: (near) => set({ nearOrderPad: near }),
   setNearExit: (near) => set({ nearExit: near }),
