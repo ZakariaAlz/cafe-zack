@@ -41,8 +41,17 @@ await page.waitForTimeout(2000);
 await page.keyboard.up("w");
 await page.screenshot({ path: "/tmp/agent-spy-walking.png" });
 
+// Sprint (Shift+W) exercises the run gait branch — currently the graceful
+// fallback (Walking at 1.7×) until the Running clip is grafted into the GLB.
+await page.keyboard.down("Shift");
+await page.keyboard.down("w");
+await page.waitForTimeout(2000);
+await page.keyboard.up("w");
+await page.keyboard.up("Shift");
+await page.screenshot({ path: "/tmp/agent-spy-running.png" });
+
 console.log("\n=== verify-agent ===");
-console.log("Screenshots written to /tmp/agent-spy-{driving,onfoot,walking}.png");
+console.log("Screenshots written to /tmp/agent-spy-{driving,onfoot,walking,running}.png");
 console.log("Console errors:", errors.length);
 for (const e of errors) console.log("  •", e);
 
