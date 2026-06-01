@@ -82,3 +82,6 @@ blender/**/*.obj
 # Local-only docs / scratch
 docs/_scratch/
 *.local.md
+
+# Superpowers visual brainstorm (local-only)
+.superpowers/
