@@ -33,10 +33,10 @@ The site is the credibility + lead-generation engine for Zakaria's freelance pra
 
 - `bun dev` → **http://localhost:3001** (port 3001, *not* 3000 — Metabase owns 3000 on this machine)
 - Green before every commit: `bun run typecheck` · `bun run check` (Biome lint+format, autofix) · `bun run build`
-- Tests: `bun test` (Vitest) · `bun run test:e2e` (Playwright)
+- Tests: `bun run test` (Vitest — **not** `bun test`, which invokes Bun's native runner and fails component tests with `document is not defined`) · `bun run test:e2e` (Playwright)
 - **Strict lint before push:** `bunx biome ci .` — CI uses this strict form, not the autofix variant in `bun run check`. Multi-line arrays/objects the autofix would inline must be inlined manually first.
 - **Asset pipeline:** `bun run assets` vendors decoders + optimizes everything in `public/models/manifest.json` → `public/models/optimized/*.glb`. Inspect any output with `bun run scripts/inspect-asset.ts <file>.glb` (meshes, skins, anims, bone names).
-- **Headless visual smoke:** `bun run scripts/verify-agent.mjs` (template). Boots dev server + bundled chromium+swiftshader, screenshots to `/tmp/`, asserts 0 console errors. Catches scale/pivot regressions e2e doesn't.
+- **Headless visual smoke:** `bun run scripts/verify-agent.mjs` (template). **Expects `bun dev` already running on :3001** (it connects, does not boot it), drives bundled chromium+swiftshader, screenshots to `/tmp/`, asserts 0 console errors. Now also holds Shift+W to cover the run gait. Catches scale/pivot regressions e2e doesn't.
 
 ## Agent tooling (MCP + skills)
 
