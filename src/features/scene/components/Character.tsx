@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { type Gait, pickGait } from "../lib/gait";
 import { useModel } from "../lib/useModel";
 
 const SPEED = 4.8;
@@ -28,10 +29,12 @@ const FEET_OFFSET = -0.85;
 // brings the silhouette to a realistic ~1.7 m, matching the capsule.
 const MODEL_SCALE = 0.01;
 
-// Cross-fade time between Walking and Idle. Long enough not to look snappy.
+// Cross-fade time between gait clips (idle/walk/run). Long enough not to snap.
 const ANIM_FADE = 0.2;
-// How much faster the Walking clip plays when sprinting — visible "run" feel
-// without needing a separate Running animation in the source pack.
+// Fallback only: when the dedicated Running clip hasn't been grafted into the
+// GLB yet, the Walking clip is played this much faster so sprint still reads as
+// a run. Once `actions.Running` exists this multiplier is unused — the run is
+// its own clip at natural speed.
 const SPRINT_TIMESCALE = 1.7;
 
 /**
@@ -42,8 +45,11 @@ const SPRINT_TIMESCALE = 1.7;
  * velocity from input. Without this, W would always move toward world -Z
  * regardless of where the camera was pointed.
  *
- * Sprint (Shift) bumps speed by 1.8× AND plays the Walking clip at 1.7×
- * timescale so it reads as a run, not a Mariocart "walk faster."
+ * Locomotion is a three-state gait machine (idle/walk/run, see `pickGait`):
+ * standing → Idle, moving → Walking, moving + Shift → the dedicated Running
+ * clip at natural speed with movement bumped by SPRINT_MULT. Until the Running
+ * clip is grafted into the GLB, sprint gracefully falls back to the Walking
+ * clip at 1.7× timescale so the feature still works on a stale asset.
  *
  * The Eyewearmesh (sunglasses) animates to scale 0 on the Café Zack face-
  * reveal beat — the rig's hook into the cinematic moment.
@@ -72,7 +78,7 @@ export function Character({
   const { actions } = useAnimations(animations, modelRef);
 
   const reveal = useRef(0);
-  const movingRef = useRef(false);
+  const gaitRef = useRef<Gait>("idle");
   const mode = useWorld((s) => s.mode);
 
   useEffect(() => {
@@ -131,25 +137,30 @@ export function Character({
       }
     }
 
-    // Crossfade Walking ↔ Idle whenever the moving state flips. Walking
-    // plays faster when sprint is held so the agent reads as running.
+    // Three-state gait machine. `run` resolves to the dedicated Running clip
+    // when present, else falls back to Walking (sped up below) so the feature
+    // degrades gracefully on a GLB that predates the grafted Running animation.
     const walk = actions.Walking;
     const idle = actions.Idle;
-    if (moving !== movingRef.current) {
-      movingRef.current = moving;
-      if (walk && idle) {
-        if (moving) {
-          idle.fadeOut(ANIM_FADE);
-          walk.reset().fadeIn(ANIM_FADE).play();
-        } else {
-          walk.fadeOut(ANIM_FADE);
-          idle.reset().fadeIn(ANIM_FADE).play();
-        }
+    const run = actions.Running;
+    const hasRun = !!run;
+    const clipFor = (g: Gait) => (g === "idle" ? idle : g === "walk" ? walk : (run ?? walk));
+
+    const gait = pickGait(moving, keys.current.sprint);
+    if (gait !== gaitRef.current) {
+      const prev = clipFor(gaitRef.current);
+      const next = clipFor(gait);
+      gaitRef.current = gait;
+      // Skip the crossfade when run falls back to the same Walking clip already
+      // playing — only the timeScale changes in that case (handled below).
+      if (prev !== next) {
+        prev?.fadeOut(ANIM_FADE);
+        next?.reset().fadeIn(ANIM_FADE).play();
       }
     }
-    if (walk && moving) {
-      walk.timeScale = keys.current.sprint ? SPRINT_TIMESCALE : 1;
-    }
+    // The real Running clip plays at natural speed; the Walking clip only speeds
+    // up when it is standing in for a missing Running clip during a sprint.
+    if (walk) walk.timeScale = !hasRun && gait === "run" ? SPRINT_TIMESCALE : 1;
   });
 
   return (
