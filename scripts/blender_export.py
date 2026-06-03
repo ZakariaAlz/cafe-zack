@@ -103,9 +103,51 @@ def import_animations(path: str) -> None:
             pass
 
 
-def export_gltf(path: str) -> None:
+def select_actions(keep: list[str]) -> None:
+    """Keep only the named clips from a mesh that ships many embedded actions
+    (e.g. Business_Man's 26 takes), dropping the rest, rename the keepers to
+    clean tokens (so the GLB ships `idle`/`walk`/`run` not `Rig|Rig|idle`), and
+    stash each onto its own NLA track on the character armature.
+
+    The NLA stash is the load-bearing step: the glTF exporter's ACTIONS mode
+    only emits the armature's *active* action plus its NLA strips — loose
+    actions sitting in `bpy.data.actions` after an FBX import are ignored. So
+    without stashing we'd export a single clip. Matching is on the final
+    `|`-token, exact — 'idle' keeps 'Rig|Rig|idle' but NOT 'Rig|Rig|sitting_idle'.
+    """
+    arm = primary_armature()
+    if arm is None:
+        raise RuntimeError("No armature to bind selected actions to.")
+    if arm.animation_data is None:
+        arm.animation_data_create()
+
+    wanted = set(keep)
+    kept: dict[str, bpy.types.Action] = {}
+    for act in list(bpy.data.actions):
+        token = act.name.rsplit("|", 1)[-1]
+        if token in wanted and token not in kept:
+            act.use_fake_user = True
+            act.name = token
+            kept[token] = act
+        else:
+            bpy.data.actions.remove(act)
+    missing = wanted - set(kept)
+    if missing:
+        raise RuntimeError(f"Requested clips not found: {sorted(missing)}")
+
+    # Clear the active action and re-home every keeper as its own NLA strip so
+    # ACTIONS-mode export emits one glTF animation per clip.
+    arm.animation_data.action = None
+    for token, act in kept.items():
+        track = arm.animation_data.nla_tracks.new()
+        track.name = token
+        start = int(act.frame_range[0])
+        track.strips.new(token, start, act)
+
+
+def export_gltf(path: str, all_actions: bool = False) -> None:
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    bpy.ops.export_scene.gltf(
+    kwargs = dict(
         filepath=path,
         export_format="GLTF_SEPARATE",
         export_apply=True,
@@ -115,6 +157,11 @@ def export_gltf(path: str) -> None:
         export_skins=True,
         export_morph=False,
     )
+    if all_actions:
+        # Export every retained action as its own glTF animation instead of
+        # just the active one (the default that only suits single-clip rigs).
+        kwargs["export_animation_mode"] = "ACTIONS"
+    bpy.ops.export_scene.gltf(**kwargs)
 
 
 def main() -> None:
@@ -129,14 +176,22 @@ def main() -> None:
 
     input_path = args[0]
     output_path = args[1]
-    anims_path = args[2] if len(args) == 3 else None
+    # Third arg is either an animation sidecar FBX, or `keep=clipA,clipB,…` to
+    # prune+export a multi-action mesh's embedded clips. They're mutually
+    # exclusive (sidecar grafts one clip; keep selects among many).
+    third = args[2] if len(args) == 3 else None
+    anims_path = third if (third and not third.startswith("keep=")) else None
+    keep = third[len("keep=") :].split(",") if (third and third.startswith("keep=")) else None
 
     reset_scene()
     import_file(input_path)
     if anims_path:
         import_animations(anims_path)
-    export_gltf(output_path)
-    print(f"[blender_export] {input_path} -> {output_path}" + (f" + anims {anims_path}" if anims_path else ""))
+    if keep:
+        select_actions(keep)
+    export_gltf(output_path, all_actions=bool(keep))
+    suffix = f" + anims {anims_path}" if anims_path else (f" + keep {keep}" if keep else "")
+    print(f"[blender_export] {input_path} -> {output_path}{suffix}")
 
 
 main()

@@ -85,3 +85,6 @@ docs/_scratch/
 
 # Superpowers visual brainstorm (local-only)
 .superpowers/
+
+# Python bytecode from headless Blender/audit scripts
+__pycache__/

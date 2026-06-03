@@ -38,6 +38,12 @@ type Asset = {
    *  people_freepack character bundle).
    */
   animations?: string;
+  /** Optional clip allow-list for a mesh that ships MANY embedded actions
+   *  (e.g. Business_Man's 26 takes). Names match the final `|`-token exactly;
+   *  the Blender step keeps only these, renames them to the clean token, and
+   *  exports in ACTIONS mode. Mutually exclusive with `animations`.
+   */
+  keepActions?: string[];
 };
 
 type Manifest = {
@@ -99,10 +105,18 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-async function blenderExport(input: string, output: string, anims?: string): Promise<void> {
+async function blenderExport(
+  input: string,
+  output: string,
+  anims?: string,
+  keepActions?: string[],
+): Promise<void> {
   const pyScript = path.join(ROOT, "scripts", "blender_export.py");
   const args = ["-b", "--python", pyScript, "--", input, output];
+  // The Blender script's optional 3rd arg is either an anims sidecar path or a
+  // `keep=` clip allow-list — never both.
   if (anims) args.push(anims);
+  else if (keepActions?.length) args.push(`keep=${keepActions.join(",")}`);
   const result = spawnSync("blender", args, { stdio: ["ignore", "pipe", "inherit"] });
   if (result.error || result.status !== 0) {
     throw new Error(
@@ -115,6 +129,7 @@ async function ensureGltfInput(
   rawInputPath: string,
   assetOutput: string,
   animsPath?: string,
+  keepActions?: string[],
 ): Promise<string> {
   const ext = path.extname(rawInputPath).toLowerCase();
   if (ext === ".gltf" || ext === ".glb") return rawInputPath;
@@ -124,7 +139,7 @@ async function ensureGltfInput(
   await mkdir(STAGING_DIR, { recursive: true });
   const stem = path.basename(assetOutput, path.extname(assetOutput));
   const stagedGltf = path.join(STAGING_DIR, `${stem}.gltf`);
-  await blenderExport(rawInputPath, stagedGltf, animsPath);
+  await blenderExport(rawInputPath, stagedGltf, animsPath, keepActions);
   return stagedGltf;
 }
 
@@ -135,7 +150,7 @@ async function optimizeOne(
   const animsPath = asset.animations ? path.join(MODELS_DIR, asset.animations) : undefined;
   const outputPath = path.join(OUT_DIR, asset.output);
   const sourceBytes = await sourceBundleSize(rawInputPath);
-  const inputPath = await ensureGltfInput(rawInputPath, asset.output, animsPath);
+  const inputPath = await ensureGltfInput(rawInputPath, asset.output, animsPath, asset.keepActions);
 
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
     "draco3d.decoder": await draco3d.createDecoderModule(),
@@ -181,14 +196,26 @@ async function main(): Promise<void> {
   await mkdir(OUT_DIR, { recursive: true });
   await rm(STAGING_DIR, { recursive: true, force: true });
   const manifest = await loadManifest();
-  const built: Manifest["built"] = {};
+  // Optional CLI filter: `assets:optimize agent-businessman.glb [other.glb …]`
+  // builds only the named outputs and preserves the rest of `built` so a
+  // single-asset rebuild doesn't wipe the others' hashes. No args → build all.
+  const only = process.argv.slice(2);
+  const assets = only.length
+    ? manifest.assets.filter((a) => only.includes(a.output))
+    : manifest.assets;
+  if (only.length && assets.length !== only.length) {
+    const found = new Set(assets.map((a) => a.output));
+    const missing = only.filter((o) => !found.has(o));
+    throw new Error(`Unknown output(s): ${missing.join(", ")}`);
+  }
+  const built: Manifest["built"] = { ...(manifest.built ?? {}) };
   const builtAt = new Date().toISOString();
 
-  console.log(`Optimizing ${manifest.assets.length} asset(s) → ${path.relative(ROOT, OUT_DIR)}/\n`);
+  console.log(`Optimizing ${assets.length} asset(s) → ${path.relative(ROOT, OUT_DIR)}/\n`);
 
   let totalIn = 0;
   let totalOut = 0;
-  for (const asset of manifest.assets) {
+  for (const asset of assets) {
     const label = `  ${asset.output.padEnd(28)}`;
     try {
       const { bytes, sha256, sourceBytes } = await optimizeOne(asset);
