@@ -12,6 +12,14 @@ const ORBIT_QUAT = new THREE.Quaternion();
 const ORBIT_EULER = new THREE.Euler(0, 0, 0, "YXZ");
 const DESIRED = new THREE.Vector3();
 const TARGET = new THREE.Vector3();
+const RAW_LOOK = new THREE.Vector3();
+
+// Look-target smoothing rate. The physics translation only updates at the fixed
+// 60 Hz step; looking at it raw snaps the view in discrete steps on any frame
+// not aligned to that tick (high-refresh displays / frame drops), reading as a
+// tremor. Exponentially filtering the target at this rate (τ ≈ 0.08 s) absorbs
+// the step while staying responsive enough not to lag the subject.
+const LOOK_RATE = 12;
 
 // Pitch limits keep the camera from flipping under the ground or staring
 // straight down at the player's head.
@@ -59,6 +67,10 @@ export function ChaseCamera({
   const pitchOffset = useRef(0);
   const distance = useRef(1);
   const dragging = useRef(false);
+  // Persistent, exponentially-smoothed look target (see LOOK_RATE). Seeded on
+  // the first frame so the camera doesn't whip in from the origin.
+  const lookSmooth = useRef(new THREE.Vector3());
+  const lookSeeded = useRef(false);
 
   useEffect(() => {
     const el = gl.domElement;
@@ -139,7 +151,18 @@ export function ChaseCamera({
 
     const k = 1 - Math.exp(-delta * 4);
     camera.position.lerp(DESIRED, k);
-    camera.lookAt(TARGET.set(t.x, t.y + lookLift, t.z));
+
+    // Look at an exponentially-smoothed target rather than the raw 60 Hz
+    // physics translation, so the view doesn't snap step-by-step (the tremor)
+    // while the interpolated character/car mesh glides underneath.
+    RAW_LOOK.set(t.x, t.y + lookLift, t.z);
+    if (lookSeeded.current) {
+      lookSmooth.current.lerp(RAW_LOOK, 1 - Math.exp(-delta * LOOK_RATE));
+    } else {
+      lookSmooth.current.copy(RAW_LOOK);
+      lookSeeded.current = true;
+    }
+    camera.lookAt(lookSmooth.current);
   });
 
   return null;
