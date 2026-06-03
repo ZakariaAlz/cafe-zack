@@ -19,45 +19,40 @@ const CAM_FWD = new THREE.Vector3();
 const CAM_RIGHT = new THREE.Vector3();
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 
-// Mixamo characters export with their feet at the model origin (Y=0). The
-// capsule body's local origin sits 0.85 above the ground, so drop the visual
-// by that amount to line up.
+// Business_Man feet sit at the model origin (Y≈0). The capsule body's local
+// origin sits 0.85 above the ground, so drop the visual by that much to align.
 const FEET_OFFSET = -0.85;
 
-// The Mixamo source for this pack authors in centimetres; Blender's FBX
-// importer keeps those units, so the GLB exports at 100× scene scale. 0.01
-// brings the silhouette to a realistic ~1.7 m, matching the capsule.
-const MODEL_SCALE = 0.01;
+// Business_Man is authored in metres (~1.9 m tall), NOT centimetres like the
+// Mixamo packs — so no 100× correction. 0.9 brings him to ~1.7 m, matching the
+// capsule (half-height 0.55 + radius 0.3).
+const MODEL_SCALE = 0.9;
 
-// Cross-fade time between gait clips (idle/walk/run). Long enough not to snap.
+// Flip to Math.PI if the model's rest pose faces away from its travel
+// direction. Business_Man's rig faces +Z, which matches atan2(x, z).
+const FACING_OFFSET = 0;
+
+// Cross-fade time between animation clips. Long enough not to look snappy.
 const ANIM_FADE = 0.2;
-// Fallback only: when the dedicated Running clip hasn't been grafted into the
-// GLB yet, the Walking clip is played this much faster so sprint still reads as
-// a run. Once `actions.Running` exists this multiplier is unused — the run is
-// its own clip at natural speed.
-const SPRINT_TIMESCALE = 1.7;
+
+// Which clip is playing. Gait (idle/walk/run) plus the café-reveal "talk" beat.
+type AnimState = Gait | "talk";
 
 /**
- * Suited agent — Mixamo-rigged 1940s Spy GLB (~3.8 MB compressed) with
- * Walking/Idle animations driven by the keyboard. Movement is camera-relative
- * on foot — the chase cam is world-fixed (user orbits with mouse drag), so we
- * project camera-forward onto the XZ plane and build the desired world
- * velocity from input. Without this, W would always move toward world -Z
- * regardless of where the camera was pointed.
+ * Player character — low-poly Business_Man GLB (~364 KB) with native
+ * idle/walk/run clips plus `cycle_talking` for the café reveal. Movement is
+ * camera-relative on foot — the chase cam is world-fixed (user orbits with
+ * mouse drag), so we project camera-forward onto the XZ plane and build the
+ * desired world velocity from input. Without this, W would always move toward
+ * world −Z regardless of where the camera points.
  *
- * Locomotion is a three-state gait machine (idle/walk/run, see `pickGait`):
- * standing → Idle, moving → Walking, moving + Shift → the dedicated Running
- * clip at natural speed with movement bumped by SPRINT_MULT. Until the Running
- * clip is grafted into the GLB, sprint gracefully falls back to the Walking
- * clip at 1.7× timescale so the feature still works on a stale asset.
+ * Locomotion is a three-state gait machine (see `pickGait`): standing → idle,
+ * moving → walk, moving + Shift → the dedicated run clip at natural speed with
+ * movement bumped by SPRINT_MULT.
  *
- * The Eyewearmesh (sunglasses) animates to scale 0 on the Café Zack face-
- * reveal beat — the rig's hook into the cinematic moment.
- *
- * The previous attempt to swap in `eric2.fbx` (a static suit FBX) shipped
- * untextured material slots, a T-pose, and no walk cycle — the spy's
- * Mixamo rig is the load-bearing visual identity for this scene until we
- * graft Mixamo Walking/Idle onto a refined suit rig in a follow-up.
+ * Café reveal (reinvented from the spy's sunglasses-off beat, since this model
+ * has no eyewear): when `faceRevealed` flips, the agent turns to face the
+ * camera, swaps idle → `cycle_talking`, and a warm key light fades up on him.
  */
 export function Character({
   bodyRef,
@@ -70,25 +65,20 @@ export function Character({
 }) {
   const keys = useKeyboard();
   const camera = useThree((s) => s.camera);
-  const { scene, animations } = useModel("agent-spy.glb");
+  const { scene, animations } = useModel("agent-businessman.glb");
   const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
-  const eyewearRef = useRef<THREE.Object3D | null>(null);
+  const revealLightRef = useRef<THREE.PointLight>(null);
   const { actions } = useAnimations(animations, modelRef);
 
   const reveal = useRef(0);
-  const gaitRef = useRef<Gait>("idle");
+  const animRef = useRef<AnimState>("idle");
   const mode = useWorld((s) => s.mode);
 
+  // Start in idle once the actions are ready; walk/run take over on input.
   useEffect(() => {
-    eyewearRef.current = cloned.getObjectByName("Eyewearmesh") ?? null;
-  }, [cloned]);
-
-  // Start in Idle once the actions are ready. Walking activates as soon as
-  // the player moves.
-  useEffect(() => {
-    const idle = actions.Idle;
+    const idle = actions.idle;
     if (idle) idle.reset().fadeIn(ANIM_FADE).play();
     return () => {
       idle?.fadeOut(ANIM_FADE);
@@ -96,11 +86,11 @@ export function Character({
   }, [actions]);
 
   useFrame((_, delta) => {
-    // Face-reveal — ease toward the store flag.
+    // Café reveal — ease toward the store flag (0 → 1).
     const target = useWorld.getState().faceRevealed ? 1 : 0;
     reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
-    const eyewear = eyewearRef.current;
-    if (eyewear) eyewear.scale.setScalar(Math.max(0.0001, 1 - reveal.current));
+    const revealed = reveal.current > 0.5;
+    if (revealLightRef.current) revealLightRef.current.intensity = reveal.current * 8;
 
     const body = bodyRef.current;
     if (!body) return;
@@ -131,36 +121,45 @@ export function Character({
         DIR.normalize();
         const speed = keys.current.sprint ? SPEED * SPRINT_MULT : SPEED;
         body.setLinvel({ x: DIR.x * speed, y: linvel.y, z: DIR.z * speed }, true);
-        if (visualRef.current) visualRef.current.rotation.y = Math.atan2(DIR.x, DIR.z);
+        if (visualRef.current) {
+          visualRef.current.rotation.y = Math.atan2(DIR.x, DIR.z) + FACING_OFFSET;
+        }
       } else {
         body.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
       }
     }
 
-    // Three-state gait machine. `run` resolves to the dedicated Running clip
-    // when present, else falls back to Walking (sped up below) so the feature
-    // degrades gracefully on a GLB that predates the grafted Running animation.
-    const walk = actions.Walking;
-    const idle = actions.Idle;
-    const run = actions.Running;
-    const hasRun = !!run;
-    const clipFor = (g: Gait) => (g === "idle" ? idle : g === "walk" ? walk : (run ?? walk));
+    // While revealed and standing still, turn to face the camera for the beat.
+    if (revealed && !moving && visualRef.current) {
+      const p = body.translation();
+      const targetYaw = Math.atan2(camera.position.x - p.x, camera.position.z - p.z);
+      const cur = visualRef.current.rotation.y;
+      let d = targetYaw - cur;
+      d = Math.atan2(Math.sin(d), Math.cos(d)); // shortest path, wrapped to [−π, π]
+      visualRef.current.rotation.y = cur + d * (1 - Math.exp(-delta * 4));
+    }
 
+    // Animation state: gait normally, but swap idle → talk during the reveal.
     const gait = pickGait(moving, keys.current.sprint);
-    if (gait !== gaitRef.current) {
-      const prev = clipFor(gaitRef.current);
-      const next = clipFor(gait);
-      gaitRef.current = gait;
-      // Skip the crossfade when run falls back to the same Walking clip already
-      // playing — only the timeScale changes in that case (handled below).
-      if (prev !== next) {
+    const next: AnimState = revealed && !moving ? "talk" : gait;
+    const clipFor = (s: AnimState) =>
+      s === "talk"
+        ? (actions.cycle_talking ?? actions.idle)
+        : s === "idle"
+          ? actions.idle
+          : s === "walk"
+            ? actions.walk
+            : (actions.run ?? actions.walk);
+
+    if (next !== animRef.current) {
+      const prev = clipFor(animRef.current);
+      const nextClip = clipFor(next);
+      animRef.current = next;
+      if (prev !== nextClip) {
         prev?.fadeOut(ANIM_FADE);
-        next?.reset().fadeIn(ANIM_FADE).play();
+        nextClip?.reset().fadeIn(ANIM_FADE).play();
       }
     }
-    // The real Running clip plays at natural speed; the Walking clip only speeds
-    // up when it is standing in for a missing Running clip during a sprint.
-    if (walk) walk.timeScale = !hasRun && gait === "run" ? SPRINT_TIMESCALE : 1;
   });
 
   return (
@@ -177,6 +176,14 @@ export function Character({
         <group ref={modelRef} position={[0, FEET_OFFSET, 0]} scale={MODEL_SCALE}>
           <primitive object={cloned} />
         </group>
+        {/* Warm key light that fades up on the café reveal — front-lit face. */}
+        <pointLight
+          ref={revealLightRef}
+          position={[0, 1, 0.7]}
+          intensity={0}
+          distance={4}
+          color="#ffd9a0"
+        />
       </group>
     </RigidBody>
   );
