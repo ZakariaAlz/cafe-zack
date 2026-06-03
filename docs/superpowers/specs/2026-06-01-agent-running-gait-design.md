@@ -1,8 +1,22 @@
 # Chantier A — Vraie course pour l'agent (3D)
 
 **Date:** 2026-06-01
-**Statut:** Design validé, prêt pour le plan
+**Statut:** Livré, mais **pivoté** — voir l'addendum 2026-06-03 en bas.
 **Scope:** Locomotion de l'agent spy uniquement. Premier des trois chantiers (A → B → C ; B = agent en 2D, C = café jeu 2D).
+
+> **Addendum 2026-06-03 — pivot héros.** Après audit de tous les personnages
+> téléchargés, l'utilisateur a choisi de **remplacer le spy par `Business_Man`**
+> (low-poly costume, 26 clips embarqués dont un vrai `run` natif → plus besoin
+> de greffer un clip Mixamo). Le face-reveal lunettes est **retiré** et
+> **réinventé** : à l'arrivée café, l'agent se tourne face caméra, passe en
+> `cycle_talking`, et une key-light chaude monte sur lui. La machine `pickGait`
+> (idle/walk/run) construite ici est réutilisée telle quelle. Le repli
+> Walking×1.7 n'a plus lieu d'être (run natif) et a été retiré. Travaux livrés
+> sur la branche `feat/businessman-hero` : pipeline (filtre CLI mono-asset,
+> `keepActions` + stash NLA, `textures`), `agent-businessman.glb` (946 KB,
+> albedo, idle/walk/run/cycle_talking), réécriture de `Character.tsx`. **Reste
+> à vérifier manuellement** : le beat de reveal au café (le smoke headless ne
+> navigue pas jusqu'au café).
 
 ## Problème
 
