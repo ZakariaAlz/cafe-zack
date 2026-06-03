@@ -30,7 +30,8 @@
         "walk",
         "run",
         "cycle_talking"
-      ]
+      ],
+      "textures": "business-man-low-polygon-game-character/textures"
     },
     {
       "input": "rsg_dogspack_germanshepherd_fbx/Mesh/SK_GermanShepherd_01.fbx",
@@ -139,10 +140,10 @@
       "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "agent-businessman.glb": {
-      "bytes": 372772,
-      "sha256": "509e8344ee584b2b0196c86ecd8393414e6c00ecc567d37f2a2f14d5de952b65",
+      "bytes": 969388,
+      "sha256": "7bb8a2984a42dc0d5329493f3cd179e9baf6e74952b7df18fe043d908bf08778",
       "sourceBytes": 9818972,
-      "builtAt": "2026-06-03T00:58:13.020Z"
+      "builtAt": "2026-06-03T01:09:40.005Z"
     },
     "dog-shepherd.glb": {
       "bytes": 111576,

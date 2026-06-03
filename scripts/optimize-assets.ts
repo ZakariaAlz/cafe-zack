@@ -44,6 +44,10 @@ type Asset = {
    *  exports in ACTIONS mode. Mutually exclusive with `animations`.
    */
   keepActions?: string[];
+  /** Optional texture folder (relative to MODELS_DIR) whose albedo/normal maps
+   *  are re-attached to textureless materials — FBX imports often fail to
+   *  resolve a model's sibling texture folder headless (Tex: 0). */
+  textures?: string;
 };
 
 type Manifest = {
@@ -110,13 +114,15 @@ async function blenderExport(
   output: string,
   anims?: string,
   keepActions?: string[],
+  textures?: string,
 ): Promise<void> {
   const pyScript = path.join(ROOT, "scripts", "blender_export.py");
   const args = ["-b", "--python", pyScript, "--", input, output];
-  // The Blender script's optional 3rd arg is either an anims sidecar path or a
-  // `keep=` clip allow-list — never both.
+  // The Blender script accepts order-independent optional flags after I/O: a
+  // bare anims sidecar path, `keep=` clip allow-list, and `tex=` texture dir.
   if (anims) args.push(anims);
   else if (keepActions?.length) args.push(`keep=${keepActions.join(",")}`);
+  if (textures) args.push(`tex=${path.join(MODELS_DIR, textures)}`);
   const result = spawnSync("blender", args, { stdio: ["ignore", "pipe", "inherit"] });
   if (result.error || result.status !== 0) {
     throw new Error(
@@ -130,6 +136,7 @@ async function ensureGltfInput(
   assetOutput: string,
   animsPath?: string,
   keepActions?: string[],
+  textures?: string,
 ): Promise<string> {
   const ext = path.extname(rawInputPath).toLowerCase();
   if (ext === ".gltf" || ext === ".glb") return rawInputPath;
@@ -139,7 +146,7 @@ async function ensureGltfInput(
   await mkdir(STAGING_DIR, { recursive: true });
   const stem = path.basename(assetOutput, path.extname(assetOutput));
   const stagedGltf = path.join(STAGING_DIR, `${stem}.gltf`);
-  await blenderExport(rawInputPath, stagedGltf, animsPath, keepActions);
+  await blenderExport(rawInputPath, stagedGltf, animsPath, keepActions, textures);
   return stagedGltf;
 }
 
@@ -150,7 +157,13 @@ async function optimizeOne(
   const animsPath = asset.animations ? path.join(MODELS_DIR, asset.animations) : undefined;
   const outputPath = path.join(OUT_DIR, asset.output);
   const sourceBytes = await sourceBundleSize(rawInputPath);
-  const inputPath = await ensureGltfInput(rawInputPath, asset.output, animsPath, asset.keepActions);
+  const inputPath = await ensureGltfInput(
+    rawInputPath,
+    asset.output,
+    animsPath,
+    asset.keepActions,
+    asset.textures,
+  );
 
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
     "draco3d.decoder": await draco3d.createDecoderModule(),
