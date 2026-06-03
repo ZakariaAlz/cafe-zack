@@ -22,9 +22,16 @@
       "role": "Djamaa el-Djedid mosque — decorative POI along the route between landmarks; not yet a panel anchor."
     },
     {
-      "input": "businessman-game-ready/source/eric2.fbx",
+      "input": "business-man-low-polygon-game-character/source/Business_Man.fbx",
       "output": "agent-businessman.glb",
-      "role": "Refined suit character (eric2.fbx, 3.1 MB) — staged for a future Mixamo retarget pass. Not currently rendered; T-pose without animations reads worse than the spy's animated walk. Spy ships as the visible character."
+      "role": "Player character — low-poly suit man (Business_Man.fbx) with 26 built-in clips. We ship idle/walk/run for locomotion plus cycle_talking for the reinvented café reveal. Replaces the 1940s spy as the visible hero; the spy's Eyewear face-reveal is retired in favour of a light + turn-to-camera + talking beat. eric2.fbx (static T-pose) is dropped.",
+      "keepActions": [
+        "idle",
+        "walk",
+        "run",
+        "cycle_talking"
+      ],
+      "textures": "business-man-low-polygon-game-character/textures"
     },
     {
       "input": "rsg_dogspack_germanshepherd_fbx/Mesh/SK_GermanShepherd_01.fbx",
@@ -133,10 +140,10 @@
       "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "agent-businessman.glb": {
-      "bytes": 992508,
-      "sha256": "2299107e703acbf6eece679977f4064efbaf0594c99112a4ba61c9893af5f7ef",
-      "sourceBytes": 3165404,
-      "builtAt": "2026-05-30T01:35:34.973Z"
+      "bytes": 969388,
+      "sha256": "7bb8a2984a42dc0d5329493f3cd179e9baf6e74952b7df18fe043d908bf08778",
+      "sourceBytes": 9818972,
+      "builtAt": "2026-06-03T01:09:40.005Z"
     },
     "dog-shepherd.glb": {
       "bytes": 111576,

@@ -82,3 +82,9 @@ blender/**/*.obj
 # Local-only docs / scratch
 docs/_scratch/
 *.local.md
+
+# Superpowers visual brainstorm (local-only)
+.superpowers/
+
+# Python bytecode from headless Blender/audit scripts
+__pycache__/
