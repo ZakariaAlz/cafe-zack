@@ -46,10 +46,23 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
     if (!body) return;
 
     // Controls are locked while a landmark panel is open, or while the player
-    // is out on foot — the car coasts to a stop (cap + damping below still run)
-    // instead of driving off-screen or responding to walk input.
-    const { mode, activePanel } = useWorld.getState();
+    // is out on foot.
+    const { mode, activePanel, taxiCalling } = useWorld.getState();
     const locked = mode !== "driving" || activePanel !== null;
+
+    // Parked: pin the car so the on-foot agent can't shove it around (walking
+    // into a dynamic body would otherwise push it — "ça n'a aucun sens"). Zero
+    // its planar + angular velocity every frame so a nudge is cancelled at
+    // once. The summon glide (DriveController, while taxiCalling) owns the body
+    // via setTranslation, so we stand down then.
+    if (locked) {
+      if (!taxiCalling) {
+        const lv = body.linvel();
+        body.setLinvel({ x: 0, y: lv.y, z: 0 }, true);
+        body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      }
+      return;
+    }
 
     const rot = body.rotation();
     QUAT.set(rot.x, rot.y, rot.z, rot.w);

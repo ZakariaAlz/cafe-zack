@@ -1,5 +1,6 @@
 "use client";
 
+import { RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { fitModelToHeight } from "../lib/fitModel";
@@ -37,7 +38,10 @@ function Stone({ stone }: { stone: Stone }) {
 
   return (
     <group position={stone.position} rotation={[0, stone.rotationY, 0]}>
-      <primitive object={cloned} />
+      {/* Solid boulder — auto cuboid so you bump it instead of phasing through. */}
+      <RigidBody type="fixed" colliders="cuboid">
+        <primitive object={cloned} />
+      </RigidBody>
     </group>
   );
 }

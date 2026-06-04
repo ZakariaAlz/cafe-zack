@@ -1,5 +1,6 @@
 "use client";
 
+import { RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { fitModelToHeight } from "../lib/fitModel";
@@ -50,7 +51,11 @@ function CasbahHouseClone({ layout }: { layout: HouseLayout }) {
 
   return (
     <group position={layout.position} rotation={[0, layout.rotationY, 0]}>
-      <primitive object={cloned} />
+      {/* Auto cuboid collider fit to the house mesh so it's a solid block —
+          the player can't walk or drive through the quarter. */}
+      <RigidBody type="fixed" colliders="cuboid">
+        <primitive object={cloned} />
+      </RigidBody>
     </group>
   );
 }
