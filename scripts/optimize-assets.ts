@@ -48,6 +48,10 @@ type Asset = {
    *  are re-attached to textureless materials — FBX imports often fail to
    *  resolve a model's sibling texture folder headless (Tex: 0). */
   textures?: string;
+  /** Optional per-asset texture-resolution cap (px). Defaults to 2048. Detailed
+   *  Sketchfab cars ship 2K+ maps that balloon the GLB; drop them to 1024/512
+   *  for web weight, especially for ambient props seen at a distance. */
+  maxTexture?: number;
 };
 
 type Manifest = {
@@ -175,23 +179,25 @@ async function optimizeOne(
 
   const doc = await io.read(inputPath);
 
+  const texCap = asset.maxTexture ?? 2048;
   await doc.transform(
     dedup(),
     prune(),
     weld(),
     // Color/MR textures → WebP at quality 80; normal maps stay lossless to
-    // preserve surface detail. Cap at 2048 to keep the player rig under a few MB.
+    // preserve surface detail. Cap (default 2048) is per-asset overridable so
+    // heavy car maps can drop to 1024/512 for web weight.
     textureCompress({
       encoder: sharp,
       targetFormat: "webp",
-      resize: [2048, 2048],
+      resize: [texCap, texCap],
       quality: 80,
       slots: /^(?!normalTexture).*$/,
     }),
     textureCompress({
       encoder: sharp,
       targetFormat: "png",
-      resize: [2048, 2048],
+      resize: [texCap, texCap],
       slots: /^normalTexture$/,
     }),
     quantize({ pattern: /^(POSITION|NORMAL|TEXCOORD|COLOR)/ }),

@@ -11,7 +11,13 @@ path, out = rest[0], rest[1]
 albedo = rest[2] if len(rest) > 2 else None
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.fbx(filepath=path)
+_ext = path.lower().rsplit(".", 1)[-1]
+if _ext in ("gltf", "glb"):
+    bpy.ops.import_scene.gltf(filepath=path)
+elif _ext == "obj":
+    bpy.ops.wm.obj_import(filepath=path)
+else:
+    bpy.ops.import_scene.fbx(filepath=path)
 
 # Force a simple lit material with the albedo so the suit/face read, since FBX
 # texture auto-link is unreliable headless.
