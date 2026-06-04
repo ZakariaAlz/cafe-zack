@@ -29,10 +29,11 @@ type State = {
   /** True while the called taxi is gliding to the on-foot agent. */
   taxiCalling: boolean;
   setTaxiCalling: (calling: boolean) => void;
-  /** The café reveal: once the on-foot agent reaches Café Zack, the sunglasses
-   * come off (one-way — the face stays revealed). */
+  /** The café reveal: the smoke veil evaporates while the on-foot agent is in
+   * front of Café Zack and re-forms when he wanders off — proximity-driven and
+   * reversible, since the open world invites exploration. */
   faceRevealed: boolean;
-  revealFace: () => void;
+  setFaceRevealed: (revealed: boolean) => void;
 
   /** Where the street agent should (re)spawn — set when leaving the café so we
    * drop back outside Café Zack, not at the default world spawn. */
@@ -83,7 +84,7 @@ export const useWorld = create<State>((set, get) => ({
   taxiCalling: false,
   setTaxiCalling: (calling) => set({ taxiCalling: calling }),
   faceRevealed: false,
-  revealFace: () => set({ faceRevealed: true }),
+  setFaceRevealed: (revealed) => set({ faceRevealed: revealed }),
 
   streetSpawn: null,
   venue: "street",
