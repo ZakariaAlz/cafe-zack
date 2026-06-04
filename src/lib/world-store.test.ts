@@ -42,9 +42,12 @@ describe("world-store", () => {
     expect(useWorld.getState().taxiCalling).toBe(false);
   });
 
-  it("reveals the face once (the café moment)", () => {
+  it("toggles the face reveal both ways (proximity-driven café moment)", () => {
     expect(useWorld.getState().faceRevealed).toBe(false);
-    useWorld.getState().revealFace();
+    useWorld.getState().setFaceRevealed(true);
     expect(useWorld.getState().faceRevealed).toBe(true);
+    // Reversible — the veil re-forms when the agent leaves the café.
+    useWorld.getState().setFaceRevealed(false);
+    expect(useWorld.getState().faceRevealed).toBe(false);
   });
 });

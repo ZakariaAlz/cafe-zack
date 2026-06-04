@@ -10,6 +10,7 @@ import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
 import { type Gait, pickGait } from "../lib/gait";
 import { useModel } from "../lib/useModel";
+import { FaceVeil } from "./FaceVeil";
 
 const SPEED = 4.8;
 const SPRINT_MULT = 1.8;
@@ -35,9 +36,6 @@ const FACING_OFFSET = 0;
 // Cross-fade time between animation clips. Long enough not to look snappy.
 const ANIM_FADE = 0.2;
 
-// Which clip is playing. Gait (idle/walk/run) plus the café-reveal "talk" beat.
-type AnimState = Gait | "talk";
-
 /**
  * Player character — low-poly Business_Man GLB (~364 KB) with native
  * idle/walk/run clips plus `cycle_talking` for the café reveal. Movement is
@@ -51,8 +49,9 @@ type AnimState = Gait | "talk";
  * movement bumped by SPRINT_MULT.
  *
  * Café reveal (reinvented from the spy's sunglasses-off beat, since this model
- * has no eyewear): when `faceRevealed` flips, the agent turns to face the
- * camera, swaps idle → `cycle_talking`, and a warm key light fades up on him.
+ * has no eyewear): a dark smoke veil (`FaceVeil`) keeps the face unreadable for
+ * the whole traversal; on `faceRevealed` the agent turns to face the camera
+ * while the veil rises and evaporates, revealing him.
  */
 export function Character({
   bodyRef,
@@ -69,11 +68,10 @@ export function Character({
   const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const modelRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
-  const revealLightRef = useRef<THREE.PointLight>(null);
   const { actions } = useAnimations(animations, modelRef);
 
   const reveal = useRef(0);
-  const animRef = useRef<AnimState>("idle");
+  const animRef = useRef<Gait>("idle");
   const mode = useWorld((s) => s.mode);
 
   // Start in idle once the actions are ready; walk/run take over on input.
@@ -90,7 +88,6 @@ export function Character({
     const target = useWorld.getState().faceRevealed ? 1 : 0;
     reveal.current += (target - reveal.current) * (1 - Math.exp(-delta * 3));
     const revealed = reveal.current > 0.5;
-    if (revealLightRef.current) revealLightRef.current.intensity = reveal.current * 8;
 
     const body = bodyRef.current;
     if (!body) return;
@@ -139,22 +136,14 @@ export function Character({
       visualRef.current.rotation.y = cur + d * (1 - Math.exp(-delta * 4));
     }
 
-    // Animation state: gait normally, but swap idle → talk during the reveal.
+    // Crossfade idle/walk/run as the gait changes.
     const gait = pickGait(moving, keys.current.sprint);
-    const next: AnimState = revealed && !moving ? "talk" : gait;
-    const clipFor = (s: AnimState) =>
-      s === "talk"
-        ? (actions.cycle_talking ?? actions.idle)
-        : s === "idle"
-          ? actions.idle
-          : s === "walk"
-            ? actions.walk
-            : (actions.run ?? actions.walk);
-
-    if (next !== animRef.current) {
+    const clipFor = (g: Gait) =>
+      g === "idle" ? actions.idle : g === "walk" ? actions.walk : (actions.run ?? actions.walk);
+    if (gait !== animRef.current) {
       const prev = clipFor(animRef.current);
-      const nextClip = clipFor(next);
-      animRef.current = next;
+      const nextClip = clipFor(gait);
+      animRef.current = gait;
       if (prev !== nextClip) {
         prev?.fadeOut(ANIM_FADE);
         nextClip?.reset().fadeIn(ANIM_FADE).play();
@@ -176,14 +165,8 @@ export function Character({
         <group ref={modelRef} position={[0, FEET_OFFSET, 0]} scale={MODEL_SCALE}>
           <primitive object={cloned} />
         </group>
-        {/* Warm key light that fades up on the café reveal — front-lit face. */}
-        <pointLight
-          ref={revealLightRef}
-          position={[0, 1, 0.7]}
-          intensity={0}
-          distance={4}
-          color="#ffd9a0"
-        />
+        {/* Dark smoke veil hiding the face until it evaporates at the café. */}
+        <FaceVeil />
       </group>
     </RigidBody>
   );
