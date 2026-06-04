@@ -1,5 +1,6 @@
 "use client";
 
+import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { fitModelToHeight } from "../lib/fitModel";
@@ -49,6 +50,11 @@ export function MarketStall({
 
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
+      {/* Solid crate stack — a fixed box so the stall is an obstacle, not decor
+          you drive through. The chair is left passable (low, easy to clip by). */}
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider args={[0.42, 0.65, 0.42]} position={[0, 0.65, 0]} />
+      </RigidBody>
       <primitive object={baseScene} />
       <primitive object={topScene} />
       <group position={[1.0, 0, 0.3]} rotation={[0, -Math.PI / 4, 0]}>

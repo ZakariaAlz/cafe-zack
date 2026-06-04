@@ -1,5 +1,7 @@
 "use client";
 
+import { CylinderCollider, RigidBody } from "@react-three/rapier";
+
 /**
  * Procedural Mediterranean palm — a tall ribbed trunk + a fan of six fronds
  * angled outward from the apex. Used along the Algiers corniche where the
@@ -39,6 +41,15 @@ export function Palm({
 
   return (
     <group position={position} rotation={[lean, yaw, lean * 0.7]} scale={scale}>
+      {/* Trunk collider — fixed cylinder so you can't walk/drive through the
+          palm. The group's uniform scale carries to the collider; the cosmetic
+          lean is negligible for blocking. */}
+      <RigidBody type="fixed" colliders={false}>
+        <CylinderCollider
+          args={[TRUNK_HEIGHT / 2, TRUNK_BASE_R * 1.3]}
+          position={[0, TRUNK_HEIGHT / 2, 0]}
+        />
+      </RigidBody>
       {/* trunk — slight taper, ribbed by a stack of two cylinders for read */}
       <mesh position={[0, TRUNK_HEIGHT / 2, 0]} castShadow>
         <cylinderGeometry args={[TRUNK_TIP_R, TRUNK_BASE_R, TRUNK_HEIGHT, 10]} />
