@@ -25,9 +25,12 @@ page.on("console", (m) => {
 });
 page.on("pageerror", (e) => errors.push(e.message));
 
+// Software-GL (swiftshader) renders the now-populated scene slowly; give
+// screenshots a generous ceiling so a frame can land. Real GPUs are instant.
+page.setDefaultTimeout(120000);
 await page.goto(URL, { waitUntil: "networkidle" });
 await page.waitForSelector("canvas");
-await page.waitForTimeout(5000);
+await page.waitForTimeout(8000);
 await page.screenshot({ path: "/tmp/agent-spy-driving.png" });
 
 await page.mouse.click(640, 360);

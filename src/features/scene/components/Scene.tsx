@@ -31,6 +31,7 @@ import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { PromenadeCrowd } from "./PromenadeCrowd";
 import { ShoreRocks } from "./ShoreRocks";
 import { Street } from "./Street";
+import { Traffic } from "./Traffic";
 import { Vehicle } from "./Vehicle";
 
 type Preset = {
@@ -184,6 +185,7 @@ function SceneContent() {
           <Ground />
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
+          <Traffic />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
           <NotreDameDAfrique playerRef={activeRef} />
