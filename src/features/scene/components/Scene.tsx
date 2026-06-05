@@ -9,7 +9,7 @@ import * as THREE from "three";
 import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
-import { AlgiersSilhouette } from "./AlgiersSilhouette";
+import { Bouzareah } from "./Bouzareah";
 import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
@@ -176,7 +176,7 @@ function SceneContent() {
       />
 
       <Suspense fallback={null}>
-        <AlgiersSilhouette />
+        <Bouzareah />
         <Sea />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
