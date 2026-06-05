@@ -21,6 +21,7 @@ import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { RoadNetwork } from "./RoadNetwork";
 import { Sea } from "./Sea";
+import { Streetlamps } from "./Streetlamps";
 import { Terrain } from "./Terrain";
 import { Traffic } from "./Traffic";
 import { Vehicle } from "./Vehicle";
@@ -183,6 +184,7 @@ function SceneContent() {
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
           <Traffic />
+          <Streetlamps />
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
           <GrandePoste playerRef={activeRef} />
