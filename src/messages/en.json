@@ -6,7 +6,7 @@
   },
   "hero": {
     "booting": "café zack · booting…",
-    "instructions": "a portfolio simulation in algiers · drive with WASD · hold Shift to sprint · F to step out and walk · C to call the R4 back · drag to look around · scroll to zoom · pull up to a landmark · v0.0.1"
+    "instructions": "a portfolio simulation in algiers · drive with WASD · hold Shift to sprint · F to step out and walk · C to call the 504 back · drag to look around · scroll to zoom · pull up to a landmark · v0.0.1"
   },
   "prompt": {
     "enterGrandePoste": "Enter La Grande Poste",
@@ -14,10 +14,10 @@
     "enterNotreDame": "Enter Notre-Dame d'Afrique",
     "enterMaqam": "Enter Maqam Echahid",
     "enterCafeZack": "Enter Café Zack",
-    "driveTaxi": "Drive the R4",
+    "driveTaxi": "Drive the 504",
     "stepOut": "Step out",
-    "callTaxi": "Call the R4",
-    "arriving": "R4 arriving…",
+    "callTaxi": "Call the 504",
+    "arriving": "504 arriving…",
     "leaveNote": "Leave a note",
     "backToStreet": "Back to the street"
   },
