@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useRef } from "react";
 import { useWorld } from "@/lib/world-store";
+import { landmarkAnchor } from "../lib/terrain";
 
 /**
  * Notre-Dame d'Afrique — the Services anchor. The real basilica is a
@@ -16,7 +17,7 @@ import { useWorld } from "@/lib/world-store";
  * landmarks it sits outside the directional light's shadow camera.
  */
 
-const POSITION: [number, number, number] = [22, 0, -10];
+const POSITION: [number, number, number] = landmarkAnchor("notre-dame");
 const TRIGGER_RADIUS = 11;
 
 const STONE = "#E6DDC8";

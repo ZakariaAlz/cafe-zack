@@ -135,6 +135,89 @@
       "output": "car-golf-mk1.glb",
       "role": "Ambient traffic — VW Golf Mk1 (CC-BY). Vintage hatchback; instanced street traffic. Textures capped to 1024.",
       "maxTexture": 1024
+    },
+    {
+      "input": "Cars/1997_peugeot_205/scene.gltf",
+      "output": "car-205.glb",
+      "role": "Ambient traffic — Peugeot 205 (CC-BY, commercial OK). Period-right Algiers hatchback. Textures 512, mesh simplified for web weight + low-poly match.",
+      "maxTexture": 512,
+      "simplify": 0.3
+    },
+    {
+      "input": "Cars/2008_peugeot_307/scene.gltf",
+      "output": "car-307.glb",
+      "role": "Ambient traffic — Peugeot 307 (CC-BY, commercial OK). Common Algiers saloon. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.22
+    },
+    {
+      "input": "Cars/classic_red_volkswagen_beetle_model/scene.gltf",
+      "output": "car-beetle.glb",
+      "role": "Ambient traffic — classic VW Beetle (CC-BY, commercial OK). Vintage character car. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.22
+    },
+    {
+      "input": "Cars/2016_volkswagen_polo/scene.gltf",
+      "output": "car-polo.glb",
+      "role": "Ambient traffic — VW Polo 2016 (CC-BY, commercial OK). Modern compact for variety. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.3
+    },
+    {
+      "input": "Cars/1999_allerauto_wolf/scene.gltf",
+      "output": "car-wolf.glb",
+      "role": "Ambient traffic — Allerauto Wolf 1999 (CC-BY, commercial OK). Boxy utility runabout (already light). Textures 512.",
+      "maxTexture": 512
+    },
+    {
+      "input": "Cars/2019_volkswagen_lavida_qihang/scene.gltf",
+      "output": "car-lavida.glb",
+      "role": "Ambient traffic — VW Lavida 2019. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.3
+    },
+    {
+      "input": "Cars/2021_volkswagen_golf_gti/scene.gltf",
+      "output": "car-golf-gti.glb",
+      "role": "Ambient traffic — VW Golf GTI 2021. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.4
+    },
+    {
+      "input": "Cars/2021_volkswagen_phideon_380_tsi/scene.gltf",
+      "output": "car-phideon.glb",
+      "role": "Ambient traffic — VW Phideon 2021. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.25
+    },
+    {
+      "input": "Cars/2021_volkswagen_t-cross_280_tsi/scene.gltf",
+      "output": "car-tcross.glb",
+      "role": "Ambient traffic — VW T-Cross 2021. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.3
+    },
+    {
+      "input": "Cars/2022_seat_ibiza_fr/scene.gltf",
+      "output": "car-ibiza.glb",
+      "role": "Ambient traffic — SEAT Ibiza FR 2022. LICENSE: CC-BY-NC (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified (heaviest source).",
+      "maxTexture": 512,
+      "simplify": 0.15
+    },
+    {
+      "input": "Cars/2022_volkswagen_tiguan_l_430_phev/scene.gltf",
+      "output": "car-tiguan-phev.glb",
+      "role": "Ambient traffic — VW Tiguan L PHEV 2022. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.2
+    },
+    {
+      "input": "Cars/2022_volkswagen_tiguan_l_-_allspace/scene.gltf",
+      "output": "car-tiguan-allspace.glb",
+      "role": "Ambient traffic — VW Tiguan L Allspace 2022. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
+      "maxTexture": 512,
+      "simplify": 0.2
     }
   ],
   "built": {
@@ -247,22 +330,22 @@
       "builtAt": "2026-06-04T20:06:12.493Z"
     },
     "car-205.glb": {
-      "bytes": 3144352,
-      "sha256": "11c9bde50eb6e2a08ef2821a58c0c3cecdb2e30f99d2482fbc963e74208f066b",
+      "bytes": 1227340,
+      "sha256": "95f1f562685fd4604d675802a0064436ddce48d8bb2b4155a08ff035e714ede0",
       "sourceBytes": 24425563,
-      "builtAt": "2026-06-04T20:03:16.048Z"
+      "builtAt": "2026-06-05T18:15:28.646Z"
     },
     "car-307.glb": {
-      "bytes": 5653512,
-      "sha256": "087ecf16008d7c80351dc41052e9b9a6fa3b179e4523c5ea76ae199f51fe3d8b",
+      "bytes": 1942420,
+      "sha256": "f6c07043d3812b7277468a8e844db3f9cbc6871b6a1ab77566c39474202dcde0",
       "sourceBytes": 41113282,
-      "builtAt": "2026-06-04T20:03:16.048Z"
+      "builtAt": "2026-06-05T18:15:28.646Z"
     },
     "car-polo.glb": {
-      "bytes": 4430144,
-      "sha256": "e0cbfe922ce2dbe7dfbd5a91a68811ac201c5e2f0443d51ceb843a2bf998d364",
+      "bytes": 1913492,
+      "sha256": "ed0c3876bf69a1bc9486e59b45948c3b9514e173fb7cedb6f5656b104e084b98",
       "sourceBytes": 14887547,
-      "builtAt": "2026-06-04T20:03:16.048Z"
+      "builtAt": "2026-06-05T18:15:28.646Z"
     },
     "car-golf-mk1.glb": {
       "bytes": 1264412,
@@ -271,10 +354,58 @@
       "builtAt": "2026-06-04T20:06:12.493Z"
     },
     "car-beetle.glb": {
-      "bytes": 8272788,
-      "sha256": "b0c377d9ecf052466a3d6cd75ed02432c51560433ca487a7eff1056598b9392e",
+      "bytes": 6307476,
+      "sha256": "d802e87fb2eb08974019a48fb28e41dc3ebbec256d918e9a28776994cbce5b66",
       "sourceBytes": 65737340,
-      "builtAt": "2026-06-04T20:03:16.048Z"
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-wolf.glb": {
+      "bytes": 255528,
+      "sha256": "e9708eaaa82ce42e328a70ae332bb681c5db36e57133523dd21d9521de5a28b5",
+      "sourceBytes": 2651378,
+      "builtAt": "2026-06-05T18:09:49.982Z"
+    },
+    "car-ibiza.glb": {
+      "bytes": 6208712,
+      "sha256": "41c6699019dd5f115edddba7082f1812753ae46ead027736b94ab713fe1059a0",
+      "sourceBytes": 87062054,
+      "builtAt": "2026-06-05T18:14:57.953Z"
+    },
+    "car-lavida.glb": {
+      "bytes": 1959372,
+      "sha256": "d4828cd81ed629bda6be742318b8f39d111c941835f26300cebd7a73435294fe",
+      "sourceBytes": 9525915,
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-golf-gti.glb": {
+      "bytes": 831364,
+      "sha256": "34a728e5cfb6c4e2e17afdc7a7f5f8a12deafc6bd6ebd07a8a56ede22932a31a",
+      "sourceBytes": 3141353,
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-phideon.glb": {
+      "bytes": 2242552,
+      "sha256": "9295b361524646d12eaa058c989dfe2e32c673fa8a11b73e0e44aff8c5e779c8",
+      "sourceBytes": 16381024,
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-tcross.glb": {
+      "bytes": 2028024,
+      "sha256": "efd3aba27c233d47e170982535f1f5d6846ffc20822f4c8d215fd4d512418340",
+      "sourceBytes": 10494763,
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-tiguan-phev.glb": {
+      "bytes": 4134276,
+      "sha256": "10c44643d9857f98aed926402b60bbcdecc2b4f6c681a542290a655a48a1e1fc",
+      "sourceBytes": 37605693,
+      "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "car-tiguan-allspace.glb": {
+      "bytes": 4675836,
+      "sha256": "5df735901d5e8bda7b4d8834e7b00da532d741c4f809ac4c1531cb22c7b50bdf",
+      "sourceBytes": 40070657,
+      "builtAt": "2026-06-05T18:15:28.646Z"
     }
   }
 }

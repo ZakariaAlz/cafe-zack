@@ -9,12 +9,15 @@ import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
 import { type Gait, pickGait } from "../lib/gait";
+import { SPAWN_XZ, spawnAbove } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 import { FaceVeil } from "./FaceVeil";
 
 const SPEED = 4.8;
 const SPRINT_MULT = 1.8;
-const SPAWN: [number, number, number] = [4, 1.2, -2];
+// Default on-foot spawn: downtown, beside the car start, dropped clear of the
+// slope so the capsule settles onto the heightfield instead of tunnelling.
+const SPAWN: [number, number, number] = spawnAbove(SPAWN_XZ[0] + 3, SPAWN_XZ[1], 2.5);
 const DIR = new THREE.Vector3();
 const CAM_FWD = new THREE.Vector3();
 const CAM_RIGHT = new THREE.Vector3();
@@ -157,6 +160,7 @@ export function Character({
       position={spawn}
       colliders={false}
       mass={70}
+      ccd
       linearDamping={0.9}
       enabledRotations={[false, false, false]}
     >

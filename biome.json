@@ -16,6 +16,7 @@
       "**/*.json",
       "!**/node_modules",
       "!**/.next",
+      "!**/.claude",
       "!**/_originals",
       "!**/dist",
       "!**/build",

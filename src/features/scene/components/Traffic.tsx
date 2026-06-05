@@ -1,65 +1,76 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
-import { useMemo, useRef } from "react";
-import * as THREE from "three";
+import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
-import { fitModelToLength } from "../lib/fitModel";
+import { AMBIENT_FLEET, CAR_LENGTH, type CarModel } from "../lib/cars";
+import { fitCarToLength } from "../lib/fitCar";
+import { terrainHeight } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 
 /**
- * Ambient Algiers traffic — the CC-BY 504s, every instance run through
- * `fitModelToLength` so they all land at one consistent size (CAR_LENGTH)
- * regardless of each GLB's wildly different native scale (the break GLB ships
- * ~3× the coupé's size). Parked cars fill the RoadNetwork parking lots and a
- * few kerbs as fixed RigidBodies with auto cuboid colliders; a couple of
- * visual-only cars drive the lanes.
+ * Ambient parked traffic — the full CC-BY-plus Algiers fleet (504 coupé/break,
+ * 205, 307, Golf Mk1, Beetle, Polo, Wolf + modern variety), each normalised to
+ * its REAL length by fitCarToLength so no car towers over the world, and laid
+ * out in tidy, NON-OVERLAPPING bays. The old fleet jammed mis-scaled cars on top
+ * of each other ("c'est catastrophique"); here every slot is spaced by a full
+ * car-width/length + gap, and each car sits on the terrain at terrainHeight.
+ *
+ * Each car is a fixed RigidBody with an auto cuboid collider, so you bump into
+ * parked cars instead of phasing through them.
  */
 
-const CAR_LENGTH = 4.3; // metres — one size for every car
-const MODELS = ["car-504-coupe.glb", "car-504-break.glb"] as const;
+const GAP = 1.4; // clear space between cars
+const MAX_CAR = 5; // widest footprint we space for, so nothing can touch
 
-function useFitCar(model: string) {
-  const { scene } = useModel(model);
-  return useMemo(() => {
-    const c = SkeletonUtils.clone(scene);
-    fitModelToLength(c, CAR_LENGTH);
-    return c;
-  }, [scene]);
+type Bay = { model: CarModel; position: [number, number, number]; rotationY: number };
+
+/**
+ * Lay `count` cars along a kerb. `axis` is the row direction; cars step along it
+ * spaced so they never overlap; `facing` is each car's yaw. Cars sit on the
+ * terrain. Models cycle through AMBIENT_FLEET from `seed` for variety.
+ */
+function row(
+  start: [number, number],
+  axis: "x" | "z",
+  count: number,
+  step: number,
+  facing: number,
+  seed: number,
+): Bay[] {
+  const out: Bay[] = [];
+  for (let i = 0; i < count; i++) {
+    const x = axis === "x" ? start[0] + i * step : start[0];
+    const z = axis === "z" ? start[1] + i * step : start[1];
+    const model = AMBIENT_FLEET[(seed + i) % AMBIENT_FLEET.length];
+    out.push({ model, position: [x, terrainHeight(x, z), z], rotationY: facing });
+  }
+  return out;
 }
 
-type Parked = {
-  model: (typeof MODELS)[number];
-  position: [number, number, number];
-  rotationY: number;
-};
-
-// Cars fill the three RoadNetwork parking lots (perpendicular bays) + a couple
-// of kerbs. rotationY orients each along its bay/road.
 const HALF_PI = Math.PI / 2;
-const FLEET: Parked[] = [
-  // La Grande Poste lot — centre [10.5, −22], width 12, facing the plaza (+Z)
-  { model: "car-504-coupe.glb", position: [6.6, 0, -22], rotationY: 0 },
-  { model: "car-504-break.glb", position: [9.2, 0, -22], rotationY: 0.02 },
-  { model: "car-504-coupe.glb", position: [11.9, 0, -22], rotationY: -0.02 },
-  { model: "car-504-break.glb", position: [14.4, 0, -22], rotationY: 0 },
-  // Café Zack lot — centre [18, 7], width 8
-  { model: "car-504-coupe.glb", position: [15.6, 0, 7], rotationY: 0.03 },
-  { model: "car-504-break.glb", position: [18.2, 0, 7], rotationY: 0 },
-  { model: "car-504-coupe.glb", position: [20.6, 0, 7], rotationY: -0.02 },
-  // Corniche lot — centre [−26, −71], width 16, facing the sea
-  { model: "car-504-break.glb", position: [-32, 0, -71], rotationY: Math.PI },
-  { model: "car-504-coupe.glb", position: [-28.5, 0, -71], rotationY: Math.PI - 0.02 },
-  { model: "car-504-break.glb", position: [-25, 0, -71], rotationY: Math.PI },
-  { model: "car-504-coupe.glb", position: [-21.5, 0, -71], rotationY: Math.PI + 0.03 },
-  // A couple parked at the kerb on the main boulevard
-  { model: "car-504-coupe.glb", position: [-3.6, 0, 2], rotationY: Math.PI },
-  { model: "car-504-break.glb", position: [3.6, 0, 16], rotationY: -HALF_PI },
+// Parking laid out on the flat downtown shelf around the Grande Poste / spawn
+// (x≈30–66, z near 0). Spacing ≥ MAX_CAR + GAP guarantees no overlap regardless
+// of which car lands in a slot.
+const STEP = MAX_CAR + GAP; // 6.4
+const FLEET: Bay[] = [
+  // Perpendicular bays in front of the Grande Poste (cars nose-in, facing −Z).
+  ...row([40, -8], "x", 5, STEP, 0, 0),
+  // Opposite bays across the forecourt, facing +Z.
+  ...row([40, 16], "x", 5, STEP, Math.PI, 5),
+  // Parallel-parked row along the seaward kerb (cars aligned along Z, nose −Z).
+  ...row([66, -22], "z", 6, STEP, 0, 9),
+  // A short row up the approach toward the spawn, facing −X.
+  ...row([30, 30], "x", 3, STEP, -HALF_PI, 2),
 ];
 
-function ParkedCar({ model, position, rotationY }: Parked) {
-  const cloned = useFitCar(model);
+function ParkedCar({ model, position, rotationY }: Bay) {
+  const { scene } = useModel(model);
+  const cloned = useMemo(() => {
+    const c = SkeletonUtils.clone(scene);
+    fitCarToLength(c, CAR_LENGTH[model]);
+    return c;
+  }, [scene, model]);
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <RigidBody type="fixed" colliders="cuboid">
@@ -69,70 +80,15 @@ function ParkedCar({ model, position, rotationY }: Parked) {
   );
 }
 
-type Moving = {
-  model: (typeof MODELS)[number];
-  from: [number, number, number];
-  to: [number, number, number];
-  speed: number;
-  phase: number;
-};
-
-// Two slow cars driving the boulevard lanes (one each way); they loop and wrap
-// at the road edge off-screen.
-const MOVING: Moving[] = [
-  { model: "car-504-coupe.glb", from: [-1.7, 0, 30], to: [-1.7, 0, -30], speed: 5, phase: 0 },
-  { model: "car-504-coupe.glb", from: [1.7, 0, -30], to: [1.7, 0, 30], speed: 4.3, phase: 0.5 },
-];
-
-const HEADING = new THREE.Vector3();
-
-function MovingCar({ model, from, to, speed, phase }: Moving) {
-  const cloned = useFitCar(model);
-  const ref = useRef<THREE.Group>(null);
-  const t = useRef(phase);
-  const start = useMemo(() => new THREE.Vector3(...from), [from]);
-  const end = useMemo(() => new THREE.Vector3(...to), [to]);
-  const len = useMemo(() => start.distanceTo(end), [start, end]);
-  const yaw = useMemo(() => {
-    HEADING.subVectors(end, start);
-    return Math.atan2(HEADING.x, HEADING.z);
-  }, [start, end]);
-
-  useFrame((_, delta) => {
-    const g = ref.current;
-    if (!g || len === 0) return;
-    t.current += (speed * delta) / len;
-    if (t.current > 1) t.current -= 1;
-    g.position.lerpVectors(start, end, t.current);
-    g.rotation.y = yaw;
-  });
-
-  return (
-    <group ref={ref}>
-      <primitive object={cloned} />
-    </group>
-  );
-}
-
 export function Traffic() {
   return (
     <group>
       {FLEET.map((car) => (
         <ParkedCar
-          key={`${car.position[0]}:${car.position[2]}`}
+          key={`${car.model}-${car.position[0]}-${car.position[2]}`}
           model={car.model}
           position={car.position}
           rotationY={car.rotationY}
-        />
-      ))}
-      {MOVING.map((car) => (
-        <MovingCar
-          key={`move-${car.from[0]}:${car.from[2]}`}
-          model={car.model}
-          from={car.from}
-          to={car.to}
-          speed={car.speed}
-          phase={car.phase}
         />
       ))}
     </group>

@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { type RefObject, useMemo, useRef } from "react";
 import { useWorld } from "@/lib/world-store";
+import { landmarkAnchor } from "../lib/terrain";
 
 /**
  * Café Zack — the Contact anchor and the site's destination. The only warm,
@@ -16,7 +17,7 @@ import { useWorld } from "@/lib/world-store";
  * approach). Built warm on purpose — it should feel like arriving somewhere.
  */
 
-const POSITION: [number, number, number] = [15, 0, 12];
+const POSITION: [number, number, number] = landmarkAnchor("cafe-zack");
 const TRIGGER_RADIUS = 9;
 
 const WALL = "#E4D6B8";

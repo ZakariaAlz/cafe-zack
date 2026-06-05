@@ -2,28 +2,34 @@
 
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
+import { CAR_LENGTH } from "../lib/cars";
+import { fitCarToLength } from "../lib/fitCar";
 import { useModel } from "../lib/useModel";
 
 /**
- * The player's car — Peugeot 504 coupé (CC-BY, ~148 KB), the international
- * agent's ride. Visual only; <Vehicle> owns the RigidBody + CuboidCollider.
+ * The player's car — Peugeot 504 coupé (CC-BY), the agent's ride. Visual only;
+ * <Vehicle> owns the RigidBody + CuboidCollider.
  *
- * The GLB is ~4.74 m long, centred in X/Z with its wheels at the model's local
- * y=0. The Vehicle's collider floor sits at y=−0.5, so we drop the model there
- * to land the wheels on the road. Forward is −Z to match the chassis frame;
- * flip FACING if the nose points the wrong way (verified in the headless smoke).
+ * fitCarToLength normalises the GLB to a real 4.49 m with its wheels at local
+ * y=0, regardless of the source scale. The Vehicle's collider floor sits at
+ * y=−0.5, so we drop the model there to land the wheels on the road. Forward is
+ * −Z to match the chassis frame; flip FACING if the nose points the wrong way.
  */
 const FLOOR_OFFSET = -0.5;
-const SCALE = 1;
 // The 504 coupé GLB's nose points +Z, so rotate 180° to match the chassis's
 // −Z forward (FORWARD_AXIS in Vehicle).
 const FACING = Math.PI;
+const MODEL = "car-504-coupe.glb";
 
 export function HeroCar() {
-  const { scene } = useModel("car-504-coupe.glb");
-  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const { scene } = useModel(MODEL);
+  const cloned = useMemo(() => {
+    const c = SkeletonUtils.clone(scene);
+    fitCarToLength(c, CAR_LENGTH[MODEL]);
+    return c;
+  }, [scene]);
   return (
-    <group position={[0, FLOOR_OFFSET, 0]} rotation={[0, FACING, 0]} scale={SCALE}>
+    <group position={[0, FLOOR_OFFSET, 0]} rotation={[0, FACING, 0]}>
       <primitive object={cloned} />
     </group>
   );

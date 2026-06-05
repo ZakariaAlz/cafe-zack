@@ -9,31 +9,29 @@ import * as THREE from "three";
 import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
-import { AlgiersSilhouette } from "./AlgiersSilhouette";
-import { Beach } from "./Beach";
-import { CafeDog } from "./CafeDog";
+import { Bouzareah } from "./Bouzareah";
 import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
-import { CasbahKidsPlaying } from "./CasbahKidsPlaying";
-import { CasbahMarket } from "./CasbahMarket";
-import { CasbahQuarter } from "./CasbahQuarter";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
-import { DjamaaDjedid } from "./DjamaaDjedid";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
-import { GrandePostePlaza } from "./GrandePostePlaza";
-import { Ground } from "./Ground";
-import { LandmarkCrowds } from "./LandmarkCrowds";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
-import { PromenadeCrowd } from "./PromenadeCrowd";
 import { RoadNetwork } from "./RoadNetwork";
-import { ShoreRocks } from "./ShoreRocks";
-import { Street } from "./Street";
+import { Sea } from "./Sea";
+import { Streetlamps } from "./Streetlamps";
+import { Terrain } from "./Terrain";
 import { Traffic } from "./Traffic";
 import { Vehicle } from "./Vehicle";
+
+// NOTE: the old flat-layout set-dressing (Street, RoadNetwork, Beach, CafeDog,
+// Casbah quarter/market/kids, Djamaa Djedid, Grande Poste plaza, promenade &
+// landmark crowds, shore rocks) is temporarily out of the scene while the world
+// is rebuilt onto the amphitheatre slope — each was pinned to the old compass
+// grid at y=0 and would float on the new terrain. They return, re-anchored to
+// terrainHeight, in the follow-up population passes.
 
 type Preset = {
   skyFile: string;
@@ -180,29 +178,20 @@ function SceneContent() {
       />
 
       <Suspense fallback={null}>
-        <AlgiersSilhouette />
-        <Street />
+        <Bouzareah />
+        <Sea />
         <RoadNetwork />
         <Physics gravity={[0, -9.81, 0]}>
-          <Ground />
+          <Terrain />
+          <Traffic />
+          <Streetlamps />
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
-          <Traffic />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
           <NotreDameDAfrique playerRef={activeRef} />
           <MaqamEchahid playerRef={activeRef} />
           <CafeZack playerRef={activeRef} />
-          <DjamaaDjedid />
-          <CasbahQuarter />
-          <CasbahMarket />
-          <CasbahKidsPlaying />
-          <CafeDog />
-          <Beach />
-          <PromenadeCrowd />
-          <GrandePostePlaza />
-          <LandmarkCrowds />
-          <ShoreRocks />
         </Physics>
       </Suspense>
 
