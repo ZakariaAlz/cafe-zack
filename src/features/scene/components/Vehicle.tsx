@@ -6,6 +6,7 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { DriverAgent } from "./DriverAgent";
 import { HeroCar } from "./HeroCar";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
@@ -130,6 +131,7 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
           HeroCar drops the wheels to meet the road. */}
       <CuboidCollider args={[0.92, 0.5, 2.1]} />
       <HeroCar />
+      <DriverAgent />
     </RigidBody>
   );
 }

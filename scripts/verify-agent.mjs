@@ -33,6 +33,18 @@ await page.waitForSelector("canvas");
 await page.waitForTimeout(8000);
 await page.screenshot({ path: "/tmp/agent-spy-driving.png" });
 
+// Orbit the chase camera ~150° (drag on the canvas) so the car is seen from the
+// side/front — lets us check the seated driver, which the rear chase view hides.
+await page.mouse.move(640, 360);
+await page.mouse.down();
+for (let i = 0; i < 16; i++) {
+  await page.mouse.move(640 - i * 22, 340 + i * 4);
+  await page.waitForTimeout(20);
+}
+await page.mouse.up();
+await page.waitForTimeout(1200);
+await page.screenshot({ path: "/tmp/car-side.png" });
+
 await page.mouse.click(640, 360);
 await page.waitForTimeout(300);
 await page.keyboard.press("f");
