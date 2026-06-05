@@ -82,10 +82,11 @@ test("enter café · leave a note · walk back to the street", async ({ page }) 
     (s) => s.mode === "driving",
   );
 
-  // Place the agent beside Café Zack ([15,0,12]) via the test body handle, then
-  // let the real proximity loop set nearby === "cafe-zack". Crossing the open
-  // world on foot via held keys is camera-relative and nondeterministic under
-  // headless GL — reaching a landmark on foot is already covered by drive-flow.
+  // Place the agent beside Café Zack (now anchored on the slope at ≈[62,40] by
+  // the terrain map) via the test body handle, then let the real proximity loop
+  // set nearby === "cafe-zack". Crossing the open world on foot via held keys is
+  // camera-relative and nondeterministic under headless GL — reaching a landmark
+  // on foot is already covered by drive-flow.
   await page.waitForFunction(
     () =>
       Boolean(
@@ -100,7 +101,7 @@ test("enter café · leave a note · walk back to the street", async ({ page }) 
         __playerBody?: { current?: { setTranslation: (v: object, w: boolean) => void } };
       }
     ).__playerBody;
-    ref?.current?.setTranslation({ x: 15, y: 1.2, z: 6 }, true);
+    ref?.current?.setTranslation({ x: 60, y: 3, z: 36 }, true);
   });
   await waitForState(page, (s) => s.nearby === "cafe-zack", 30_000);
 
