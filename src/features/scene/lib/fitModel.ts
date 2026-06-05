@@ -29,3 +29,28 @@ export function fitModelToHeight(obj: THREE.Object3D, targetHeight: number, grou
   scaled.getCenter(center);
   obj.position.set(-center.x, groundY - scaled.min.y, -center.z);
 }
+
+/**
+ * Auto-fit a model so its longest horizontal axis (a car's length) equals
+ * `targetLength`, sitting on the ground (base at `groundY`) and centred in X/Z.
+ *
+ * Sketchfab cars arrive at wildly different native scales — the 504 break GLB
+ * is ~12 m, the coupé ~4.7 m — so dropping them into the world raw makes them
+ * different sizes. Normalising on length lands every car at one consistent size
+ * regardless of its source units.
+ */
+export function fitModelToLength(obj: THREE.Object3D, targetLength: number, groundY = 0): void {
+  obj.position.set(0, 0, 0);
+  obj.scale.setScalar(1);
+  obj.updateMatrixWorld(true);
+  const size = new THREE.Vector3();
+  new THREE.Box3().setFromObject(obj).getSize(size);
+  const longest = Math.max(size.x, size.z);
+  if (longest === 0) return;
+  obj.scale.setScalar(targetLength / longest);
+  obj.updateMatrixWorld(true);
+  const scaled = new THREE.Box3().setFromObject(obj);
+  const center = new THREE.Vector3();
+  scaled.getCenter(center);
+  obj.position.set(-center.x, groundY - scaled.min.y, -center.z);
+}
