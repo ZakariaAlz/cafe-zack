@@ -30,6 +30,7 @@ import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { PromenadeCrowd } from "./PromenadeCrowd";
 import { RoadNetwork } from "./RoadNetwork";
+import { Sablette } from "./Sablette";
 import { ShoreRocks } from "./ShoreRocks";
 import { Street } from "./Street";
 import { Traffic } from "./Traffic";
@@ -199,6 +200,7 @@ function SceneContent() {
           <CasbahKidsPlaying />
           <CafeDog />
           <Beach />
+          <Sablette />
           <PromenadeCrowd />
           <GrandePostePlaza />
           <LandmarkCrowds />

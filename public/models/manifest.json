@@ -135,6 +135,24 @@
       "output": "car-golf-mk1.glb",
       "role": "Ambient traffic — VW Golf Mk1 (CC-BY). Vintage hatchback; instanced street traffic. Textures capped to 1024.",
       "maxTexture": 1024
+    },
+    {
+      "input": "people-cafe-beach-restaurants/carpa_playera_-_beach_tent/scene.gltf",
+      "output": "beach-parasol.glb",
+      "role": "Sablette — beach parasol/tent (CC-BY). Instanced + colour-varied along the corniche promenade terrace.",
+      "maxTexture": 1024
+    },
+    {
+      "input": "people-cafe-beach-restaurants/beach_chair/scene.gltf",
+      "output": "beach-chair.glb",
+      "role": "Sablette — beach chair (CC-BY). Instanced at the terrace; some seat a sitting agent.",
+      "maxTexture": 1024
+    },
+    {
+      "input": "people-cafe-beach-restaurants/beach_table/scene.gltf",
+      "output": "beach-table.glb",
+      "role": "Sablette — beach café table (CC-BY). Instanced at the terrace.",
+      "maxTexture": 1024
     }
   ],
   "built": {
@@ -275,6 +293,24 @@
       "sha256": "b0c377d9ecf052466a3d6cd75ed02432c51560433ca487a7eff1056598b9392e",
       "sourceBytes": 65737340,
       "builtAt": "2026-06-04T20:03:16.048Z"
+    },
+    "beach-parasol.glb": {
+      "bytes": 20804,
+      "sha256": "cd623441e92fb062ec0ea55005ed6320355b02cfda24c8d62d34108ca0221657",
+      "sourceBytes": 81408,
+      "builtAt": "2026-06-05T16:21:20.721Z"
+    },
+    "beach-chair.glb": {
+      "bytes": 440088,
+      "sha256": "b971d9c98be5e0242091ca0aacc0bc72cf359f540acd0e9465fe0e65845cf733",
+      "sourceBytes": 1558559,
+      "builtAt": "2026-06-05T16:21:20.721Z"
+    },
+    "beach-table.glb": {
+      "bytes": 1915364,
+      "sha256": "9e71f2a72be3274c459e4e2b4ae3ce770401e3411ffb9c61fea5b33676884278",
+      "sourceBytes": 3622464,
+      "builtAt": "2026-06-05T16:21:20.721Z"
     }
   }
 }

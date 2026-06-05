@@ -56,6 +56,16 @@ await page.waitForTimeout(2000);
 await page.keyboard.up("w");
 await page.screenshot({ path: "/tmp/agent-spy-walking.png" });
 
+// Teleport the on-foot agent up to the corniche promenade so the camera frames
+// the Sablette terrace (parasols/tables/chairs/seated patrons) — it's far north
+// of the spawn and never reached by the short walk above.
+await page.evaluate(() => {
+  const body = window.__playerBody?.current;
+  if (body) body.setTranslation({ x: 4, y: 1.2, z: -61 }, true);
+});
+await page.waitForTimeout(2500);
+await page.screenshot({ path: "/tmp/sablette.png" });
+
 // Sprint (Shift+W) exercises the run gait branch — currently the graceful
 // fallback (Walking at 1.7×) until the Running clip is grafted into the GLB.
 await page.keyboard.down("Shift");
