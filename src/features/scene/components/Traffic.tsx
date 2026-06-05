@@ -1,7 +1,9 @@
 "use client";
 
+import { useFrame } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useModel } from "../lib/useModel";
 
@@ -61,6 +63,59 @@ function ParkedCar({ model, position, rotationY }: Parked) {
   );
 }
 
+type Moving = {
+  model: (typeof MODELS)[number];
+  /** Lane endpoints; the car loops from→to and wraps back at the road edge. */
+  from: [number, number, number];
+  to: [number, number, number];
+  /** Metres per second. */
+  speed: number;
+  /** Start offset along the lane [0..1]. */
+  phase: number;
+};
+
+// A few slow cars driving the lanes — one each way on the main road, one on the
+// cross street. Lanes sit inside the parked rows (x≈±1.6 / z≈−12) and the
+// endpoints run past the road ends so the wrap-around lands off-screen.
+const MOVING: Moving[] = [
+  { model: "car-504-coupe.glb", from: [-1.7, 0, 30], to: [-1.7, 0, -30], speed: 5, phase: 0 },
+  { model: "car-504-break.glb", from: [1.7, 0, -30], to: [1.7, 0, 30], speed: 4.2, phase: 0.45 },
+  { model: "car-504-coupe.glb", from: [26, 0, -12.2], to: [-26, 0, -12.2], speed: 4.6, phase: 0.2 },
+];
+
+// The 504 GLB faces +Z at rotationY=0; aligning rotation.y to the heading makes
+// it drive nose-first.
+const HEADING = new THREE.Vector3();
+
+function MovingCar({ model, from, to, speed, phase }: Moving) {
+  const { scene } = useModel(model);
+  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const ref = useRef<THREE.Group>(null);
+  const t = useRef(phase);
+  const start = useMemo(() => new THREE.Vector3(...from), [from]);
+  const end = useMemo(() => new THREE.Vector3(...to), [to]);
+  const len = useMemo(() => start.distanceTo(end), [start, end]);
+  const yaw = useMemo(() => {
+    HEADING.subVectors(end, start);
+    return Math.atan2(HEADING.x, HEADING.z);
+  }, [start, end]);
+
+  useFrame((_, delta) => {
+    const g = ref.current;
+    if (!g || len === 0) return;
+    t.current += (speed * delta) / len;
+    if (t.current > 1) t.current -= 1; // wrap at the road edge (off-screen)
+    g.position.lerpVectors(start, end, t.current);
+    g.rotation.y = yaw;
+  });
+
+  return (
+    <group ref={ref}>
+      <primitive object={cloned} />
+    </group>
+  );
+}
+
 export function Traffic() {
   return (
     <group>
@@ -70,6 +125,16 @@ export function Traffic() {
           model={car.model}
           position={car.position}
           rotationY={car.rotationY}
+        />
+      ))}
+      {MOVING.map((car) => (
+        <MovingCar
+          key={`move-${car.from[0]}:${car.from[2]}:${car.to[2]}`}
+          model={car.model}
+          from={car.from}
+          to={car.to}
+          speed={car.speed}
+          phase={car.phase}
         />
       ))}
     </group>
