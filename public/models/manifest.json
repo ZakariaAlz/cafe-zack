@@ -112,6 +112,28 @@
       "output": "npc-walker-m2.glb",
       "role": "Adult male NPC #2 — Doctor_Male_B (suit silhouette) phone-walking. Reads as a businessman striding along the promenade with a call.",
       "animations": "people_freepack_rigsfbx/Animations.fbx/locom_m_phoneWalking_40f.fbx"
+    },
+    {
+      "input": "Cars/2018_peugeot_2008/scene.gltf",
+      "output": "car-hero-2008.glb",
+      "role": "Player car — 2018 Peugeot 2008 (CC-BY, commercial OK). The international agent's classy modern crossover; replaces the procedural Renault 4 as the drivable hero. Textures capped to 1024 for web weight.",
+      "maxTexture": 1024
+    },
+    {
+      "input": "Cars/peugeot_504_break/scene.gltf",
+      "output": "car-504-break.glb",
+      "role": "Ambient traffic — Peugeot 504 break (CC-BY, Algerian author Mohamed Fsili). The iconic Algiers estate/taxi; instanced + colour-varied as street traffic."
+    },
+    {
+      "input": "Cars/peugeot_504_coupe_low_poly/scene.gltf",
+      "output": "car-504-coupe.glb",
+      "role": "Ambient traffic — Peugeot 504 coupé low-poly (CC-BY). Iconic Algiers classic; instanced street traffic."
+    },
+    {
+      "input": "Cars/car_volkswagen_golf_mk1/scene.gltf",
+      "output": "car-golf-mk1.glb",
+      "role": "Ambient traffic — VW Golf Mk1 (CC-BY). Vintage hatchback; instanced street traffic. Textures capped to 1024.",
+      "maxTexture": 1024
     }
   ],
   "built": {
@@ -204,6 +226,54 @@
       "sha256": "a9636acf740cf0d629bd7b1cec6e42f7c55c1010dbb5dc91afc815c3f051142f",
       "sourceBytes": 331920,
       "builtAt": "2026-05-30T01:35:34.973Z"
+    },
+    "car-hero-2008.glb": {
+      "bytes": 6006608,
+      "sha256": "c369716dd8e63c1d35e0b5f9e98e8dad13538c8b4ea83635bba14b8873ca6d43",
+      "sourceBytes": 43172092,
+      "builtAt": "2026-06-04T20:06:12.493Z"
+    },
+    "car-504-break.glb": {
+      "bytes": 218676,
+      "sha256": "920f1e93e1af7eaf4ee83c8e68664ad2811ea436a39ba5753fc0a57eab278835",
+      "sourceBytes": 701709,
+      "builtAt": "2026-06-04T20:06:12.493Z"
+    },
+    "car-504-coupe.glb": {
+      "bytes": 152052,
+      "sha256": "88a68daa2e25c83894da956b81fe9c761232caecdb2444077d39c73c8da3f94f",
+      "sourceBytes": 714837,
+      "builtAt": "2026-06-04T20:06:12.493Z"
+    },
+    "car-205.glb": {
+      "bytes": 3144352,
+      "sha256": "11c9bde50eb6e2a08ef2821a58c0c3cecdb2e30f99d2482fbc963e74208f066b",
+      "sourceBytes": 24425563,
+      "builtAt": "2026-06-04T20:03:16.048Z"
+    },
+    "car-307.glb": {
+      "bytes": 5653512,
+      "sha256": "087ecf16008d7c80351dc41052e9b9a6fa3b179e4523c5ea76ae199f51fe3d8b",
+      "sourceBytes": 41113282,
+      "builtAt": "2026-06-04T20:03:16.048Z"
+    },
+    "car-polo.glb": {
+      "bytes": 4430144,
+      "sha256": "e0cbfe922ce2dbe7dfbd5a91a68811ac201c5e2f0443d51ceb843a2bf998d364",
+      "sourceBytes": 14887547,
+      "builtAt": "2026-06-04T20:03:16.048Z"
+    },
+    "car-golf-mk1.glb": {
+      "bytes": 1264412,
+      "sha256": "085909869053aa8f0b5ae84504079df40dfbeac735786ec9997610dc0bb096d0",
+      "sourceBytes": 4790279,
+      "builtAt": "2026-06-04T20:06:12.493Z"
+    },
+    "car-beetle.glb": {
+      "bytes": 8272788,
+      "sha256": "b0c377d9ecf052466a3d6cd75ed02432c51560433ca487a7eff1056598b9392e",
+      "sourceBytes": 65737340,
+      "builtAt": "2026-06-04T20:03:16.048Z"
     }
   }
 }

@@ -6,7 +6,7 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { RenaultFour } from "./RenaultFour";
+import { HeroCar } from "./HeroCar";
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
@@ -20,8 +20,8 @@ const ACCEL_SPRINT_MULT = 1.5;
 const ANGVEL_DAMPING = 0.9;
 
 /**
- * Drivable car. The visual is a procedural Renault 4 (<RenaultFour> —
- * Inspecteur Tahar's ride) with simple arcade-style physics: forward/back
+ * Drivable car. The visual is the Peugeot 504 coupé GLB (<HeroCar> — the
+ * international agent's ride) with simple arcade-style physics: forward/back
  * impulse along the body's facing direction, torque on yaw for steering (only
  * when actually moving so the car can't spin in place).
  *
@@ -125,11 +125,11 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
       angularDamping={0.5}
       enabledRotations={[false, true, false]}
     >
-      {/* Chassis-only collision box; matches the old auto-cuboid half-extents
-          so the arcade tuning above is unchanged. Bottom sits at local y=-0.4,
-          where the Renault 4's wheels are sized to meet the road. */}
-      <CuboidCollider args={[0.8, 0.4, 1.55]} />
-      <RenaultFour />
+      {/* Chassis collision box sized to the Peugeot 504 coupé (~1.84 × 1.0 ×
+          4.2 m); bumpers poke slightly past it. Floor at local y=−0.5, where
+          HeroCar drops the wheels to meet the road. */}
+      <CuboidCollider args={[0.92, 0.5, 2.1]} />
+      <HeroCar />
     </RigidBody>
   );
 }
