@@ -5,11 +5,11 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import {
   buildHeightfield,
-  terrainHeight,
   TERRAIN_DEPTH,
   TERRAIN_WIDTH,
   TERRAIN_X_MAX,
   TERRAIN_X_MIN,
+  terrainHeight,
 } from "../lib/terrain";
 
 /**

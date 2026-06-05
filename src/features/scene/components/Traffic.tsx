@@ -3,55 +3,74 @@
 import { RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
+import { AMBIENT_FLEET, CAR_LENGTH, type CarModel } from "../lib/cars";
+import { fitCarToLength } from "../lib/fitCar";
+import { terrainHeight } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 
 /**
- * Ambient parked traffic — the CC-BY Algiers car fleet (504 break, 504 coupé,
- * Golf Mk1) scattered along the road edges so the streets read as lived-in.
- * Each car is a fixed RigidBody with an auto cuboid collider, so you bump into
- * parked cars instead of phasing through them (matching the world-solidity
- * pass). Models are real-scale with wheels at the GLB's local y=0, so they sit
- * straight on the road at y=0.
+ * Ambient parked traffic — the full CC-BY-plus Algiers fleet (504 coupé/break,
+ * 205, 307, Golf Mk1, Beetle, Polo, Wolf + modern variety), each normalised to
+ * its REAL length by fitCarToLength so no car towers over the world, and laid
+ * out in tidy, NON-OVERLAPPING bays. The old fleet jammed mis-scaled cars on top
+ * of each other ("c'est catastrophique"); here every slot is spaced by a full
+ * car-width/length + gap, and each car sits on the terrain at terrainHeight.
  *
- * Placements hug the kerbs of the "+" road network (main road along Z at x≈±3.3,
- * cross street at z=−12 along X) and a few landmark forecourts, steering clear
- * of the intersection where the player car spawns.
+ * Each car is a fixed RigidBody with an auto cuboid collider, so you bump into
+ * parked cars instead of phasing through them.
  */
 
-const MODELS = ["car-504-break.glb", "car-504-coupe.glb"] as const;
+const GAP = 1.4; // clear space between cars
+const MAX_CAR = 5; // widest footprint we space for, so nothing can touch
 
-type Parked = {
-  model: (typeof MODELS)[number];
-  position: [number, number, number];
-  rotationY: number;
-};
+type Bay = { model: CarModel; position: [number, number, number]; rotationY: number };
 
-// The two iconic 504s only (both <220 KB) — kept the heavier Golf out of the
-// instanced fleet so the populated scene stays light for software-GL/CI and
-// low-end GPUs. rotationY 0/π aligns a car along the main road (Z); ±π/2 along
-// the cross street (X). Values nudged a few degrees so the row isn't a grid.
+/**
+ * Lay `count` cars along a kerb. `axis` is the row direction; cars step along it
+ * spaced so they never overlap; `facing` is each car's yaw. Cars sit on the
+ * terrain. Models cycle through AMBIENT_FLEET from `seed` for variety.
+ */
+function row(
+  start: [number, number],
+  axis: "x" | "z",
+  count: number,
+  step: number,
+  facing: number,
+  seed: number,
+): Bay[] {
+  const out: Bay[] = [];
+  for (let i = 0; i < count; i++) {
+    const x = axis === "x" ? start[0] + i * step : start[0];
+    const z = axis === "z" ? start[1] + i * step : start[1];
+    const model = AMBIENT_FLEET[(seed + i) % AMBIENT_FLEET.length];
+    out.push({ model, position: [x, terrainHeight(x, z), z], rotationY: facing });
+  }
+  return out;
+}
+
 const HALF_PI = Math.PI / 2;
-const FLEET: Parked[] = [
-  // Main road — west kerb (x≈−3.4), facing south (+Z, rotationY=π)
-  { model: "car-504-break.glb", position: [-3.4, 0, -20], rotationY: Math.PI + 0.04 },
-  { model: "car-504-coupe.glb", position: [-3.4, 0, 4], rotationY: Math.PI + 0.02 },
-  { model: "car-504-break.glb", position: [-3.4, 0, 20], rotationY: Math.PI },
-  // Main road — east kerb (x≈+3.4), facing north (−Z, rotationY=0)
-  { model: "car-504-coupe.glb", position: [3.4, 0, -14], rotationY: 0.03 },
-  { model: "car-504-break.glb", position: [3.4, 0, 8], rotationY: -0.02 },
-  { model: "car-504-coupe.glb", position: [3.4, 0, 22], rotationY: 0 },
-  // Cross street — north kerb (z≈−15), facing east (+X, rotationY=−π/2)
-  { model: "car-504-break.glb", position: [-16, 0, -15], rotationY: -HALF_PI + 0.03 },
-  { model: "car-504-coupe.glb", position: [12, 0, -15], rotationY: -HALF_PI - 0.02 },
-  // Cross street — south kerb (z≈−9), facing west (−X, rotationY=+π/2)
-  { model: "car-504-coupe.glb", position: [-18, 0, -9], rotationY: HALF_PI },
-  { model: "car-504-break.glb", position: [-11, 0, -9], rotationY: HALF_PI + 0.03 },
-  { model: "car-504-coupe.glb", position: [16, 0, -9], rotationY: HALF_PI },
+// Parking laid out on the flat downtown shelf around the Grande Poste / spawn
+// (x≈30–66, z near 0). Spacing ≥ MAX_CAR + GAP guarantees no overlap regardless
+// of which car lands in a slot.
+const STEP = MAX_CAR + GAP; // 6.4
+const FLEET: Bay[] = [
+  // Perpendicular bays in front of the Grande Poste (cars nose-in, facing −Z).
+  ...row([40, -8], "x", 5, STEP, 0, 0),
+  // Opposite bays across the forecourt, facing +Z.
+  ...row([40, 16], "x", 5, STEP, Math.PI, 5),
+  // Parallel-parked row along the seaward kerb (cars aligned along Z, nose −Z).
+  ...row([66, -22], "z", 6, STEP, 0, 9),
+  // A short row up the approach toward the spawn, facing −X.
+  ...row([30, 30], "x", 3, STEP, -HALF_PI, 2),
 ];
 
-function ParkedCar({ model, position, rotationY }: Parked) {
+function ParkedCar({ model, position, rotationY }: Bay) {
   const { scene } = useModel(model);
-  const cloned = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const cloned = useMemo(() => {
+    const c = SkeletonUtils.clone(scene);
+    fitCarToLength(c, CAR_LENGTH[model]);
+    return c;
+  }, [scene, model]);
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <RigidBody type="fixed" colliders="cuboid">
@@ -66,7 +85,7 @@ export function Traffic() {
     <group>
       {FLEET.map((car) => (
         <ParkedCar
-          key={`${car.position[0]}:${car.position[2]}`}
+          key={`${car.model}-${car.position[0]}-${car.position[2]}`}
           model={car.model}
           position={car.position}
           rotationY={car.rotationY}

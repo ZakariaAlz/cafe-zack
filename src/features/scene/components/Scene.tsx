@@ -20,6 +20,7 @@ import { GrandePoste } from "./GrandePoste";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { Terrain } from "./Terrain";
+import { Traffic } from "./Traffic";
 import { Vehicle } from "./Vehicle";
 
 // NOTE: the old flat-layout set-dressing (Street, RoadNetwork, Beach, CafeDog,
@@ -177,6 +178,7 @@ function SceneContent() {
         <AlgiersSilhouette />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
+          <Traffic />
           <Vehicle bodyRef={taxiRef} />
           <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
           <GrandePoste playerRef={activeRef} />

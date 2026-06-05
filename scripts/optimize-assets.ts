@@ -21,6 +21,7 @@ import {
   meshopt,
   prune,
   quantize,
+  simplify,
   textureCompress,
   weld,
 } from "@gltf-transform/functions";
@@ -52,6 +53,12 @@ type Asset = {
    *  Sketchfab cars ship 2K+ maps that balloon the GLB; drop them to 1024/512
    *  for web weight, especially for ambient props seen at a distance. */
   maxTexture?: number;
+  /** Optional mesh-decimation ratio (0–1) — fraction of triangles to KEEP.
+   *  Photoreal Sketchfab cars are geometry-bound (millions of tris) and stay
+   *  multi-MB even after draco; simplifying to ~0.2–0.4 makes them web-light
+   *  AND a better stylistic match for the low-poly world. Omit to keep full
+   *  resolution (landmarks, characters, already-low-poly props). */
+  simplify?: number;
 };
 
 type Manifest = {
@@ -184,6 +191,12 @@ async function optimizeOne(
     dedup(),
     prune(),
     weld(),
+    // Mesh decimation for geometry-bound assets (photoreal cars). Runs after
+    // weld so the simplifier sees indexed geometry. Skipped (identity) when no
+    // ratio is set, so landmarks/characters keep full resolution.
+    ...(asset.simplify
+      ? [simplify({ simplifier: MeshoptSimplifier, ratio: asset.simplify, error: 0.01 })]
+      : []),
     // Color/MR textures → WebP at quality 80; normal maps stay lossless to
     // preserve surface detail. Cap (default 2048) is per-asset overridable so
     // heavy car maps can drop to 1024/512 for web weight.
