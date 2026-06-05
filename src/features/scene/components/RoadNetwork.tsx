@@ -1,118 +1,141 @@
 "use client";
 
 import { useMemo } from "react";
+import * as THREE from "three";
+import { LANDMARK_XZ, terrainHeight } from "../lib/terrain";
 
 /**
- * Expanded road network layered on top of the core "+" in <Street>: a boulevard
- * extension running north to the seafront, the corniche highway along the
- * beach, a branch to Café Zack, and parking lots in front of the landmarks
- * (where the normalized car fleet will park in a later pass).
+ * The road graph — the dossier itinerary draped over the amphitheatre. Roads are
+ * ribbon meshes that follow terrainHeight along their length (a few cm above the
+ * surface), so they climb and descend the slope instead of clipping into it.
  *
- * Generic `RoadSegment` draws asphalt + flush sidewalks + a dashed centre line
- * between any two ground points, in any direction. Like <Street>, it's purely
- * decorative — the flat Ground collider owns driving collision, so the car can
- * roll across the whole plate; flush kerbs avoid clipping.
+ * Purely decorative: the heightfield terrain owns ALL driving collision, so the
+ * car climbs/descends on the ground beneath; the asphalt is a cosmetic skin.
+ * Endpoints are anchored to the landmark positions, so the network tracks them.
  */
 
 const ASPHALT = "#2B2B30";
 const LINE = "#E8C24A";
-const SIDEWALK = "#D8C9A8";
-const BAY = "#C9BC9C";
+const SIDEWALK = "#CBBE9C";
 
-function RoadSegment({
-  from,
-  to,
-  width = 9,
-  sidewalk = true,
-}: {
-  from: [number, number];
-  to: [number, number];
-  width?: number;
-  sidewalk?: boolean;
-}) {
-  const dx = to[0] - from[0];
-  const dz = to[1] - from[1];
-  const len = Math.hypot(dx, dz);
-  const angle = Math.atan2(dx, dz); // rotate local +Z onto the segment direction
-  const cx = (from[0] + to[0]) / 2;
-  const cz = (from[1] + to[1]) / 2;
+type V2 = [number, number];
 
-  const dashes = useMemo(() => {
-    const out: number[] = [];
-    for (let d = -len / 2 + 2; d < len / 2 - 1; d += 3) out.push(d);
-    return out;
-  }, [len]);
+const GP = LANDMARK_XZ["grande-poste"];
+const ND = LANDMARK_XZ["notre-dame"];
+const CAS = LANDMARK_XZ.casbah;
+const MAQ = LANDMARK_XZ.maqam;
+const CAFE = LANDMARK_XZ["cafe-zack"];
 
-  return (
-    <group position={[cx, 0, cz]} rotation={[0, angle, 0]}>
-      <mesh position={[0, 0.011, 0]} receiveShadow>
-        <boxGeometry args={[width, 0.02, len]} />
-        <meshStandardMaterial color={ASPHALT} roughness={0.85} />
-      </mesh>
-      {sidewalk &&
-        [-1, 1].map((s) => (
-          <mesh key={s} position={[s * (width / 2 + 1.5), 0.012, 0]} receiveShadow>
-            <boxGeometry args={[3, 0.02, len]} />
-            <meshStandardMaterial color={SIDEWALK} roughness={0.9} />
-          </mesh>
-        ))}
-      {dashes.map((d) => (
-        <mesh key={d} position={[0, 0.022, d]}>
-          <boxGeometry args={[0.22, 0.006, 1.4]} />
-          <meshStandardMaterial color={LINE} roughness={0.6} />
-        </mesh>
-      ))}
-    </group>
-  );
+// Dossier §3: the front-de-mer spine (Notre-Dame → downtown → Sablette/Café),
+// the climb into the Casbah, and the climb up to Maqam Echahid.
+const PATHS: { points: V2[]; width: number }[] = [
+  {
+    points: [
+      [ND[0], ND[1]],
+      [44, -45],
+      [GP[0], GP[1]],
+      [52, 22],
+      [CAFE[0], CAFE[1]],
+    ],
+    width: 8,
+  },
+  {
+    points: [
+      [GP[0], GP[1]],
+      [38, -14],
+      [CAS[0], CAS[1]],
+    ],
+    width: 6,
+  },
+  {
+    points: [
+      [52, 22],
+      [24, 38],
+      [MAQ[0], MAQ[1]],
+    ],
+    width: 6,
+  },
+];
+
+/** Subdivide a polyline so the ribbon samples terrain along its whole length. */
+function densify(points: V2[], step: number): V2[] {
+  const out: V2[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const [x0, z0] = points[i];
+    const [x1, z1] = points[i + 1];
+    const segLen = Math.hypot(x1 - x0, z1 - z0);
+    const n = Math.max(1, Math.round(segLen / step));
+    for (let s = 0; s < n; s++) out.push([x0 + ((x1 - x0) * s) / n, z0 + ((z1 - z0) * s) / n]);
+  }
+  out.push(points[points.length - 1]);
+  return out;
 }
 
-function ParkingLot({
-  position,
-  width,
-  depth,
-  rotationY = 0,
-}: {
-  position: [number, number, number];
-  width: number;
-  depth: number;
-  rotationY?: number;
-}) {
-  const bays = useMemo(() => {
-    const out: number[] = [];
-    for (let x = -width / 2 + 1.3; x <= width / 2 - 1.3 + 0.001; x += 2.6) out.push(x);
-    return out;
-  }, [width]);
-
-  return (
-    <group position={position} rotation={[0, rotationY, 0]}>
-      <mesh position={[0, 0.0105, 0]} receiveShadow>
-        <boxGeometry args={[width, 0.02, depth]} />
-        <meshStandardMaterial color={ASPHALT} roughness={0.85} />
-      </mesh>
-      {bays.map((x) => (
-        <mesh key={x} position={[x, 0.022, 0]}>
-          <boxGeometry args={[0.12, 0.006, depth * 0.82]} />
-          <meshStandardMaterial color={BAY} roughness={0.6} />
-        </mesh>
-      ))}
-    </group>
-  );
+/** Build a flat ribbon of `width` that rides the terrain at `terrainHeight + lift`. */
+function ribbon(points: V2[], width: number, lift: number): THREE.BufferGeometry {
+  const dense = densify(points, 2.5);
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const half = width / 2;
+  for (let i = 0; i < dense.length; i++) {
+    const [x, z] = dense[i];
+    const prev = dense[Math.max(0, i - 1)];
+    const next = dense[Math.min(dense.length - 1, i + 1)];
+    let tx = next[0] - prev[0];
+    let tz = next[1] - prev[1];
+    const tl = Math.hypot(tx, tz) || 1;
+    tx /= tl;
+    tz /= tl;
+    const px = -tz; // perpendicular in XZ
+    const pz = tx;
+    const lx = x + px * half;
+    const lz = z + pz * half;
+    const rx = x - px * half;
+    const rz = z - pz * half;
+    positions.push(lx, terrainHeight(lx, lz) + lift, lz);
+    positions.push(rx, terrainHeight(rx, rz) + lift, rz);
+    if (i < dense.length - 1) {
+      const a = i * 2;
+      const b = i * 2 + 1;
+      const c = (i + 1) * 2;
+      const d = (i + 1) * 2 + 1;
+      indices.push(a, b, c, b, d, c);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 export function RoadNetwork() {
+  const roads = useMemo(
+    () =>
+      PATHS.map((p, i) => ({
+        key: `road-${i}`,
+        kerb: ribbon(p.points, p.width + 2.4, 0.04),
+        asphalt: ribbon(p.points, p.width, 0.07),
+        line: ribbon(p.points, 0.3, 0.09),
+      })),
+    [],
+  );
+
   return (
     <group>
-      {/* Boulevard extension north from the core "+" toward the seafront. */}
-      <RoadSegment from={[0, -28]} to={[0, -78]} width={9} />
-      {/* Corniche highway running E–W along the beach (wider, no inner kerb). */}
-      <RoadSegment from={[-62, -76]} to={[62, -76]} width={13} sidewalk={false} />
-      {/* Branch east off the boulevard to Café Zack ([15, 12]). */}
-      <RoadSegment from={[2, 12]} to={[21, 12]} width={7} />
-
-      {/* Parking lots — kerbside plates the car fleet will fill later. */}
-      <ParkingLot position={[10.5, 0, -22]} width={12} depth={7} />
-      <ParkingLot position={[18, 0, 7]} width={8} depth={6} />
-      <ParkingLot position={[-26, 0, -71]} width={16} depth={7} />
+      {roads.map((r) => (
+        <group key={r.key}>
+          <mesh geometry={r.kerb} receiveShadow>
+            <meshStandardMaterial color={SIDEWALK} roughness={0.95} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh geometry={r.asphalt} receiveShadow>
+            <meshStandardMaterial color={ASPHALT} roughness={0.9} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh geometry={r.line}>
+            <meshStandardMaterial color={LINE} roughness={0.6} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }

@@ -19,6 +19,7 @@ import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
+import { RoadNetwork } from "./RoadNetwork";
 import { Sea } from "./Sea";
 import { Terrain } from "./Terrain";
 import { Traffic } from "./Traffic";
@@ -178,6 +179,7 @@ function SceneContent() {
       <Suspense fallback={null}>
         <Bouzareah />
         <Sea />
+        <RoadNetwork />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
           <Traffic />
