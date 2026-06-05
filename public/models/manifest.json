@@ -29,7 +29,8 @@
         "idle",
         "walk",
         "run",
-        "cycle_talking"
+        "cycle_talking",
+        "sitting_idle"
       ],
       "textures": "business-man-low-polygon-game-character/textures"
     },
@@ -162,10 +163,10 @@
       "builtAt": "2026-05-30T01:35:34.973Z"
     },
     "agent-businessman.glb": {
-      "bytes": 969388,
-      "sha256": "7bb8a2984a42dc0d5329493f3cd179e9baf6e74952b7df18fe043d908bf08778",
+      "bytes": 1038628,
+      "sha256": "8ae835d5b00b0b222176ec7270acd117ec359a0f02c170eeab96b0cf922a5b26",
       "sourceBytes": 9818972,
-      "builtAt": "2026-06-03T01:09:40.005Z"
+      "builtAt": "2026-06-05T14:54:32.997Z"
     },
     "dog-shepherd.glb": {
       "bytes": 111576,

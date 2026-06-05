@@ -29,6 +29,7 @@ import { LandmarkCrowds } from "./LandmarkCrowds";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { PromenadeCrowd } from "./PromenadeCrowd";
+import { RoadNetwork } from "./RoadNetwork";
 import { ShoreRocks } from "./ShoreRocks";
 import { Street } from "./Street";
 import { Vehicle } from "./Vehicle";
@@ -180,6 +181,7 @@ function SceneContent() {
       <Suspense fallback={null}>
         <AlgiersSilhouette />
         <Street />
+        <RoadNetwork />
         <Physics gravity={[0, -9.81, 0]}>
           <Ground />
           <Vehicle bodyRef={taxiRef} />
