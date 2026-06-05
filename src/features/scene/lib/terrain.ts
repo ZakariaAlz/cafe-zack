@@ -123,6 +123,34 @@ export function isSea(x: number): boolean {
   return x > SHORE_X;
 }
 
+// --- Terrain footprint + physics heightfield ---------------------------------
+
+/** Visual + collider footprint along X (a little past the shore and inland edge). */
+export const TERRAIN_X_MIN = INLAND_X - 10;
+export const TERRAIN_X_MAX = SHORE_X + 30;
+export const TERRAIN_WIDTH = TERRAIN_X_MAX - TERRAIN_X_MIN; // east–west span (the slope)
+export const TERRAIN_DEPTH = WORLD_HALF_Z * 2; // north–south span
+
+/**
+ * Sample terrainHeight onto a regular grid for a Rapier HeightfieldCollider.
+ * Rapier wants a flat, COLUMN-MAJOR heights buffer of length (rows+1)·(cols+1),
+ * indexed `row + col·(rows+1)`. Rows run along Z, columns along X — matching a
+ * heightfield centred on the footprint (local X ∈ [−W/2, W/2], Z ∈ [−D/2, D/2]).
+ * Pure + deterministic so the collider can be unit-tested against terrainHeight
+ * without a browser.
+ */
+export function buildHeightfield(rows: number, cols: number): number[] {
+  const heights = new Array<number>((rows + 1) * (cols + 1));
+  for (let col = 0; col <= cols; col++) {
+    const x = TERRAIN_X_MIN + (col / cols) * TERRAIN_WIDTH;
+    for (let row = 0; row <= rows; row++) {
+      const z = -TERRAIN_DEPTH / 2 + (row / rows) * TERRAIN_DEPTH;
+      heights[row + col * (rows + 1)] = terrainHeight(x, z);
+    }
+  }
+  return heights;
+}
+
 /**
  * Journey start — downtown, low, near the coast and the Grande Poste (About),
  * on the flat shelf so the car spawns level. The car/character drop in just

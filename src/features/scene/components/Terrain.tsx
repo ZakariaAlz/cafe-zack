@@ -1,30 +1,36 @@
 "use client";
 
-import { RigidBody } from "@react-three/rapier";
+import { HeightfieldCollider, RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import * as THREE from "three";
-import { INLAND_X, SHORE_X, terrainHeight, WORLD_HALF_Z } from "../lib/terrain";
+import {
+  buildHeightfield,
+  terrainHeight,
+  TERRAIN_DEPTH,
+  TERRAIN_WIDTH,
+  TERRAIN_X_MAX,
+  TERRAIN_X_MIN,
+} from "../lib/terrain";
 
 /**
  * The Algiers amphitheatre ground — a low-poly slope rising from the bay to the
- * heights, replacing the old flat 320×320 plate. The mesh vertices and the
- * Rapier trimesh collider are displaced by the SAME terrainHeight() the
- * landmarks and roads sample, so the physics surface is exactly the surface you
- * see (the car climbs the hill you're looking at; no invisible floor).
+ * heights, replacing the old flat 320×320 plate.
+ *
+ * Collision is a Rapier HeightfieldCollider (a solid terrain primitive, not a
+ * thin trimesh sheet bodies can fall through) sampled from the SAME
+ * terrainHeight() that displaces the visual mesh — so the physics surface is
+ * exactly the surface you see and the car climbs the hill you're looking at.
  *
  * Faceted (flatShading) for the stylized Bruno-Simon read, with a height-driven
  * vertex-colour ramp: sandy shore → ochre lower city → dry-green / pale-rock
- * heights. Real cobble/asphalt PBR is for the road pass, not the whole terrain.
+ * heights.
  */
 
-// Plane footprint: x ∈ [INLAND_X−10, SHORE_X+30], z ∈ [±WORLD_HALF_Z]. Centred at
-// origin so the slope runs the full world. Segment ~3 units → chunky low-poly facets.
-const X_MIN = INLAND_X - 10;
-const X_MAX = SHORE_X + 30;
-const WIDTH = X_MAX - X_MIN; // along X (east–west, the slope)
-const DEPTH = WORLD_HALF_Z * 2; // along Z (north–south)
-const W_SEG = Math.round(WIDTH / 3);
+const WIDTH = TERRAIN_WIDTH; // along X (east–west, the slope)
+const DEPTH = TERRAIN_DEPTH; // along Z (north–south)
+const W_SEG = Math.round(WIDTH / 3); // ~3-unit facets → chunky low-poly
 const D_SEG = Math.round(DEPTH / 3);
+const FOOTPRINT_X = (TERRAIN_X_MIN + TERRAIN_X_MAX) / 2;
 
 // Elevation colour stops (game-unit heights) for the vertex ramp.
 const SAND = new THREE.Color("#D9C7A0"); // shore / sea floor
@@ -47,7 +53,7 @@ export function Terrain() {
     const geo = new THREE.PlaneGeometry(WIDTH, DEPTH, W_SEG, D_SEG);
     // PlaneGeometry lies in XY with +Z normal; lay it flat into XZ (+Y up).
     geo.rotateX(-Math.PI / 2);
-    geo.translate((X_MIN + X_MAX) / 2, 0, 0); // shift so x spans [X_MIN, X_MAX]
+    geo.translate(FOOTPRINT_X, 0, 0); // shift so x spans [X_MIN, X_MAX]
 
     const pos = geo.attributes.position as THREE.BufferAttribute;
     const colours = new Float32Array(pos.count * 3);
@@ -67,8 +73,17 @@ export function Terrain() {
     return geo;
   }, []);
 
+  // Collider grid (rows along Z, cols along X) sampled from terrainHeight; the
+  // heightfield is centred on the footprint and scaled out to world extents.
+  const heights = useMemo(() => buildHeightfield(D_SEG, W_SEG), []);
+
   return (
-    <RigidBody type="fixed" colliders="trimesh" friction={1.3}>
+    <RigidBody type="fixed" colliders={false} friction={1.3}>
+      <HeightfieldCollider
+        args={[D_SEG, W_SEG, heights, { x: WIDTH, y: 1, z: DEPTH }]}
+        position={[FOOTPRINT_X, 0, 0]}
+        friction={1.3}
+      />
       <mesh geometry={geometry} receiveShadow castShadow>
         <meshStandardMaterial vertexColors flatShading roughness={0.97} metalness={0} />
       </mesh>

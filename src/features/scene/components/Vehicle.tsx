@@ -10,8 +10,9 @@ import { SPAWN_XZ, spawnAbove } from "../lib/terrain";
 import { DriverAgent } from "./DriverAgent";
 import { HeroCar } from "./HeroCar";
 
-// Drop the car onto the downtown shelf, just above the terrain surface.
-const CAR_SPAWN = spawnAbove(SPAWN_XZ[0], SPAWN_XZ[1], 1);
+// Drop the car onto the downtown shelf, clear of the terrain surface so it
+// settles cleanly onto the heightfield instead of tunnelling through it.
+const CAR_SPAWN = spawnAbove(SPAWN_XZ[0], SPAWN_XZ[1], 2.5);
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
@@ -126,6 +127,7 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
       position={CAR_SPAWN}
       colliders={false}
       mass={300}
+      ccd
       linearDamping={0.6}
       angularDamping={0.5}
       enabledRotations={[false, true, false]}
