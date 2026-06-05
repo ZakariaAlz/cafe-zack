@@ -87,8 +87,18 @@ export function Sablette() {
         <group key={x} position={[x, 0, PROMENADE_Z]}>
           <BeachProp model="beach-parasol.glb" height={2.6} position={[0, 0, 0]} />
           <BeachProp model="beach-table.glb" height={0.72} position={[0, 0, 0.2]} />
-          <BeachProp model="beach-chair.glb" height={0.8} position={[-0.8, 0, 0.9]} rotationY={0.2} />
-          <BeachProp model="beach-chair.glb" height={0.8} position={[0.8, 0, 0.9]} rotationY={-0.2} />
+          <BeachProp
+            model="beach-chair.glb"
+            height={0.8}
+            position={[-0.8, 0, 0.9]}
+            rotationY={0.2}
+          />
+          <BeachProp
+            model="beach-chair.glb"
+            height={0.8}
+            position={[0.8, 0, 0.9]}
+            rotationY={-0.2}
+          />
         </group>
       ))}
 
@@ -97,7 +107,12 @@ export function Sablette() {
       <BeachSitter position={[0.8, 0, PROMENADE_Z + 0.9]} rotationY={Math.PI - 0.2} />
 
       {/* Strollers on the promenade. */}
-      <WalkingNPC model="npc-walker-f1.glb" from={[-22, 0.02, -64]} to={[24, 0.02, -64]} speed={1.1} />
+      <WalkingNPC
+        model="npc-walker-f1.glb"
+        from={[-22, 0.02, -64]}
+        to={[24, 0.02, -64]}
+        speed={1.1}
+      />
       <WalkingNPC
         model="npc-walker-m1.glb"
         from={[20, 0.02, -65]}
