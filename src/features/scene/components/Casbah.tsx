@@ -6,6 +6,7 @@ import { type RefObject, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { fitModelToHeight } from "../lib/fitModel";
+import { landmarkAnchor } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 
 /**
@@ -17,7 +18,7 @@ import { useModel } from "../lib/useModel";
  * opens the Projects panel.
  */
 
-const POSITION: [number, number, number] = [-22, 0, -12];
+const POSITION: [number, number, number] = landmarkAnchor("casbah");
 const TRIGGER_RADIUS = 11;
 // A single house reads ~8 m tall — keeps it under the Maqam silhouette while
 // still feeling massed at street level.

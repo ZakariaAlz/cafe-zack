@@ -6,8 +6,12 @@ import { type RefObject, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { SPAWN_XZ, spawnAbove } from "../lib/terrain";
 import { DriverAgent } from "./DriverAgent";
 import { HeroCar } from "./HeroCar";
+
+// Drop the car onto the downtown shelf, just above the terrain surface.
+const CAR_SPAWN = spawnAbove(SPAWN_XZ[0], SPAWN_XZ[1], 1);
 
 const FORWARD_AXIS = new THREE.Vector3(0, 0, -1);
 const QUAT = new THREE.Quaternion();
@@ -119,7 +123,7 @@ export function Vehicle({ bodyRef: externalRef }: { bodyRef?: RefObject<RapierRi
   return (
     <RigidBody
       ref={bodyRef}
-      position={[0, 1, 0]}
+      position={CAR_SPAWN}
       colliders={false}
       mass={300}
       linearDamping={0.6}

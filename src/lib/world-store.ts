@@ -111,9 +111,11 @@ export const useWorld = create<State>((set, get) => ({
         // Always inside on foot (you can't drive the R4 indoors); on exit the
         // agent stays a pedestrian standing outside the café.
         mode: "onFoot" as DriveMode,
-        // Returning to the street: respawn just outside Café Zack (it sits at
-        // [15,0,12] facing -Z), not at the world's default spawn.
-        streetSpawn: entering ? s.streetSpawn : [15, 1.2, 5],
+        // Returning to the street: respawn just outside Café Zack on the
+        // Sablette seafront (terrain anchor ≈ [62, 0, 40]), a step inland of the
+        // door, not at the world's default spawn. Kept as a literal so this
+        // cross-cutting store stays free of scene-feature imports.
+        streetSpawn: entering ? s.streetSpawn : [60, 1.2, 36],
         // Clear interior-only UI/proximity flags on either crossing.
         contactOpen: false,
         nearOrderPad: false,

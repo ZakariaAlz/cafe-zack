@@ -122,3 +122,15 @@ export function landmarkAnchor(id: LandmarkId): [number, number, number] {
 export function isSea(x: number): boolean {
   return x > SHORE_X;
 }
+
+/**
+ * Journey start — downtown, low, near the coast and the Grande Poste (About),
+ * on the flat shelf so the car spawns level. The car/character drop in just
+ * above terrain here; `spawnAbove` lifts a body clear of the surface.
+ */
+export const SPAWN_XZ: [number, number] = [40, 12];
+
+/** [x, y, z] to drop a body at (x, z), `lift` units above the terrain surface. */
+export function spawnAbove(x: number, z: number, lift = 1): [number, number, number] {
+  return [x, terrainHeight(x, z) + lift, z];
+}

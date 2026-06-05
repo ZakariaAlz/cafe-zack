@@ -5,6 +5,7 @@ import { CuboidCollider, type RapierRigidBody, RigidBody } from "@react-three/ra
 import { type RefObject, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useWorld } from "@/lib/world-store";
+import { landmarkAnchor } from "../lib/terrain";
 
 // Algiers stone palette (scene colors are independent of the 2D design tokens).
 const STONE = "#E4D5B7";
@@ -12,7 +13,7 @@ const STONE_LIGHT = "#EFE3CA";
 const OCHRE = "#C2410C";
 const RECESS = "#241811"; // dark interior seen through the arches
 
-const POSITION: [number, number, number] = [0, 0, -21];
+const POSITION: [number, number, number] = landmarkAnchor("grande-poste");
 const TRIGGER_RADIUS = 9;
 
 /**

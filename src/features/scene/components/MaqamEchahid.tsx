@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 import { useWorld } from "@/lib/world-store";
 import { fitModelToHeight } from "../lib/fitModel";
+import { landmarkAnchor } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 import { useTimeOfDay } from "../store/useTimeOfDay";
 
@@ -26,10 +27,9 @@ import { useTimeOfDay } from "../store/useTimeOfDay";
  * opens the Skills panel.
  */
 
-// Pushed south from the old [0,0,22] so the wider 30 m footprint clears the
-// road network and the player can approach across the plaza before the
-// trigger fires.
-const POSITION: [number, number, number] = [0, 0, 40];
+// Anchored to the El Madania heights (south, inland, high) per the dossier — it
+// sits on its own raised massif so it commands the bay from the slope.
+const POSITION: [number, number, number] = landmarkAnchor("maqam");
 const TRIGGER_RADIUS = 18;
 const TARGET_HEIGHT = 30;
 const PLAZA_RADIUS = 12;
