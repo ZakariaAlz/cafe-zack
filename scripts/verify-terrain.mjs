@@ -36,7 +36,7 @@ await page.waitForTimeout(3000);
 
 const agentY = await page.evaluate(() => {
   const ref = window.__playerBody;
-  const body = ref && ref.current;
+  const body = ref?.current;
   if (!body) return null;
   const t = body.translation();
   return { x: +t.x.toFixed(2), y: +t.y.toFixed(2), z: +t.z.toFixed(2) };
