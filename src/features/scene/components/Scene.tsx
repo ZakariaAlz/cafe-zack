@@ -13,6 +13,7 @@ import { Bouzareah } from "./Bouzareah";
 import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
+import { CasbahStreet } from "./CasbahStreet";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
 import { DriveController } from "./DriveController";
@@ -191,6 +192,7 @@ function SceneContent() {
           <Character bodyRef={characterRef} spawn={streetSpawn ?? undefined} />
           <GrandePoste playerRef={activeRef} />
           <Casbah playerRef={activeRef} />
+          <CasbahStreet />
           <NotreDameDAfrique playerRef={activeRef} />
           <MaqamEchahid playerRef={activeRef} />
           <CafeZack playerRef={activeRef} />
