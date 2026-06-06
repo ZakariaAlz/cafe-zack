@@ -26,7 +26,9 @@ function ridge(rowX: number, color: string, radius: number, hMin: number, hMax: 
   const peaks: Peak[] = [];
   const span = WORLD_HALF_Z + 60;
   let i = 0;
-  for (let z = -span; z <= span; z += radius * 1.3) {
+  // Tight spacing so neighbours overlap into a continuous rolling ridge rather
+  // than a row of separate spikes.
+  for (let z = -span; z <= span; z += radius * 0.8) {
     // Deterministic pseudo-variation from the index so peaks aren't uniform.
     const j = Math.sin(i * 12.9898) * 43758.5453;
     const frac = j - Math.floor(j);
@@ -44,16 +46,20 @@ function ridge(rowX: number, color: string, radius: number, hMin: number, hMax: 
 
 export function Bouzareah() {
   const peaks = useMemo(
-    () => [...ridge(INLAND_X - 35, NEAR, 26, 26, 44), ...ridge(INLAND_X - 80, FAR, 36, 40, 64)],
+    // Broad + low (height < radius) so the cones read as rounded hills, not
+    // sharp towers; the far row is taller and paler for depth.
+    () => [...ridge(INLAND_X - 30, NEAR, 32, 16, 24), ...ridge(INLAND_X - 78, FAR, 44, 26, 40)],
     [],
   );
 
   return (
     <group>
       {peaks.map((p) => (
-        <mesh key={`${p.x.toFixed(1)}:${p.z.toFixed(1)}`} position={[p.x, p.height / 2 - 6, p.z]}>
-          {/* 5-sided faceted cones read as chunky low-poly mountains. */}
-          <coneGeometry args={[p.radius, p.height, 5]} />
+        // Low-poly DOME (buried sphere) — a rounded hilltop, not a pointy cone.
+        // Centre is dropped so only a cap of `height` shows; broad radii overlap
+        // into a continuous rolling ridge.
+        <mesh key={`${p.x.toFixed(1)}:${p.z.toFixed(1)}`} position={[p.x, p.height - p.radius, p.z]}>
+          <sphereGeometry args={[p.radius, 9, 6]} />
           <meshStandardMaterial color={p.color} roughness={1} metalness={0} flatShading />
         </mesh>
       ))}
@@ -61,10 +67,9 @@ export function Bouzareah() {
       {peaks.slice(0, 4).map((p) => (
         <mesh
           key={`s-${p.x.toFixed(1)}`}
-          position={[p.z * 0.4, p.height / 2 - 6, WORLD_HALF_Z + 70 + p.x * 0.1]}
-          rotation={[0, Math.PI, 0]}
+          position={[p.z * 0.4, p.height * 0.8 - p.radius, WORLD_HALF_Z + 70 + p.x * 0.1]}
         >
-          <coneGeometry args={[p.radius, p.height * 0.8, 5]} />
+          <sphereGeometry args={[p.radius, 9, 6]} />
           <meshStandardMaterial color={FAR} roughness={1} metalness={0} flatShading />
         </mesh>
       ))}

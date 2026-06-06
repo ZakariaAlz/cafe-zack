@@ -29,7 +29,7 @@ export const INLAND_X = -90;
 /** Half-extent along Z (north–south), spanning the coastal itinerary. */
 export const WORLD_HALF_Z = 110;
 /** Tallest the gentle base slope reaches at the inland edge. */
-const BASE_MAX = 16;
+const BASE_MAX = 9;
 /** Edge of the flat coastal shelf (downtown / port / Sablette sit seaward of this). */
 const SHELF_X = 40;
 
@@ -70,12 +70,14 @@ function baseSlope(x: number): number {
  */
 type Massif = { cx: number; cz: number; rx: number; rz: number; height: number };
 const MASSIFS: Massif[] = [
-  // Casbah pyramid — a broad cone climbing to the citadel summit (north-centre).
-  { cx: 28, cz: -30, rx: 16, rz: 16, height: 13 },
-  // Notre-Dame cliff/spur — tall and narrow, a coastal cliff in the north.
-  { cx: 40, cz: -78, rx: 11, rz: 15, height: 20 },
-  // Maqam Echahid mount — the El Madania heights, broad and commanding (south).
-  { cx: -8, cz: 46, rx: 20, rz: 20, height: 12 },
+  // Casbah rise — elevated up the hill, but a soft mound (~39% peak grade) not
+  // the old 156%-grade spike. Radius kept ≈20 so it doesn't bleed into downtown
+  // or the shore (which must stay near the waterline).
+  { cx: 28, cz: -30, rx: 20, rz: 20, height: 9 },
+  // Notre-Dame headland — a contained soft rise replacing the narrow spike.
+  { cx: 40, cz: -78, rx: 20, rz: 20, height: 10 },
+  // Maqam Echahid knoll — a broad gentle mound (south).
+  { cx: -8, cz: 46, rx: 22, rz: 22, height: 9 },
 ];
 
 /**

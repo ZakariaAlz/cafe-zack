@@ -134,6 +134,16 @@ export function ChaseCamera({
   }, [gl]);
 
   useFrame((_, delta) => {
+    // Debug-only aerial override: set window.__overview = { pos:[x,y,z],
+    // look:[x,y,z] } (e.g. from a headless overview script) to lift the camera
+    // off the chase rig and frame the whole terrain. No-op in normal play.
+    const ov = (window as unknown as { __overview?: { pos: number[]; look: number[] } }).__overview;
+    if (ov) {
+      camera.position.set(ov.pos[0], ov.pos[1], ov.pos[2]);
+      camera.lookAt(ov.look[0], ov.look[1], ov.look[2]);
+      return;
+    }
+
     const body = targetRef.current;
     if (!body) return;
     const t = body.translation();
