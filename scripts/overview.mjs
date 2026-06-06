@@ -27,6 +27,9 @@ const SHOTS = [
   // The amphitheatre seen from out over the bay, looking inland at the city
   // rising up the slope — the classic Algiers view.
   { name: "bay", pos: [120, 55, 10], look: [-10, 6, -5] },
+  // Ground-level Sablette: from the promenade looking out over the seated
+  // patrons / strollers toward the sea (+X).
+  { name: "sablette", pos: [50, 6, 40], look: [66, 1.5, 42] },
 ];
 
 for (const s of SHOTS) {

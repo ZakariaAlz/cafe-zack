@@ -20,6 +20,7 @@ import { GrandePoste } from "./GrandePoste";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { RoadNetwork } from "./RoadNetwork";
+import { Sablette } from "./Sablette";
 import { Sea } from "./Sea";
 import { Streetlamps } from "./Streetlamps";
 import { Terrain } from "./Terrain";
@@ -181,6 +182,7 @@ function SceneContent() {
         <Bouzareah />
         <Sea />
         <RoadNetwork />
+        <Sablette />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
           <Traffic />

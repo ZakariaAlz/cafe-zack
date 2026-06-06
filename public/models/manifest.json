@@ -218,6 +218,52 @@
       "role": "Ambient traffic — VW Tiguan L Allspace 2022. LICENSE: CC-BY-NC-SA (NON-COMMERCIAL) — flagged; pull before any commercial deploy. Textures 512, mesh simplified.",
       "maxTexture": 512,
       "simplify": 0.2
+    },
+    {
+      "input": "people-cafe-beach-restaurants/seated_gentleman_in_suede_jacket/scene.gltf",
+      "output": "char-seated-gentleman.glb",
+      "role": "Populace — seated gentleman (realistic, posed). Sits at café/beach tables; normalized to the player's height. Textures 1024.",
+      "maxTexture": 1024,
+      "simplify": 0.35
+    },
+    {
+      "input": "people-cafe-beach-restaurants/older_man_reading_a_newspaper/scene.gltf",
+      "output": "char-elder-reading.glb",
+      "role": "Populace — elder reading a newspaper (realistic, seated). Café/beach patron; normalized to the player's height. Textures 1024.",
+      "maxTexture": 1024,
+      "simplify": 0.35
+    },
+    {
+      "input": "people-cafe-beach-restaurants/hijabi_woman/scene.gltf",
+      "output": "char-hijabi-woman.glb",
+      "role": "Populace — Algerian woman in hijab (realistic). Promenade/beach; normalized to the player's height. Textures 1024.",
+      "maxTexture": 1024,
+      "simplify": 0.35
+    },
+    {
+      "input": "people-cafe-beach-restaurants/executive_in_a_suit/scene.gltf",
+      "output": "char-executive.glb",
+      "role": "Populace — executive in a suit (realistic). Downtown crowd; normalized to the player's height. Textures 1024.",
+      "maxTexture": 1024,
+      "simplify": 0.35
+    },
+    {
+      "input": "people-cafe-beach-restaurants/casual_street_walk/scene.gltf",
+      "output": "char-casual-walk.glb",
+      "role": "Populace — casual street walker (realistic). Promenade/beach crowd; normalized to the player's height. Textures 1024.",
+      "maxTexture": 1024,
+      "simplify": 0.35
+    },
+    {
+      "input": "people-cafe-beach-restaurants/low_poly_beach_assets/scene.gltf",
+      "output": "beach-kit-lowpoly.glb",
+      "role": "Sablette — low-poly beach prop kit (umbrellas/towels/etc.) for dressing the shore."
+    },
+    {
+      "input": "people-cafe-beach-restaurants/marco_monopattino/scene.gltf",
+      "output": "vehicle-scooter.glb",
+      "role": "Algiers scooter (monopattino) — parked street dressing + a rider later; normalized. Textures 1024.",
+      "maxTexture": 1024
     }
   ],
   "built": {
@@ -406,6 +452,48 @@
       "sha256": "5df735901d5e8bda7b4d8834e7b00da532d741c4f809ac4c1531cb22c7b50bdf",
       "sourceBytes": 40070657,
       "builtAt": "2026-06-05T18:15:28.646Z"
+    },
+    "char-seated-gentleman.glb": {
+      "bytes": 5118352,
+      "sha256": "11582e4a5724044633e71a1e1c21b48bc86a903f212c79b015a3779ecd2a32cf",
+      "sourceBytes": 30995694,
+      "builtAt": "2026-06-06T15:03:52.814Z"
+    },
+    "char-elder-reading.glb": {
+      "bytes": 4222916,
+      "sha256": "af5afab77e8651830c90dca0795dcdd2ce110e7b08a7fc0790d8f8a77014a9a7",
+      "sourceBytes": 25246278,
+      "builtAt": "2026-06-06T15:03:52.814Z"
+    },
+    "char-hijabi-woman.glb": {
+      "bytes": 4458396,
+      "sha256": "df40cace6c75f3733b7119563c166dc745d2aa09a275cb001748fad3de1792f0",
+      "sourceBytes": 32811825,
+      "builtAt": "2026-06-06T15:03:52.814Z"
+    },
+    "char-executive.glb": {
+      "bytes": 4399572,
+      "sha256": "83e347855ee29dfbc6ea35f12f5a72ef5870fdf75aa8674c30f2f4f70fb8307d",
+      "sourceBytes": 28551743,
+      "builtAt": "2026-06-06T15:03:52.814Z"
+    },
+    "char-casual-walk.glb": {
+      "bytes": 3749240,
+      "sha256": "f6fa3e51afde0b86aacbea403e808a3b29477f4a0189a39d57fd470ec8f51dc7",
+      "sourceBytes": 23522519,
+      "builtAt": "2026-06-06T15:03:52.814Z"
+    },
+    "beach-kit-lowpoly.glb": {
+      "bytes": 406548,
+      "sha256": "fbe3bdf5d885f4244300d529cdb562cd4272e56e760cd8d5982f0aa4f850d9b4",
+      "sourceBytes": 1149118,
+      "builtAt": "2026-06-06T15:02:48.930Z"
+    },
+    "vehicle-scooter.glb": {
+      "bytes": 1741880,
+      "sha256": "78cd0aeec9a2d299a03e13a61019e025fbc3320efa012311061b700e8ef56d24",
+      "sourceBytes": 13129844,
+      "builtAt": "2026-06-06T15:02:48.930Z"
     }
   }
 }
