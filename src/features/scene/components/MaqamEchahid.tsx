@@ -31,8 +31,11 @@ import { useTimeOfDay } from "../store/useTimeOfDay";
 // sits on its own raised massif so it commands the bay from the slope.
 const POSITION: [number, number, number] = landmarkAnchor("maqam");
 const TRIGGER_RADIUS = 18;
-const TARGET_HEIGHT = 30;
-const PLAZA_RADIUS = 12;
+// Iconic but in scale with the world (buildings ~6 m): a 30 m monument on its
+// 12 m hill towered as a 42 m spike. ~18 m still reads as the commanding
+// Martyrs' Memorial without dominating the skyline.
+const TARGET_HEIGHT = 18;
+const PLAZA_RADIUS = 10;
 
 const GREEN = "#3DFF8C";
 const RED_STRIP = "#FF3344";
@@ -114,7 +117,7 @@ export function MaqamEchahid({ playerRef }: { playerRef: RefObject<RapierRigidBo
   return (
     <group position={POSITION}>
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[10, 15, 10]} position={[0, 15, 0]} />
+        <CuboidCollider args={[6, 9, 6]} position={[0, 9, 0]} />
       </RigidBody>
 
       {/* Stone esplanade disc — the real Maqam sits on a wide plaza, not on
