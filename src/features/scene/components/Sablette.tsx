@@ -7,67 +7,44 @@ import { terrainHeight } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 
 /**
- * La Sablette — the populated seafront just east of downtown, on the flat
- * coastal shelf at the waterline (x≈60–70, facing the sea at +X). Real CC-BY
- * people from the asset library, every one normalized to the player's ~1.7 m
- * height via `fitModelToHeight`, so the realistic crowd reads at one consistent
- * scale alongside the low-poly player. Seated patrons, strollers, beach
- * umbrellas, and a parked scooter dress the promenade.
+ * La Sablette — the populated seafront café terrace + promenade just east of
+ * downtown, on the flat coastal shelf at the waterline (x≈60–70, facing the sea
+ * at +X). Real CC-BY people from the asset library, every one normalized to the
+ * player's ~1.7 m height via `fitModelToHeight`, so the realistic crowd reads at
+ * one consistent scale alongside the low-poly player.
  *
- * All Y comes from `terrainHeight` so people/props sit on the slope, not in the
- * air. Realistic figures default to facing +Z; FACE_SEA turns them toward the
- * water. Decorative — no colliders on the dressing.
+ * The heavy café-building GLBs (12 MB+) don't ship, so the café is a light
+ * terrace: KayKit tables + chairs with patrons seated together, beach props,
+ * and a scooter. All Y comes from `terrainHeight`. Decorative — no colliders.
  */
 
 const PLAYER_HEIGHT = 1.7;
-const SEATED_HEIGHT = 1.25;
-// Realistic GLBs from this pack face +Z; +X is the sea, so turn −90° to face it.
-const FACE_SEA = -Math.PI / 2;
+// A seated figure's standing-equivalent height, so the seated pose lands in
+// scale with the standing crowd.
+const SEATED_HEIGHT = 1.55;
+// Realistic GLBs from this pack face +Z.
+const FACE_PZ = 0;
+const FACE_NZ = Math.PI;
 
-function place(x: number, z: number): [number, number, number] {
-  return [x, terrainHeight(x, z), z];
+function place(x: number, z: number, y = 0): [number, number, number] {
+  return [x, terrainHeight(x, z) + y, z];
 }
 
-/** A standing person, normalized to the player's height. */
-function Person({
-  model,
-  x,
-  z,
-  rotationY = 0,
-  height = PLAYER_HEIGHT,
-}: {
-  model: string;
-  x: number;
-  z: number;
-  rotationY?: number;
-  height?: number;
-}) {
-  const { scene } = useModel(model);
-  const cloned = useMemo(() => {
-    const c = SkeletonUtils.clone(scene);
-    fitModelToHeight(c, height);
-    return c;
-  }, [scene, height]);
-  return (
-    <group position={place(x, z)} rotation={[0, rotationY, 0]}>
-      <primitive object={cloned} />
-    </group>
-  );
-}
-
-/** A beach prop (umbrella / kit), normalized to a target height. */
-function Prop({
+/** Load + clone a GLB normalized to `height`, dropped at (x,z) on the terrain. */
+function Fitted({
   model,
   x,
   z,
   height,
   rotationY = 0,
+  yLift = 0,
 }: {
   model: string;
   x: number;
   z: number;
   height: number;
   rotationY?: number;
+  yLift?: number;
 }) {
   const { scene } = useModel(model);
   const cloned = useMemo(() => {
@@ -76,42 +53,62 @@ function Prop({
     return c;
   }, [scene, height]);
   return (
-    <group position={place(x, z)} rotation={[0, rotationY, 0]}>
+    <group position={place(x, z, yLift)} rotation={[0, rotationY, 0]}>
       <primitive object={cloned} />
     </group>
+  );
+}
+
+/** A café table flanked by two chairs. */
+function CafeTable({ x, z }: { x: number; z: number }) {
+  return (
+    <>
+      <Fitted model="cafe-table.glb" x={x} z={z} height={0.74} />
+      <Fitted model="market-chair.glb" x={x} z={z - 0.95} height={0.9} rotationY={FACE_PZ} />
+      <Fitted model="market-chair.glb" x={x} z={z + 0.95} height={0.9} rotationY={FACE_NZ} />
+    </>
   );
 }
 
 export function Sablette() {
   return (
     <group>
-      {/* Seated patrons looking out to sea (on the low sea-wall / sand). */}
-      <Person
+      {/* Café terrace — two patrons seated together at a table, facing each
+          other across it. yLift seats their hips onto the chairs (eye-tuned). */}
+      <CafeTable x={64} z={40} />
+      <Fitted
         model="char-seated-gentleman.glb"
-        x={66}
-        z={36}
-        rotationY={FACE_SEA}
+        x={64}
+        z={38.8}
         height={SEATED_HEIGHT}
+        rotationY={FACE_PZ}
+        yLift={0.45}
       />
-      <Person
+      <Fitted
         model="char-elder-reading.glb"
-        x={66}
-        z={44}
-        rotationY={FACE_SEA}
+        x={64}
+        z={41.2}
         height={SEATED_HEIGHT}
+        rotationY={FACE_NZ}
+        yLift={0.45}
       />
+      {/* A second, empty table for ambience. */}
+      <CafeTable x={64} z={47} />
 
       {/* Strollers on the promenade, varied headings. */}
-      <Person model="char-casual-walk.glb" x={60} z={30} rotationY={0.6} />
-      <Person model="char-hijabi-woman.glb" x={58} z={48} rotationY={Math.PI} />
-      <Person model="char-executive.glb" x={62} z={54} rotationY={-2.2} />
+      <Fitted model="char-casual-walk.glb" x={60} z={30} height={PLAYER_HEIGHT} rotationY={0.6} />
+      <Fitted
+        model="char-hijabi-woman.glb"
+        x={58}
+        z={50}
+        height={PLAYER_HEIGHT}
+        rotationY={FACE_NZ}
+      />
+      <Fitted model="char-executive.glb" x={61} z={55} height={PLAYER_HEIGHT} rotationY={-2.2} />
 
-      {/* Beach umbrellas / props on the sand toward the water. */}
-      <Prop model="beach-kit-lowpoly.glb" x={68} z={32} height={2.6} />
-      <Prop model="beach-kit-lowpoly.glb" x={69} z={46} height={2.6} rotationY={0.8} />
-
-      {/* A scooter parked at the kerb. */}
-      <Prop model="vehicle-scooter.glb" x={57} z={40} height={1.1} rotationY={Math.PI / 2} />
+      {/* Scooter with its rider — sized so the RIDER reads ~1.7 m (the whole
+          model is ~1.9 m tall), not the kick-scooter alone. */}
+      <Fitted model="vehicle-scooter.glb" x={57} z={42} height={1.9} rotationY={Math.PI / 2} />
     </group>
   );
 }

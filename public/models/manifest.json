@@ -494,6 +494,18 @@
       "sha256": "78cd0aeec9a2d299a03e13a61019e025fbc3320efa012311061b700e8ef56d24",
       "sourceBytes": 13129844,
       "builtAt": "2026-06-06T15:02:48.930Z"
+    },
+    "cafe-cozy.glb": {
+      "bytes": 13257264,
+      "sha256": "b0c1e6521ec9d0705c05140c6325a663010f0c99cb0e2be156b9986acff73caa",
+      "sourceBytes": 77119999,
+      "builtAt": "2026-06-06T16:52:57.002Z"
+    },
+    "cafe-tea-garden.glb": {
+      "bytes": 7305016,
+      "sha256": "eedc3c76532ffbacc74f01a57982e563e834df3af3b947202d1b2bdb359fe984",
+      "sourceBytes": 73109554,
+      "builtAt": "2026-06-06T16:51:30.822Z"
     }
   }
 }
