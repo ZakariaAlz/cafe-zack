@@ -32,20 +32,34 @@ const W_SEG = Math.round(WIDTH / 3); // ~3-unit facets → chunky low-poly
 const D_SEG = Math.round(DEPTH / 3);
 const FOOTPRINT_X = (TERRAIN_X_MIN + TERRAIN_X_MAX) / 2;
 
-// Elevation colour stops (game-unit heights) for the vertex ramp.
-const SAND = new THREE.Color("#D9C7A0"); // shore / sea floor
-const OCHRE = new THREE.Color("#C2885A"); // lower city ground
-const PALE = new THREE.Color("#CDBF9A"); // mid slope
-const ROCK = new THREE.Color("#9FA68C"); // dry-green heights
+// Elevation colour stops (game-unit heights) for the vertex ramp. Pushed to
+// more distinct, saturated tones so the slope reads as varied Algiers ground
+// (pale beach sand → warm ochre lower city → dry scrubland green on the
+// heights) instead of one flat tan blob.
+const SAND = new THREE.Color("#E8D8B0"); // shore / sea floor — pale warm sand
+const OCHRE = new THREE.Color("#B97A45"); // lower city ground — warm ochre
+const SCRUB = new THREE.Color("#94995E"); // mid slope — dusty olive
+const GREEN = new THREE.Color("#6E8A4E"); // dry-green vegetated heights
 
-function colourForHeight(h: number, target: THREE.Color): void {
-  if (h < 0.5) {
+// Deterministic ±jitter per vertex so each facet varies slightly — kills the
+// "single flat colour" read without any texture. Hash of the (x,z) position.
+function jitter(x: number, z: number): number {
+  const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
+  return (s - Math.floor(s) - 0.5) * 0.14; // ≈ ±7%
+}
+
+function colourForHeight(h: number, x: number, z: number, target: THREE.Color): void {
+  if (h < 0.4) {
     target.copy(SAND);
-  } else if (h < 5) {
-    target.copy(OCHRE).lerp(PALE, (h - 0.5) / 4.5);
+  } else if (h < 4) {
+    target.copy(SAND).lerp(OCHRE, (h - 0.4) / 3.6);
+  } else if (h < 9) {
+    target.copy(OCHRE).lerp(SCRUB, (h - 4) / 5);
   } else {
-    target.copy(PALE).lerp(ROCK, Math.min(1, (h - 5) / 13));
+    target.copy(SCRUB).lerp(GREEN, Math.min(1, (h - 9) / 9));
   }
+  const j = 1 + jitter(x, z);
+  target.setRGB(Math.min(1, target.r * j), Math.min(1, target.g * j), Math.min(1, target.b * j));
 }
 
 export function Terrain() {
@@ -63,7 +77,7 @@ export function Terrain() {
       const z = pos.getZ(i);
       const h = terrainHeight(x, z);
       pos.setY(i, h);
-      colourForHeight(h, c);
+      colourForHeight(h, x, z, c);
       colours[i * 3] = c.r;
       colours[i * 3 + 1] = c.g;
       colours[i * 3 + 2] = c.b;

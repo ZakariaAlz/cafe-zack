@@ -34,6 +34,19 @@ export function FerrisWheel({ x, z }: { x: number; z: number }) {
 
   const cloned = useMemo(() => {
     const c = SkeletonUtils.clone(scene);
+    // The GLB ships fairground furniture (a ground plane, fence, trash, base
+    // block, stairs — the "lambert4" group) alongside the wheel structure
+    // ("lambert1"). The flat ground plane is huge in native units; left in, it
+    // (a) dominates the bounding box so fitModelToHeight mis-scales the wheel
+    // and (b) blows up into a giant slab. Strip the furniture BEFORE fitting so
+    // the scale comes from the wheel alone and the slab is gone.
+    const drop: THREE.Object3D[] = [];
+    c.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && /plane|fence|trash|block|stairs|lambert4/i.test(obj.name)) {
+        drop.push(obj);
+      }
+    });
+    for (const m of drop) m.removeFromParent();
     fitModelToHeight(c, TARGET_HEIGHT);
     return c;
   }, [scene]);
