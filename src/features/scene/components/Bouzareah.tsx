@@ -58,7 +58,10 @@ export function Bouzareah() {
         // Low-poly DOME (buried sphere) — a rounded hilltop, not a pointy cone.
         // Centre is dropped so only a cap of `height` shows; broad radii overlap
         // into a continuous rolling ridge.
-        <mesh key={`${p.x.toFixed(1)}:${p.z.toFixed(1)}`} position={[p.x, p.height - p.radius, p.z]}>
+        <mesh
+          key={`${p.x.toFixed(1)}:${p.z.toFixed(1)}`}
+          position={[p.x, p.height - p.radius, p.z]}
+        >
           <sphereGeometry args={[p.radius, 9, 6]} />
           <meshStandardMaterial color={p.color} roughness={1} metalness={0} flatShading />
         </mesh>

@@ -264,6 +264,30 @@
       "output": "vehicle-scooter.glb",
       "role": "Algiers scooter (monopattino) — parked street dressing + a rider later; normalized. Textures 1024.",
       "maxTexture": 1024
+    },
+    {
+      "input": "ferris_wheel/scene.gltf",
+      "output": "ferris-wheel.glb",
+      "role": "Sablette — the grande roue (Ferris wheel). Hero promenade landmark; its bulbs/rim glow emissively at night. Geometry is light (thin struts) so no simplify — it would shred the spokes. Textures 1024.",
+      "maxTexture": 1024
+    },
+    {
+      "input": "scooter/source/Scooter Fbx.fbx",
+      "output": "vehicle-moto-scooter.glb",
+      "role": "Algiers motor scooter (Vespa-style) — the common two-wheeler, parked street dressing across the world. FBX → Blender. Normalized ~1.1 m tall (wheels-to-bars). Textures 1024.",
+      "maxTexture": 1024
+    },
+    {
+      "input": "park_bench/scene.gltf",
+      "output": "park-bench.glb",
+      "role": "Sablette/promenade — park bench. Seating dressing along the paved seafront; normalized ~0.85 m tall. Instanced, so textures capped to 512.",
+      "maxTexture": 512
+    },
+    {
+      "input": "picnic_tables/scene.gltf",
+      "output": "picnic-table.glb",
+      "role": "Sablette — picnic table + benches combined unit for the promenade/kiosk area; normalized ~0.75 m tall. Instanced, so textures capped to 512.",
+      "maxTexture": 512
     }
   ],
   "built": {
@@ -506,6 +530,30 @@
       "sha256": "eedc3c76532ffbacc74f01a57982e563e834df3af3b947202d1b2bdb359fe984",
       "sourceBytes": 73109554,
       "builtAt": "2026-06-06T16:51:30.822Z"
+    },
+    "ferris-wheel.glb": {
+      "bytes": 1889340,
+      "sha256": "58ca2ad96dc0a81baf43f6eb402cf1bfdb77c35db765cd4ba26d6b03bf006d62",
+      "sourceBytes": 14606998,
+      "builtAt": "2026-06-06T17:32:42.369Z"
+    },
+    "park-bench.glb": {
+      "bytes": 932244,
+      "sha256": "6283a38618c6884973b50ef28f12a3e8cb517e5c5c167dd8215adc6c9cc387f5",
+      "sourceBytes": 14574693,
+      "builtAt": "2026-06-06T17:33:06.121Z"
+    },
+    "picnic-table.glb": {
+      "bytes": 1112412,
+      "sha256": "44410f9fe50382a87b0a0ff833f9ba6cca6a3be6872bc6c6062bd0ec7e9b748f",
+      "sourceBytes": 20425983,
+      "builtAt": "2026-06-06T17:33:06.121Z"
+    },
+    "vehicle-moto-scooter.glb": {
+      "bytes": 1307252,
+      "sha256": "1c1cbb0bc1dc9f0992a39da3ce606bc83b57e0ef557ff4f301e09c4533d97676",
+      "sourceBytes": 4335884,
+      "builtAt": "2026-06-06T17:33:06.121Z"
     }
   }
 }

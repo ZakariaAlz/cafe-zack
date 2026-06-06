@@ -5,6 +5,7 @@ import { SkeletonUtils } from "three-stdlib";
 import { fitModelToHeight } from "../lib/fitModel";
 import { terrainHeight } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
+import { FerrisWheel } from "./FerrisWheel";
 
 /**
  * La Sablette — the populated seafront café terrace + promenade just east of
@@ -22,9 +23,16 @@ const PLAYER_HEIGHT = 1.7;
 // A seated figure's standing-equivalent height, so the seated pose lands in
 // scale with the standing crowd.
 const SEATED_HEIGHT = 1.55;
+// Real-world heights for the promenade furniture, so everything sits in scale
+// next to the ~1.7 m crowd (see the scooter/beach-kit sizing lessons).
+const BENCH_HEIGHT = 0.85;
+const TABLE_HEIGHT = 0.75;
+const SCOOTER_HEIGHT = 1.1; // wheels-to-handlebars of the parked motor scooter
 // Realistic GLBs from this pack face +Z.
 const FACE_PZ = 0;
 const FACE_NZ = Math.PI;
+// The sea is at +X; a +Z-forward model rotated +90° about Y faces it.
+const FACE_SEA = Math.PI / 2;
 
 function place(x: number, z: number, y = 0): [number, number, number] {
   return [x, terrainHeight(x, z) + y, z];
@@ -106,9 +114,41 @@ export function Sablette() {
       />
       <Fitted model="char-executive.glb" x={61} z={55} height={PLAYER_HEIGHT} rotationY={-2.2} />
 
-      {/* Scooter with its rider — sized so the RIDER reads ~1.7 m (the whole
-          model is ~1.9 m tall), not the kick-scooter alone. */}
+      {/* Kick-scooter with its rider — sized so the RIDER reads ~1.7 m (the
+          whole model is ~1.9 m tall), not the scooter alone. */}
       <Fitted model="vehicle-scooter.glb" x={57} z={42} height={1.9} rotationY={Math.PI / 2} />
+
+      {/* La Grande Roue — the luminous Ferris wheel on the seafront, near the
+          waterline (shore is x≈70). Spins, glows warm at night. */}
+      <FerrisWheel x={66} z={54} />
+
+      {/* Promenade benches — a row facing out to sea (+X) along the paved
+          seafront, the classic Sablette bench line. */}
+      <Fitted model="park-bench.glb" x={62} z={32} height={BENCH_HEIGHT} rotationY={FACE_SEA} />
+      <Fitted model="park-bench.glb" x={62} z={37} height={BENCH_HEIGHT} rotationY={FACE_SEA} />
+      <Fitted model="park-bench.glb" x={62} z={46} height={BENCH_HEIGHT} rotationY={FACE_SEA} />
+      <Fitted model="park-bench.glb" x={62} z={51} height={BENCH_HEIGHT} rotationY={FACE_SEA} />
+
+      {/* Picnic tables clustered behind the bench line, toward the kiosks. */}
+      <Fitted model="picnic-table.glb" x={56} z={35} height={TABLE_HEIGHT} rotationY={0.4} />
+      <Fitted model="picnic-table.glb" x={55} z={49} height={TABLE_HEIGHT} rotationY={-0.6} />
+
+      {/* Parked motor scooters — the common Algiers two-wheeler as street
+          dressing along the promenade edge, kickstand-leaning. */}
+      <Fitted
+        model="vehicle-moto-scooter.glb"
+        x={59}
+        z={29}
+        height={SCOOTER_HEIGHT}
+        rotationY={-1.1}
+      />
+      <Fitted
+        model="vehicle-moto-scooter.glb"
+        x={58.4}
+        z={56}
+        height={SCOOTER_HEIGHT}
+        rotationY={2.3}
+      />
     </group>
   );
 }
