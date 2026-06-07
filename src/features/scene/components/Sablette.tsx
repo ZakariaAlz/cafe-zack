@@ -3,9 +3,16 @@
 import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { fitModelToHeight } from "../lib/fitModel";
+import { makePavingTexture } from "../lib/paving";
 import { terrainHeight } from "../lib/terrain";
 import { useModel } from "../lib/useModel";
 import { FerrisWheel } from "./FerrisWheel";
+
+// Grey paved promenade footprint (flat coastal shelf, y≈0).
+const PAVE_CENTER: [number, number, number] = [60, 0.03, 42];
+const PAVE_W = 18; // along X (toward the sea)
+const PAVE_D = 34; // along Z (the promenade run)
+const PAVE_TILE = 2.5; // metres per texture tile
 
 /**
  * La Sablette — the populated seafront café terrace + promenade just east of
@@ -79,8 +86,18 @@ function CafeTable({ x, z }: { x: number; z: number }) {
 }
 
 export function Sablette() {
+  const paving = useMemo(() => {
+    const t = makePavingTexture({ base: "#8C8E92", grout: "#5E6064", cells: 4, variation: 0.1 });
+    t.repeat.set(PAVE_W / PAVE_TILE, PAVE_D / PAVE_TILE);
+    return t;
+  }, []);
   return (
     <group>
+      {/* Grey paved promenade ground covering the seafront terrace. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={PAVE_CENTER} receiveShadow>
+        <planeGeometry args={[PAVE_W, PAVE_D]} />
+        <meshStandardMaterial map={paving} roughness={0.92} />
+      </mesh>
       {/* Café terrace — two patrons seated together at a table, facing each
           other across it. yLift seats their hips onto the chairs (eye-tuned). */}
       <CafeTable x={64} z={40} />

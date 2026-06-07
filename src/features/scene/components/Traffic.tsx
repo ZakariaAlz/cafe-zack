@@ -58,8 +58,8 @@ const FLEET: Bay[] = [
   ...row([40, -8], "x", 5, STEP, 0, 0),
   // Opposite bays across the forecourt, facing +Z.
   ...row([40, 16], "x", 5, STEP, Math.PI, 5),
-  // Parallel-parked row along the seaward kerb (cars aligned along Z, nose −Z).
-  ...row([66, -22], "z", 6, STEP, 0, 9),
+  // (The seaward kerb row was removed — the coastal Autoroute now runs there
+  // with moving traffic instead of parked cars.)
   // A short row up the approach toward the spawn, facing −X.
   ...row([30, 30], "x", 3, STEP, -HALF_PI, 2),
 ];

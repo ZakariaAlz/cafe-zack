@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { useAmbientZone } from "@/features/audio";
 import { useWorld } from "@/lib/world-store";
 import { type TimeOfDay, useTimeOfDay } from "../store/useTimeOfDay";
+import { Autoroute } from "./Autoroute";
 import { Bouzareah } from "./Bouzareah";
 import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
@@ -191,6 +192,7 @@ function SceneContent() {
             road-tile here pitched into ramps on the slope; a draped ribbon
             tracks the rolling medina ground.) */}
         <CasbahPath />
+        <Autoroute />
         <Sablette />
         <Pedestrians />
         <Physics gravity={[0, -9.81, 0]}>
