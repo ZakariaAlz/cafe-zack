@@ -15,8 +15,8 @@ import { LANDMARK_XZ, terrainHeight } from "../lib/terrain";
  */
 
 const ASPHALT = "#2B2B30";
-const LINE = "#E8C24A";
-const SIDEWALK = "#CBBE9C";
+const LINE = "#F0CC55";
+const SIDEWALK = "#CDC6B4"; // pale kerb stone — matches the Casbah path
 
 type V2 = [number, number];
 
@@ -112,11 +112,13 @@ function ribbon(points: V2[], width: number, lift: number): THREE.BufferGeometry
 export function RoadNetwork() {
   const roads = useMemo(
     () =>
+      // Sidewalk RAISED above the asphalt (lift 0.16 > 0.07) so it reads as a
+      // real kerb, not a strip painted under the road; wider footpath (+3.6).
       PATHS.map((p, i) => ({
         key: `road-${i}`,
-        kerb: ribbon(p.points, p.width + 2.4, 0.04),
+        kerb: ribbon(p.points, p.width + 3.6, 0.16),
         asphalt: ribbon(p.points, p.width, 0.07),
-        line: ribbon(p.points, 0.3, 0.09),
+        line: ribbon(p.points, 0.3, 0.1),
       })),
     [],
   );
