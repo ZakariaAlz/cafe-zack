@@ -13,6 +13,7 @@ import { Bouzareah } from "./Bouzareah";
 import { CafeInterior } from "./CafeInterior";
 import { CafeZack } from "./CafeZack";
 import { Casbah } from "./Casbah";
+import { CasbahPath } from "./CasbahPath";
 import { CasbahStreet } from "./CasbahStreet";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
@@ -185,6 +186,11 @@ function SceneContent() {
         <Bouzareah />
         <Sea />
         <RoadNetwork />
+        {/* Casbah path — a terrain-draped cobble lane with raised stone
+            sidewalks down the alley between the enlarged white houses. (A rigid
+            road-tile here pitched into ramps on the slope; a draped ribbon
+            tracks the rolling medina ground.) */}
+        <CasbahPath />
         <Sablette />
         <Pedestrians />
         <Physics gravity={[0, -9.81, 0]}>

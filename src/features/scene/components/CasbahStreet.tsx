@@ -21,9 +21,10 @@ import { useModel } from "../lib/useModel";
  * walls are solid. Y comes from `terrainHeight` so the row climbs the slope.
  */
 
-const HOUSE_HEIGHT = 6;
-const HALF_WIDTH = 3.6; // alley half-width (centre-to-house-face)
-const COUNT = 7; // houses per side
+const HOUSE_HEIGHT = 10; // tall, massed white Casbah houses
+const HALF_WIDTH = 5.5; // alley half-width (centre-to-house-face) — room for the path + sidewalks
+const HOUSE_HALF = 2.8; // footprint collider half-extent
+const COUNT = 8; // houses per side
 const T_START = 0.22; // start past the Casbah landmark
 const T_END = 0.86; // end before the basilica plaza
 
@@ -51,7 +52,10 @@ function House({
     <group position={[x, terrainHeight(x, z), z]} rotation={[0, rotationY, 0]}>
       <primitive object={cloned} />
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[2.4, HOUSE_HEIGHT / 2, 2.4]} position={[0, HOUSE_HEIGHT / 2, 0]} />
+        <CuboidCollider
+          args={[HOUSE_HALF, HOUSE_HEIGHT / 2, HOUSE_HALF]}
+          position={[0, HOUSE_HEIGHT / 2, 0]}
+        />
       </RigidBody>
     </group>
   );
