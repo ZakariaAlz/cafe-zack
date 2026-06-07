@@ -288,6 +288,19 @@
       "output": "picnic-table.glb",
       "role": "Sablette — picnic table + benches combined unit for the promenade/kiosk area; normalized ~0.75 m tall. Instanced, so textures capped to 512.",
       "maxTexture": 512
+    },
+    {
+      "input": "people-cafe-beach-restaurants/aaa_algerian_villa/scene.gltf",
+      "output": "algerian-villa.glb",
+      "role": "City population — traditional Algerian villa, instanced + terrain-anchored to line the road network so streets read as a city, not roads in a desert. Textures 1024, geometry simplified for instancing weight.",
+      "maxTexture": 1024,
+      "simplify": 0.5
+    },
+    {
+      "input": "shop/scene.gltf",
+      "output": "shop.glb",
+      "role": "City population — small street shop/storefront, instanced along the roads for ground-floor commerce variety. Textures 1024.",
+      "maxTexture": 1024
     }
   ],
   "built": {
@@ -554,6 +567,18 @@
       "sha256": "1c1cbb0bc1dc9f0992a39da3ce606bc83b57e0ef557ff4f301e09c4533d97676",
       "sourceBytes": 4335884,
       "builtAt": "2026-06-06T17:33:06.121Z"
+    },
+    "algerian-villa.glb": {
+      "bytes": 3815108,
+      "sha256": "c82686330423d1d78d3752734a1f869630747a89f049d4abf63e0b539a569351",
+      "sourceBytes": 18216654,
+      "builtAt": "2026-06-07T18:25:43.079Z"
+    },
+    "shop.glb": {
+      "bytes": 82428,
+      "sha256": "ebe71f5268a4270b0f1ef4c5bfed9b9ca66dc8cda987c3cfa617bf841b02636f",
+      "sourceBytes": 403513,
+      "builtAt": "2026-06-07T18:25:43.079Z"
     }
   }
 }

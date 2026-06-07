@@ -16,10 +16,12 @@ import { Casbah } from "./Casbah";
 import { CasbahStreet } from "./CasbahStreet";
 import { Character } from "./Character";
 import { ChaseCamera } from "./ChaseCamera";
+import { CityBlocks } from "./CityBlocks";
 import { DriveController } from "./DriveController";
 import { GrandePoste } from "./GrandePoste";
 import { MaqamEchahid } from "./MaqamEchahid";
 import { NotreDameDAfrique } from "./NotreDameDAfrique";
+import { Pedestrians } from "./Pedestrians";
 import { RoadNetwork } from "./RoadNetwork";
 import { Sablette } from "./Sablette";
 import { Sea } from "./Sea";
@@ -184,8 +186,10 @@ function SceneContent() {
         <Sea />
         <RoadNetwork />
         <Sablette />
+        <Pedestrians />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
+          <CityBlocks />
           <Traffic />
           <Streetlamps />
           <Vehicle bodyRef={taxiRef} />
