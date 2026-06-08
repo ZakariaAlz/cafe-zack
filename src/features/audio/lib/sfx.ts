@@ -58,3 +58,46 @@ export function playRevealWhoosh(): void {
   chime(659.25, 0.05); // E5
   chime(987.77, 0.18); // B5
 }
+
+/**
+ * A short playful child giggle — a run of quick rising vowel-ish blips ("hee
+ * hee hee") synthesised on the shared AudioContext, so it needs no asset and
+ * honours unlock/mute/volume. Triggered when the player passes a child on the
+ * Sablette promenade. `pitch` (≈1) lets different kids giggle a bit higher or
+ * lower so a cluster doesn't sound cloned.
+ */
+export function playChildGiggle(pitch = 1): void {
+  const { unlocked, muted, volume } = useAudio.getState();
+  if (!unlocked || muted) return;
+  const ctx = Howler.ctx as AudioContext | undefined;
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const out = ctx.createGain();
+  out.gain.value = Math.min(1, Math.max(0, volume)) * 0.4;
+  out.connect(ctx.destination);
+
+  // 4 quick "hee" blips, each a short pitched burst with a fast vibrato.
+  for (let n = 0; n < 4; n++) {
+    const t0 = n * 0.12;
+    const base = (760 + n * 70) * pitch; // rising
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(base * 0.92, now + t0);
+    osc.frequency.exponentialRampToValueAtTime(base, now + t0 + 0.05);
+    const vib = ctx.createOscillator();
+    vib.frequency.value = 28;
+    const vibGain = ctx.createGain();
+    vibGain.gain.value = base * 0.04;
+    vib.connect(vibGain).connect(osc.frequency);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now + t0);
+    g.gain.exponentialRampToValueAtTime(0.3, now + t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + 0.1);
+    osc.connect(g).connect(out);
+    vib.start(now + t0);
+    osc.start(now + t0);
+    osc.stop(now + t0 + 0.11);
+    vib.stop(now + t0 + 0.11);
+  }
+}

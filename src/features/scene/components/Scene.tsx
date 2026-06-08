@@ -26,6 +26,7 @@ import { NotreDameDAfrique } from "./NotreDameDAfrique";
 import { Pedestrians } from "./Pedestrians";
 import { RoadNetwork } from "./RoadNetwork";
 import { Sablette } from "./Sablette";
+import { SabletteLife } from "./SabletteLife";
 import { Sea } from "./Sea";
 import { Streetlamps } from "./Streetlamps";
 import { Terrain } from "./Terrain";
@@ -194,6 +195,7 @@ function SceneContent() {
         <CasbahPath />
         <Autoroute />
         <Sablette />
+        <SabletteLife playerRef={activeRef} />
         <Pedestrians />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
