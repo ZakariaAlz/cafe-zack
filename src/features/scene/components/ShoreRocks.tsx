@@ -7,10 +7,11 @@ import { fitModelToHeight } from "../lib/fitModel";
 import { useModel } from "../lib/useModel";
 
 /**
- * Six KayKit Forest rocks scattered at the corniche waterline, varied in
- * size, rotation, and Y-offset so they read as worn boulders the surf wraps
- * around. Each clone uses fitModelToHeight to land at a target metres value
- * regardless of the source FBX units.
+ * KayKit Forest rocks scattered in the sea just off the Sablette shore (x > the
+ * SHORE_X=70 waterline), varied in size, rotation, and Y so they read as worn
+ * boulders the surf wraps around — the "rochers dans la mer" off the promenade.
+ * Each clone uses fitModelToHeight to land at a target metres value regardless
+ * of the source FBX units; sunk a touch (y<water≈−0.1) so the surf laps them.
  */
 
 type Stone = {
@@ -20,12 +21,15 @@ type Stone = {
 };
 
 const STONES: Stone[] = [
-  { position: [-32, -0.15, -85], rotationY: 0.3, height: 0.9 },
-  { position: [-18, -0.1, -86], rotationY: 1.7, height: 1.4 },
-  { position: [-3, -0.2, -84.5], rotationY: 2.8, height: 1.1 },
-  { position: [12, -0.1, -86.5], rotationY: -0.5, height: 1.6 },
-  { position: [27, -0.15, -85], rotationY: -1.8, height: 1.0 },
-  { position: [38, -0.2, -86], rotationY: 0.9, height: 1.3 },
+  { position: [73, -0.3, 30], rotationY: 0.3, height: 1.6 },
+  { position: [75, -0.25, 36], rotationY: 1.7, height: 1.2 },
+  { position: [72, -0.35, 42], rotationY: 2.8, height: 2.0 },
+  { position: [76, -0.2, 48], rotationY: -0.5, height: 1.4 },
+  { position: [74, -0.3, 54], rotationY: -1.8, height: 1.7 },
+  { position: [73, -0.3, 22], rotationY: 0.9, height: 1.3 },
+  { position: [77, -0.25, 12], rotationY: 2.1, height: 1.1 },
+  { position: [72, -0.35, 0], rotationY: -1.2, height: 1.9 },
+  { position: [75, -0.3, -10], rotationY: 0.6, height: 1.5 },
 ];
 
 function Stone({ stone }: { stone: Stone }) {

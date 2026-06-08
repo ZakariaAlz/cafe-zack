@@ -28,6 +28,7 @@ import { RoadNetwork } from "./RoadNetwork";
 import { Sablette } from "./Sablette";
 import { SabletteLife } from "./SabletteLife";
 import { Sea } from "./Sea";
+import { ShoreRocks } from "./ShoreRocks";
 import { Streetlamps } from "./Streetlamps";
 import { Terrain } from "./Terrain";
 import { Traffic } from "./Traffic";
@@ -199,6 +200,7 @@ function SceneContent() {
         <Pedestrians />
         <Physics gravity={[0, -9.81, 0]}>
           <Terrain />
+          <ShoreRocks />
           <CityBlocks />
           <Traffic />
           <Streetlamps />
